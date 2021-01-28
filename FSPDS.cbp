@@ -33,7 +33,7 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="Makefile" />
-		<Unit filename="source/main.cpp" />
+		<Unit filename="source/main.c"/>					
 		<Extensions>
 			<code_completion />
 			<envvars />
