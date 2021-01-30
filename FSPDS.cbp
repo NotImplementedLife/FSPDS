@@ -33,7 +33,14 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="Makefile" />
-		<Unit filename="source/main.c"/>					
+		<Unit filename="include/console.h" />
+		<Unit filename="include/filesystem.h" />
+		<Unit filename="include/player.h" />
+		<Unit filename="include/ppm.h" />
+		<Unit filename="include/tabsystem.h" />
+		<Unit filename="source/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<envvars />

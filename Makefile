@@ -21,6 +21,7 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
@@ -91,6 +92,18 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 			-I$(CURDIR)/$(BUILD)
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+
+# THX:  https://devkitpro.org/viewtopic.php?t=508
+
+icons = $(wildcard *.bmp)
+
+ifneq (,$(findstring $(TARGET).bmp,$(icons)))
+	export GAME_ICON := $(CURDIR)/$(TARGET).bmp
+else
+	ifneq (,$(findstring icon.bmp,$(icons)))
+		export GAME_ICON := $(CURDIR)/icon.bmp
+	endif
+endif
 
 .PHONY: $(BUILD) clean
 

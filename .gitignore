@@ -1,5 +1,7 @@
 .git/
 build/
+flipnotes-example/
 FSPDS.layout
 FSPDS.elf
 FSPDS.nds
+run.bat
