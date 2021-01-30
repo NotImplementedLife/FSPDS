@@ -17,9 +17,8 @@ u32 ppmMeta_Timestamp;
 
 void ppm_loadMetadata()
 {
-    int index=7*CurrentPage+PageSelection;
     char fn[40]="/flipnotes/";
-    strcat(fn,files[index]);
+    strcat(fn,files[7*CurrentPage+PageSelection]);
     FILE* fp=fopen(fn,"rb");
     // Parse head
     fread(ppmHead_Magic,4,1,fp);  ppmHead_Magic[4]=0;
@@ -39,6 +38,21 @@ void ppm_loadMetadata()
     fread(ppmMeta_RootAuthorId,8,1,fp);
     fread(&ppmMeta_Timestamp,sizeof(u32),1,fp);
     fclose(fp);
+}
+
+u16 ppmADat_0x6A0; // Size of frame offset table
+u16 ppmADat_0x6A6; // Flags
+
+
+FILE* ppmLoadAnimationData()
+{
+    char fn[40]="/flipnotes/";
+    strcat(fn,files[7*CurrentPage+PageSelection]);
+    FILE* fp=fopen(fn,"rb");
+    fseek(fp,0x6A0,SEEK_SET);
+    fread(&ppmADat_0x6A0,2,1,fp);
+    fseek(fp,4,SEEK_CUR);
+    fread(&ppmADat_0x6A8,2,1,fp);
 }
 
 #endif // FSPDS_PPM_H_INCLUDED

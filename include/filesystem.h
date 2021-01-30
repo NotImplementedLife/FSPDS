@@ -144,12 +144,15 @@ void writePage()
     }
 }
 
+#include "player.h"
+
 void nextPage()
 {
     if(CurrentPage+1>=PagesCount)
         return;
     CurrentPage++;
     PageSelection=0;
+    displayThumbnail();
     writePage();
 }
 
@@ -159,6 +162,7 @@ void prevPage()
         return;
     CurrentPage--;
     PageSelection=0;
+    displayThumbnail();
     writePage();
 }
 
@@ -171,12 +175,14 @@ void nextEntry()
     {
         CurrentPage++;
         PageSelection=0;
+        displayThumbnail();
         writePage();
     }
     else
     {
         writeEntry(id++,PageSelection++,false);
         writeEntry(id  ,PageSelection  ,true);
+        displayThumbnail();
     }
 }
 
@@ -189,12 +195,14 @@ void prevEntry()
     {
         CurrentPage--;
         PageSelection=6;
+        displayThumbnail();
         writePage();
     }
     else
     {
         writeEntry(id--,PageSelection--,false);
         writeEntry(id  ,PageSelection  ,true);
+        displayThumbnail();
     }
 }
 

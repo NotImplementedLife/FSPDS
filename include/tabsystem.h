@@ -71,7 +71,6 @@ void initTabs()
     FilesTab.keyDownProc=FilesTabKeyDown;
     FilesTab.left=FilesTab.right=&InfoTab;
 
-
     InfoTab.loadingProc=InfoTabLoading;
     InfoTab.drawingProc=InfoTabDrawing;
     InfoTab.keyDownProc=TabNoAction;

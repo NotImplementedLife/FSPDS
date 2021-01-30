@@ -11,10 +11,10 @@ int main(int argc, char **argv)
     initTabs();
     initPlayer();
 
-    loadFiles();
+    //loadFiles();
 
 
-    /**filescount=25;
+    filescount=25;
     char* fname=(char*)malloc(29*sizeof(char));
     char* fsize=(char*)malloc(7*sizeof(char));
     for(int i=0;i<filescount;i++)
@@ -24,14 +24,14 @@ int main(int argc, char **argv)
         strcpy(files[i],fname);
         strcpy(sizes[i],fsize);
     }
-    */
-
 
     PagesCount=filescount/7;
     if(filescount%7>0)
         PagesCount++;
 
     CurrentTab->drawingProc();
+    clearPlayer();
+    displayThumbnail();
 
 	while(1)
     {
