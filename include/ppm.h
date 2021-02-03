@@ -3,18 +3,6 @@
 
 #include "filesystem.h"
 
-char ppmHead_Magic[5]="NULL";
-u32 ppmHead_AnimationDataSize;
-u32 ppmHead_SoundDataSize;
-u16 ppmHead_FrameCount;
-u16 ppmHead_FormatVersion;
-u16 ppmMeta_Lock;
-u16 ppmMeta_ThumbnailFrameIndex;
-u8 ppmMeta_ParentAuthorId[8];
-u8 ppmMeta_CurrentAuthorId[8];
-u8 ppmMeta_RootAuthorId[8];
-u32 ppmMeta_Timestamp;
-
 void ppm_loadMetadata()
 {
     char fn[40]="/flipnotes/";
@@ -40,19 +28,22 @@ void ppm_loadMetadata()
     fclose(fp);
 }
 
-u16 ppmADat_0x6A0; // Size of frame offset table
-u16 ppmADat_0x6A6; // Flags
-
-
-FILE* ppmLoadAnimationData()
+void ppmLoadAnimationData()
 {
+    if(ppmADat_Offsets!=NULL)
+    {
+        free(ppmADat_Offsets);
+    }
     char fn[40]="/flipnotes/";
     strcat(fn,files[7*CurrentPage+PageSelection]);
-    FILE* fp=fopen(fn,"rb");
-    fseek(fp,0x6A0,SEEK_SET);
-    fread(&ppmADat_0x6A0,2,1,fp);
-    fseek(fp,4,SEEK_CUR);
-    fread(&ppmADat_0x6A8,2,1,fp);
+    FILE* PPM_Current=fopen(fn,"rb");
+    fseek(PPM_Current,0x6A0,SEEK_SET);
+    fread(&ppmADat_0x6A0,2,1,PPM_Current);
+    fseek(PPM_Current,4,SEEK_CUR);
+    fread(&ppmADat_0x6A6,2,1,PPM_Current);
+    int len=ppmADat_0x6A0>>2;
+    ppmADat_Offsets=malloc(len*sizeof(u32));
+    fread(ppmADat_Offsets,len*sizeof(u32),1,PPM_Current);
 }
 
 #endif // FSPDS_PPM_H_INCLUDED

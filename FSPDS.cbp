@@ -38,6 +38,7 @@
 		<Unit filename="include/player.h" />
 		<Unit filename="include/ppm.h" />
 		<Unit filename="include/tabsystem.h" />
+		<Unit filename="include/vars.h" />
 		<Unit filename="source/main.c">
 			<Option compilerVar="CC" />
 		</Unit>

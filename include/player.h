@@ -6,15 +6,23 @@
 int bgMain;
 u16* mainGFX;
 
+#include "vars.h"
 
 void initPlayer()
 {
-    vramSetBankA(VRAM_A_MAIN_BG);
-    vramSetBankB(VRAM_B_MAIN_BG);
+    vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
+    vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
     videoSetMode(MODE_5_2D);
     bgMain=bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0,0);
-    mainGFX = bgGetGfxPtr(bgMain);
+    mainGFX = bgGetGfxPtr(bgMain)+256*256;
 }
+
+void playerSwapBuffers()
+{
+    mainGFX=(u16*)bgGetGfxPtr(bgMain);
+    bgSetMapBase(bgMain,8-bgGetMapBase(bgMain));
+}
+
 
 u16 THUMBNAIL_PALETTE[16]=
 {
@@ -26,9 +34,11 @@ u16 THUMBNAIL_PALETTE[16]=
 
 void setPixelThumbnail(u8 x,u8 y,u16 c)
 {
-    int xx=64+2*x;
-    int yy=48+2*y;
-    mainGFX[256*yy+xx]=mainGFX[256*yy+xx+1]=mainGFX[256*(yy+1)+xx]=mainGFX[256*(yy+1)+(xx+1)]=c;
+    int xx=64+2*x, yy=48+2*y;
+    mainGFX[256*yy+(xx++)]=c;
+    mainGFX[256*(yy++)+xx]=c;
+    mainGFX[256*yy+(xx--)]=c;
+    mainGFX[256*yy+xx]=c;
 }
 
 void clearPlayer()
@@ -62,6 +72,11 @@ void displayThumbnail()
                 }
         }
     }
+
+    playerSwapBuffers();
 }
+
+
+
 
 #endif // FSPDS_PLAYER_H_INCLUDED

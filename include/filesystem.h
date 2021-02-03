@@ -8,10 +8,7 @@
 
 #define MAXFILESCOUNT 1024
 
-
-int filescount=0;
-char files[MAXFILESCOUNT][29];
-char sizes[MAXFILESCOUNT][7];
+#include "vars.h"
 
 // Converts file size to string ( e.g. 2704 => "2.64KB" )
 void long_to_size_string(char dest[7],long sz)
@@ -143,8 +140,6 @@ void writePage()
         writeEntry(7*CurrentPage+i,i,i==PageSelection);
     }
 }
-
-#include "player.h"
 
 void nextPage()
 {
