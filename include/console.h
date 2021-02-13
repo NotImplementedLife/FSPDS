@@ -18,7 +18,6 @@ static inline void c_goto(int row, int column)
 
 void c_writeFrame()
 {
-    iprintf("\x1b[33m");
     c_goto(0,0);
     iprintf("\024");
     for(int i=1;i<31;i++) iprintf("\004");
@@ -78,8 +77,9 @@ static inline void initConsole()
     dmaFillWords(0xFFFFF000, (void*)0x62002B4, 4);
     dmaFillWords(0x00000000, (void*)0x62002B8, 8);
 
-	BG_PALETTE[ 0]=BG_PALETTE_SUB[ 0]=0x7FFF;
-    BG_PALETTE[63]=BG_PALETTE_SUB[63]=0x01DF;
+	BG_PALETTE[  0]=BG_PALETTE_SUB[  0]=0x7FFF; // used when clear screen
+    BG_PALETTE[ 15]=BG_PALETTE_SUB[ 15]=0x7FFF; // used by \x1b[30m
+    BG_PALETTE[255]=BG_PALETTE_SUB[255]=0x01DF; // used by \x1b[39m
 }
 
 // screen to display error messages
@@ -103,6 +103,29 @@ bool c_displayError(const char* message,bool isfatal)
     }
     consoleSetWindow(&consoleFG,0,0,32,24);
     return true;
+}
+
+void c_loadingBox()
+{
+    consoleSelect(&consoleBG);
+    iprintf("\x1b[30m");
+    for(int i=10;i<13;i++)
+    {
+        c_goto(i,10);
+        for(int j=0;j<10;j++) iprintf(" ");
+    }
+    consoleSelect(&consoleFG);
+    iprintf("\x1b[39m");
+    c_goto(10,10);
+    iprintf("\024");
+    for(int i=0;i<10;i++) iprintf("\004");
+    iprintf("\022");
+    c_goto(11,10);
+    iprintf("\003Loading...\003");
+    c_goto(12,10);
+    iprintf("\025");
+    for(int i=0;i<10;i++) iprintf("\004");
+    iprintf("\023");
 }
 
 

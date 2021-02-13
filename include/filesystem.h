@@ -6,9 +6,8 @@
 #include <string.h>
 #include <dirent.h>
 
-#define MAXFILESCOUNT 1024
-
 #include "vars.h"
+#include "player.h"
 
 // Converts file size to string ( e.g. 2704 => "2.64KB" )
 void long_to_size_string(char dest[7],long sz)
@@ -77,14 +76,19 @@ void loadFiles()
             {
                 if(strlen(entry->d_name)==28 && strcmp(".ppm",entry->d_name+24)==0)
                 {
-                    strcpy(files[filescount],entry->d_name);
                     char fn[40]="/flipnotes/";
                     strcat(fn,entry->d_name);
                     FILE* fp=fopen(fn,"rb");
                     fseek(fp,0L,SEEK_END);
-                    long_to_size_string(sizes[filescount],ftell(fp));
-                    fclose(fp);
-                    filescount++;
+                    long fsize=ftell(fp);
+                    /// Accept only files under 1MB
+                    if(fsize<=1024*1024)
+                    {
+                        strcpy(files[filescount],entry->d_name);
+                        long_to_size_string(sizes[filescount],fsize);
+                        fclose(fp);
+                        filescount++;
+                    }
                 }
             }
         }
@@ -117,7 +121,7 @@ void writeEntry(int i,int listpos, bool highlight)
         return;
     }
     consoleSelect(&consoleBG);
-    iprintf(highlight?"\x1b[33m":"\x1b[39m");
+    iprintf(highlight?"\x1b[39m":"\x1b[30m");
     for(int i=0;i<3;i++)
     {
         c_goto(1+3*listpos+i,1);
@@ -125,14 +129,13 @@ void writeEntry(int i,int listpos, bool highlight)
     }
     consoleSelect(&consoleFG);
     c_goto(1+3*listpos,2);
-    iprintf(highlight?"\x1b[39m":"\x1b[33m");
+    iprintf(highlight?"\x1b[30m":"\x1b[39m");
     iprintf(files[i]);
     if(listpos==7) return;
     c_goto(2+3*listpos,20);
     iprintf(sizes[i]);
 }
 
-int PagesCount, PageSelection=0, CurrentPage=0;
 void writePage()
 {
     for(int i=0;i<8;i++)
