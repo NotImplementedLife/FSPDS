@@ -6,7 +6,7 @@
 
 This simple ROM allows you to play flipnotes on Nintendo DS (Lite) using your flashcard.
 
-![ROM in action: show thumbnail](https://github.com/NotImplementedLife/Resources/blob/main/FSPDS/images/ss01.png "Show thumbnail")
+![ROM in action: show thumbnail](https://github.com/NotImplementedLife/Resources/blob/master/FSPDS/images/ss01.png "Show thumbnail")
 
 *Thumbnail of one of the sample flipnotes (Cat on a skateboard) displayed by FSPDS*
 
