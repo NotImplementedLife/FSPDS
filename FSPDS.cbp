@@ -32,6 +32,9 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<ExtraCommands>
+			<Add after='cmd /c copy  &quot;FSPDS.nds&quot; &quot;D:\Archive\Files\Nintendo\NDS\flash\R4wood\FSPDS.nds&quot;' />
+		</ExtraCommands>
 		<Unit filename="Makefile" />
 		<Unit filename="include/console.h" />
 		<Unit filename="include/filesystem.h" />

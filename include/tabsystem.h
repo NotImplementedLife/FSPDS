@@ -12,6 +12,7 @@ struct ConsoleTab
     void (*loadingProc)();
     void (*drawingProc)();
     void (*keyDownProc)(uint32);
+    void (*leavingProc)();
 };
 
 struct ConsoleTab* CurrentTab;
@@ -103,9 +104,12 @@ void PlayTabKeyDown(uint32 input)
     {
         clearPlayer();
         playerNextFrame();
-        //c_goto(1,1);
-        //iprintf("%u\n%u\n%u",PlayerFrameIndex,ppmHead_AnimationDataSize,ppmHead_FrameCount);
     }
+}
+
+void PlayTabLeaving()
+{
+    PlayerState=PAUSED;
 }
 
 void initTabs()
@@ -113,18 +117,21 @@ void initTabs()
     FilesTab.loadingProc=TabNoAction;
     FilesTab.drawingProc=FilesTabDrawing;
     FilesTab.keyDownProc=FilesTabKeyDown;
+    FilesTab.leavingProc=TabNoAction;
     FilesTab.left=&PlayTab;
     FilesTab.right=&InfoTab;
 
     InfoTab.loadingProc=InfoTabLoading;
     InfoTab.drawingProc=InfoTabDrawing;
     InfoTab.keyDownProc=TabNoAction;
+    InfoTab.leavingProc=TabNoAction;
     InfoTab.left=&FilesTab;
     InfoTab.right=&PlayTab;
 
     PlayTab.loadingProc=PlayTabLoading;
     PlayTab.drawingProc=PlayTabDrawing;
     PlayTab.keyDownProc=PlayTabKeyDown;
+    PlayTab.leavingProc=PlayTabLeaving;
     PlayTab.left=&InfoTab;
     PlayTab.right=&FilesTab;
 

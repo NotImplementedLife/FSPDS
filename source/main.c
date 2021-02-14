@@ -48,12 +48,14 @@ int main(int argc, char **argv)
         uint32 input=keysDown();
         if(input & KEY_L)
         {
+            CurrentTab->leavingProc();
             CurrentTab=CurrentTab->left;
             CurrentTab->loadingProc();
             CurrentTab->drawingProc();
         }
         else if (input & KEY_R)
         {
+            CurrentTab->leavingProc();
             CurrentTab=CurrentTab->right;
             CurrentTab->loadingProc();
             CurrentTab->drawingProc();
@@ -65,12 +67,13 @@ int main(int argc, char **argv)
 
         if(PlayerState==PLAYING)
         {
-            counter++;
+            playerNextFrame();
+            /*counter++;
             if(counter==3)
             {
                 playerNextFrame();
                 counter=0;
-            }
+            }*/
         }
         //playerSwapBuffers();
 	}
