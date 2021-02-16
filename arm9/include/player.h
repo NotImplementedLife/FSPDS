@@ -130,7 +130,7 @@ void playerNextFrame()
                     {
                         u8 chunk=ppm_AnimationData[k++];
                         for(u8 b=0;b<8;b++)
-                            layer[yy] ^= (-(u8)((chunk>>b)&1) ^ layer[yy] & (1<<b));
+                            layer[yy] ^= ((-(u8)((chunk>>b)&1) ^ layer[yy]) & (1<<b));
                         yy++;
                     }
                     break;

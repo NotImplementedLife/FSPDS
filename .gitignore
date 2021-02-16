@@ -1,7 +1,9 @@
 .git/
+arm7/build/
+arm9/build/
 build/
 flipnotes-example/
 FSPDS.layout
-FSPDS.elf
+*.elf
 FSPDS.nds
 run.bat

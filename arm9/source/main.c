@@ -46,6 +46,10 @@ int main(int argc, char **argv)
 		swiWaitForVBlank();
 		scanKeys();
         uint32 input=keysDown();
+        if(input == 0)
+        {
+            goto __LBL__SKIP_KEY_CHK__;
+        }
         if(input & KEY_L)
         {
             CurrentTab->leavingProc();
@@ -64,6 +68,7 @@ int main(int argc, char **argv)
         {
             CurrentTab->keyDownProc(input);
         }
+        __LBL__SKIP_KEY_CHK__:
 
         if(PlayerState==PLAYING)
         {
@@ -75,7 +80,6 @@ int main(int argc, char **argv)
                 counter=0;
             }*/
         }
-        //playerSwapBuffers();
 	}
 
 	return 0;

@@ -36,13 +36,18 @@
 			<Add after='cmd /c copy  &quot;FSPDS.nds&quot; &quot;D:\Archive\Files\Nintendo\NDS\flash\R4wood\FSPDS.nds&quot;' />
 		</ExtraCommands>
 		<Unit filename="Makefile" />
-		<Unit filename="include/console.h" />
-		<Unit filename="include/filesystem.h" />
-		<Unit filename="include/player.h" />
-		<Unit filename="include/ppm.h" />
-		<Unit filename="include/tabsystem.h" />
-		<Unit filename="include/vars.h" />
-		<Unit filename="source/main.c">
+		<Unit filename="arm7/Makefile" />
+		<Unit filename="arm7/source/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="arm9/Makefile" />
+		<Unit filename="arm9/include/console.h" />
+		<Unit filename="arm9/include/filesystem.h" />
+		<Unit filename="arm9/include/player.h" />
+		<Unit filename="arm9/include/ppm.h" />
+		<Unit filename="arm9/include/tabsystem.h" />
+		<Unit filename="arm9/include/vars.h" />
+		<Unit filename="arm9/source/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>
