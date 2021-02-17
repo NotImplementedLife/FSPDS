@@ -31,8 +31,24 @@ void c_writeFrame()
     iprintf("\025");
     for(int i=1;i<31;i++) iprintf("\004");
     iprintf("\023");
-    c_goto(23,0);
     //for(i=32;i--;) iprintf("\x02");
+}
+
+void c_drawBorder(u8 l1,u8 c1,u8 l2,u8 c2)
+{
+    c_goto(l1,c1);
+    iprintf("\024");
+    for(int i=c1+1;i<c2;i++) iprintf("\004");
+    iprintf("\022");
+    for(int i=l1+1;i<l2;i++)
+    {
+        c_goto(i,c1); iprintf("\003");
+        c_goto(i,c2); iprintf("\003");
+    }
+    c_goto(l2,c1);
+    iprintf("\025");
+    for(int i=c1+1;i<c2;i++) iprintf("\004");
+    iprintf("\023");
 }
 
 static inline void initConsole()
@@ -52,6 +68,11 @@ static inline void initConsole()
     dmaFillWords(0x00000000, (void*)0x620008C, 8);
     dmaFillWords(0xFFFFFFFF, (void*)0x6200094, 4);
     dmaFillWords(0x00000000, (void*)0x6200098, 8);
+
+    // half weight vertical bars
+    dmaFillWords(0xFFFF0000, (void*)0x62000A0,32);
+    dmaFillWords(0x0000FFFF, (void*)0x62000C0,32);
+
 
     dmaFillWords(0x00000000, (void*)0x6200240, 8);
     dmaFillWords(0x000FFFFF, (void*)0x6200248, 4);
@@ -76,6 +97,56 @@ static inline void initConsole()
     dmaFillWords(0x00000F00, (void*)0x62002AC, 8);
     dmaFillWords(0xFFFFF000, (void*)0x62002B4, 4);
     dmaFillWords(0x00000000, (void*)0x62002B8, 8);
+
+    // Char #26
+    void* address=(void*)0x62002C0;
+    u32 word=0x000000FF;
+    for(u8 i=3;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word=(word<<8)|0xFF;
+        address+=0x4;
+    }
+    dmaFillWords(word, address,20);
+
+    // Char #27
+    address=(void*)0x62002E0;
+    word=0x00000000;
+    dmaFillWords(word,address,16);
+    word=0x000000FF;
+    address+=16;
+    for(u8 i=4;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word=(word<<8)|0xFF;
+        address+=0x4;
+    }
+
+    // Char #28
+    address=(void*)0x6200300;
+    word=0xFFFFFFFF;
+
+    dmaFillWords(word, address,20);
+    address+=0x14;
+    word>>=8;
+    for(int i=3;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word>>=8;
+        address+=0x4;
+    }
+
+    // Char #29
+    address=(void*)0x6200320;
+    word=0xFFFFFFFF;
+    for(int i=4;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word>>=8;
+        address+=0x4;
+    }
+    dmaFillWords(word,address,16);
+
 
 	BG_PALETTE[  0]=BG_PALETTE_SUB[  0]=0x7FFF; // used when clear screen
     BG_PALETTE[ 15]=BG_PALETTE_SUB[ 15]=0x7FFF; // used by \x1b[30m

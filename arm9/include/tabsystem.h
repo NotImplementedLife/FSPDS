@@ -48,6 +48,7 @@ void FilesTabKeyDown(uint32 input)
         PlayerState=PLAYING;
         PlayerFrameIndex=0;
         PlayerForceAnimationReload=true;
+        PlayerThumbnailNeedsRedraw=true;
         CurrentTab=&PlayTab;
         CurrentTab->loadingProc();
         CurrentTab->drawingProc();
@@ -83,8 +84,12 @@ void PlayTabLoading()
         c_loadingBox();
         ppm_loadAnimationData();
         PlayerForceAnimationReload=false;
+        PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
     }
 }
+
+const char* PlayButton="\033[10;14H\026\027  \033[11;14H\002\002\026\027\033[12;14H\002\002\x18\x19\033[13;14H\x18\x19  ";
+const char* PauseButton="\033[10;14H\x05\x06\x05\x06\033[11;14H\x05\x06\x05\x06\033[12;14H\x05\x06\x05\x06\033[13;14H\x05\x06\x05\x06";
 
 void PlayTabDrawing()
 {
@@ -94,25 +99,41 @@ void PlayTabDrawing()
     c_writeFrame();
     c_goto(0,13);
     iprintf("Player");
-    // To do : Add interface
-
+    c_drawBorder(8,12,15,19);
+    iprintf(PlayerState ? PlayButton : PauseButton);
 }
 
 void PlayTabKeyDown(uint32 input)
 {
     if(input & KEY_A)
     {
-        playerClear();
-        playerNextFrame();
+        s16 index=7*CurrentPage+PageSelection;
+        if(PlayerLoadedFileIndex!=index)
+        {
+            c_goto(18,10);
+            iprintf("Loading...");
+            ppm_loadAnimationData();
+            c_goto(18,10);
+            iprintf("          ");
+            PlayerLoadedFileIndex=index;
+        }
+        PlayerState=1-PlayerState;
+        iprintf(PlayerState ? PlayButton : PauseButton);
+        PlayerThumbnailNeedsRedraw=true;
     }
 }
 
 void PlayTabLeaving()
 {
     PlayerState=PAUSED;
-    playerClear();
-    playerSwapBuffers();
-    playerClear();
+    if(PlayerThumbnailNeedsRedraw)
+    {
+        playerClear();
+        playerSwapBuffers();
+        playerClear();
+        displayThumbnail();
+        PlayerThumbnailNeedsRedraw=false;
+    }
 }
 
 void initTabs()

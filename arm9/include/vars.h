@@ -37,7 +37,9 @@ enum
     PAUSED
 } PlayerState = PAUSED;
 
+s16 PlayerLoadedFileIndex=-1;
 bool PlayerForceAnimationReload = false;
+bool PlayerThumbnailNeedsRedraw = false;
 
 u16 PlayerFrameIndex=0;
 
