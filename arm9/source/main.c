@@ -5,7 +5,7 @@
 #include "player.h"
 #include "tabsystem.h"
 
-int main(int argc, char **argv)
+int main(int argc, char ** argv)
 {
     initConsole();
     initTabs();
@@ -35,9 +35,9 @@ int main(int argc, char **argv)
         PagesCount++;
 
     CurrentTab->drawingProc();
-    clearPlayer();
+    playerClear();
     playerSwapBuffers();
-    clearPlayer();
+    playerClear();
     displayThumbnail();
 
     u16 counter=0;

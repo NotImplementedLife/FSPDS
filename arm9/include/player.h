@@ -48,7 +48,7 @@ void setPixelThumbnail(u8 x,u8 y,u16 c)
     mainGFX[256*yy+xx]=c;
 }
 
-void clearPlayer()
+void playerClear()
 {
     for(int x=0;x<256;x++)
         for(int y=0;y<192;y++)

@@ -102,7 +102,7 @@ void PlayTabKeyDown(uint32 input)
 {
     if(input & KEY_A)
     {
-        clearPlayer();
+        playerClear();
         playerNextFrame();
     }
 }
@@ -110,6 +110,9 @@ void PlayTabKeyDown(uint32 input)
 void PlayTabLeaving()
 {
     PlayerState=PAUSED;
+    playerClear();
+    playerSwapBuffers();
+    playerClear();
 }
 
 void initTabs()
