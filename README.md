@@ -6,10 +6,6 @@
 
 This simple ROM allows you to play flipnotes on Nintendo DS (Lite) using your flashcard.
 
-![ROM in action: show thumbnail](https://github.com/NotImplementedLife/Resources/blob/master/FSPDS/images/ss01.png "Show thumbnail")
-
-*Thumbnail of one of the sample flipnotes (Cat on a skateboard) displayed by FSPDS*
-
 ## How to use
 
 - Create a new folder named ```/flipnotes``` at the root of your SD card
@@ -20,6 +16,16 @@ This simple ROM allows you to play flipnotes on Nintendo DS (Lite) using your fl
 - Select a file from the menu using the D-pad
 - Press ```A``` to play it
 - Use ```L```/```R``` buttons to navigate through bottom-screen tabs
+
+## Screenshots
+
+![ROM in action: show thumbnail](https://github.com/NotImplementedLife/Resources/blob/master/FSPDS/images/ss01.png "Show thumbnail")
+
+*Thumbnail of one of the sample flipnotes (Cat on a skateboard) displayed by FSPDS*
+
+![ROM in action: playing a flipnote](https://github.com/NotImplementedLife/Resources/blob/master/FSPDS/images/ss02.png "Playing a flipnote")
+
+*Capture of "eBay Song" flipnote by RANDOM☆GUY played by FSPDS*
 
 ## Bugs/Limitations
 
