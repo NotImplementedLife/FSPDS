@@ -1,7 +1,10 @@
 #ifndef FSPDS_VARS_H_INCLUDED
 #define FSPDS_VARS_H_INCLUDED
 
+#include <nds.h>
 /// Filesystem variables
+
+touchPosition touch;
 
 #define MAXFILESCOUNT 1024
 int filescount=0;

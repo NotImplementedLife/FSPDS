@@ -17,7 +17,7 @@ include $(DEVKITARM)/ds_rules
 TARGET		:=	FSPDS
 BUILD		:=	build
 SOURCES		:=	source
-INCLUDES	:=	include
+INCLUDES	:=	include ../include
 
 #---------------------------------------------------------------------------------
 # options for code generation

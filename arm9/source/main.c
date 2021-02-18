@@ -49,6 +49,11 @@ int main(int argc, char ** argv)
             CurrentTab->loadingProc();
             CurrentTab->drawingProc();
         }
+        else if (input & KEY_TOUCH)
+        {
+            touchRead(&touch);
+            CurrentTab->touchRdProc();
+        }
         else
         {
             CurrentTab->keyDownProc(input);

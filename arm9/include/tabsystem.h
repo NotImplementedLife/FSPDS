@@ -12,6 +12,7 @@ struct ConsoleTab
     void (*loadingProc)();
     void (*drawingProc)();
     void (*keyDownProc)(uint32);
+    void (*touchRdProc)();
     void (*leavingProc)();
 };
 
@@ -103,24 +104,36 @@ void PlayTabDrawing()
     iprintf(PlayerState ? PlayButton : PauseButton);
 }
 
+void PlayTabPlayButtonPressed()
+{
+    s16 index=7*CurrentPage+PageSelection;
+    if(PlayerLoadedFileIndex!=index)
+    {
+        c_goto(18,10);
+        iprintf("Loading...");
+        ppm_loadAnimationData();
+        c_goto(18,10);
+        iprintf("          ");
+        PlayerLoadedFileIndex=index;
+    }
+    PlayerState=1-PlayerState;
+    iprintf(PlayerState ? PlayButton : PauseButton);
+    PlayerThumbnailNeedsRedraw=true;
+}
+
 void PlayTabKeyDown(uint32 input)
 {
     if(input & KEY_A)
     {
-        s16 index=7*CurrentPage+PageSelection;
-        if(PlayerLoadedFileIndex!=index)
-        {
-            c_goto(18,10);
-            iprintf("Loading...");
-            ppm_loadAnimationData();
-            c_goto(18,10);
-            iprintf("          ");
-            PlayerLoadedFileIndex=index;
-        }
-        PlayerState=1-PlayerState;
-        iprintf(PlayerState ? PlayButton : PauseButton);
-        PlayerThumbnailNeedsRedraw=true;
+        PlayTabPlayButtonPressed();
     }
+}
+
+void PlayTabRdTouch()
+{
+    if(104<=touch.px && touch.px<152 && 72<=touch.py && touch.py<120)
+        PlayTabPlayButtonPressed();
+
 }
 
 void PlayTabLeaving()
@@ -141,6 +154,7 @@ void initTabs()
     FilesTab.loadingProc=TabNoAction;
     FilesTab.drawingProc=FilesTabDrawing;
     FilesTab.keyDownProc=FilesTabKeyDown;
+    FilesTab.touchRdProc=TabNoAction;
     FilesTab.leavingProc=TabNoAction;
     FilesTab.left=&PlayTab;
     FilesTab.right=&InfoTab;
@@ -148,6 +162,7 @@ void initTabs()
     InfoTab.loadingProc=InfoTabLoading;
     InfoTab.drawingProc=InfoTabDrawing;
     InfoTab.keyDownProc=TabNoAction;
+    InfoTab.touchRdProc=TabNoAction;
     InfoTab.leavingProc=TabNoAction;
     InfoTab.left=&FilesTab;
     InfoTab.right=&PlayTab;
@@ -155,6 +170,7 @@ void initTabs()
     PlayTab.loadingProc=PlayTabLoading;
     PlayTab.drawingProc=PlayTabDrawing;
     PlayTab.keyDownProc=PlayTabKeyDown;
+    PlayTab.touchRdProc=PlayTabRdTouch;
     PlayTab.leavingProc=PlayTabLeaving;
     PlayTab.left=&InfoTab;
     PlayTab.right=&FilesTab;
