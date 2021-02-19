@@ -199,5 +199,4 @@ void c_loadingBox()
     iprintf("\023");
 }
 
-
 #endif // CONSOLE_H_INCLUDED

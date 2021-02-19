@@ -33,7 +33,7 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<ExtraCommands>
-			<Add after='cmd /c copy  &quot;FSPDS.nds&quot; &quot;C:\DeSmuMe\R4wood\FSPDS.nds&quot;' />
+			<Add after='cmd /c copy  &quot;FSPDS.nds&quot; &quot;D:\Archive\Files\Nintendo\NDS\flash\R4wood&quot;' />
 		</ExtraCommands>
 		<Unit filename="Makefile" />
 		<Unit filename="arm7/Makefile" />
@@ -50,9 +50,11 @@
 		<Unit filename="arm9/source/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="include/common.h" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
+			<code_completion />
+			<envvars />
+			<debugger />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

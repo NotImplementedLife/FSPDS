@@ -3,6 +3,7 @@
 
 #include "console.h"
 #include "ppm.h"
+#include "info.h"
 
 
 struct ConsoleTab
@@ -34,7 +35,7 @@ void FilesTabDrawing()
     writePage();
 }
 
-void FilesTabKeyDown(uint32 input)
+void FilesTabKeyDown(u32 input)
 {
     if(input & KEY_RIGHT)
         nextPage();
@@ -69,14 +70,29 @@ void InfoTabDrawing()
     c_writeFrame();
     c_goto(0,14);
     iprintf("Info");
-    c_goto(1,2);
-    iprintf(files[7*CurrentPage+PageSelection]);
-    c_goto(2,1);
-    iprintf("Frames count: %i",ppmHead_FrameCount);
-    c_goto(3,1);
-    iprintf("Locked      : ");
-    iprintf(ppmMeta_Lock==1?"YES":"NO");
+    InfoDisplay();
 }
+
+void InfoTabKeyDown(u32 input)
+{
+    if(input & KEY_DOWN)
+    {
+        if(InfoScrollPos<INFO_COUNT-1)
+        {
+            InfoScrollPos++;
+            InfoTabDrawing(); // ! expensive
+        }
+    }
+    else if(input & KEY_UP)
+    {
+        if(InfoScrollPos>0)
+        {
+            InfoScrollPos--;
+            InfoTabDrawing();
+        }
+    }
+}
+
 
 void PlayTabLoading()
 {
@@ -161,7 +177,7 @@ void initTabs()
 
     InfoTab.loadingProc=InfoTabLoading;
     InfoTab.drawingProc=InfoTabDrawing;
-    InfoTab.keyDownProc=TabNoAction;
+    InfoTab.keyDownProc=InfoTabKeyDown;
     InfoTab.touchRdProc=TabNoAction;
     InfoTab.leavingProc=TabNoAction;
     InfoTab.left=&FilesTab;

@@ -25,6 +25,7 @@ int main(int argc, char ** argv)
     playerClear();
     displayThumbnail();
 
+
     u16 counter=0;
 	while(1)
     {
