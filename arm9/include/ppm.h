@@ -27,6 +27,11 @@ void ppm_loadMetadata()
     fseek(fp,36,SEEK_CUR); // skip filenames - redundant data
     fread(ppmMeta_RootAuthorId,8,1,fp);
     fread(&ppmMeta_Timestamp,sizeof(u32),1,fp);
+
+    // Jump to frame playback speed
+    fseek(fp,-ppmHead_SoundDataSize-0xA0,SEEK_END);
+    fread(&ppm_FramePlaybackSpeed,1,1, fp);
+    ppm_FramePlaybackSpeed=8-ppm_FramePlaybackSpeed;
     fclose(fp);
 }
 
@@ -42,9 +47,6 @@ void ppm_loadAnimationData()
     ppmHead_FrameCount++;
     /// Assume size of frame offset table is 4*FrameCount, we don't need that
     /// Jump directly to flags
-    //fseek(PPM_Current,0x6A0,SEEK_SET);
-    //fread(&ppmADat_0x6A0,2,1,PPM_Current);
-    //fseek(PPM_Current,4,SEEK_CUR);
     fseek(PPM_Current,0x6A6,SEEK_SET);
     fread(&ppmADat_0x6A6,2,1,PPM_Current);
     // read offset table

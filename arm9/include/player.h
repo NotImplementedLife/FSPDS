@@ -183,7 +183,6 @@ void playerNextFrame()
                     if(x-tX>=256) break;
                     u8 dx=(x-tX);
                     layer[BL+c]^= ((bool)(layerA[BA+(dx>>3)]&(1<<(dx&0x7))))<<b;
-
                 }
         }
     }
@@ -205,9 +204,9 @@ void playerNextFrame()
     layer1Color=FlipnoteColors[layer1Color];
     layer2Color=FlipnoteColors[layer2Color];
 
-    for(u16 y=0;y<192;y++)
+    for(u16 y=0,yy=0;y<192;y++)
     {
-        u16 yy=(y<<5);
+        //u16 yy=(y<<5);
         for(u8 c=32;c--;yy++)
         {
             for(u8 b=0;b<8;b++)

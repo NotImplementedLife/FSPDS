@@ -43,6 +43,7 @@
 		<Unit filename="arm9/Makefile" />
 		<Unit filename="arm9/include/console.h" />
 		<Unit filename="arm9/include/filesystem.h" />
+		<Unit filename="arm9/include/info.h" />
 		<Unit filename="arm9/include/player.h" />
 		<Unit filename="arm9/include/ppm.h" />
 		<Unit filename="arm9/include/tabsystem.h" />

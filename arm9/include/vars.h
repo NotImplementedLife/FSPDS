@@ -27,6 +27,8 @@ u8 ppmMeta_CurrentAuthorId[8];
 u8 ppmMeta_RootAuthorId[8];
 u32 ppmMeta_Timestamp;
 
+u8 ppm_FramePlaybackSpeed;
+
 FILE* PPM_Current;
 
 ///u16 ppmADat_0x6A0; // Size of frame offset table

@@ -80,7 +80,7 @@ void InfoTabKeyDown(u32 input)
         if(InfoScrollPos<INFO_COUNT-1)
         {
             InfoScrollPos++;
-            InfoTabDrawing(); // ! expensive
+            InfoDisplay();
         }
     }
     else if(input & KEY_UP)
@@ -88,7 +88,7 @@ void InfoTabKeyDown(u32 input)
         if(InfoScrollPos>0)
         {
             InfoScrollPos--;
-            InfoTabDrawing();
+            InfoDisplay();
         }
     }
 }
@@ -102,6 +102,10 @@ void PlayTabLoading()
         ppm_loadAnimationData();
         PlayerForceAnimationReload=false;
         PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
+    }
+    else
+    {
+
     }
 }
 
@@ -127,7 +131,9 @@ void PlayTabPlayButtonPressed()
     {
         c_goto(18,10);
         iprintf("Loading...");
+        PlayerFrameIndex=0;
         ppm_loadAnimationData();
+        PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
         c_goto(18,10);
         iprintf("          ");
         PlayerLoadedFileIndex=index;
