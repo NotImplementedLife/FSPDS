@@ -29,7 +29,6 @@ int main(int argc, char ** argv)
     u16 counter=0;
 	while(1)
     {
-		swiWaitForVBlank();
 		scanKeys();
         uint32 input=keysDown();
         if(input == 0)
@@ -63,14 +62,15 @@ int main(int argc, char ** argv)
 
         if(PlayerState==PLAYING)
         {
-            playerNextFrame();
-            /*counter++;
-            if(counter==3)
+            counter++;
+            if(counter==frameTime[ppm_FramePlaybackSpeed])
             {
                 playerNextFrame();
                 counter=0;
-            }*/
+            }
         }
+        else counter=0;
+        swiWaitForVBlank();
 	}
 
 	return 0;
