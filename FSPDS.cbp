@@ -37,6 +37,7 @@
 		</ExtraCommands>
 		<Unit filename="Makefile" />
 		<Unit filename="arm7/Makefile" />
+		<Unit filename="arm7/include/sound.h" />
 		<Unit filename="arm7/source/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -53,9 +54,6 @@
 		</Unit>
 		<Extensions>
 			<lib_finder disable_auto="1" />
-			<code_completion />
-			<envvars />
-			<debugger />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

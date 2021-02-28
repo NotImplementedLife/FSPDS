@@ -48,9 +48,6 @@ bool PlayerThumbnailNeedsRedraw = false;
 
 u16 PlayerFrameIndex=0;
 
-const u8 frameTime[9]=
-{
-  0, 120, 60, 30, 15, 10, 5, 3, 2
-};
+const u8 frameTime[9]= { 0, 120, 60, 30, 15, 10, 5, 3, 2 };
 
 #endif // FSPDS_VARS_H_INCLUDED

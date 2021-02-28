@@ -27,6 +27,10 @@ int main(int argc, char ** argv)
 
 
     u16 counter=0;
+    int iPos, kPos;
+    u8 first_byte_header;
+    s8 tX=0,tY=0; // translate parameters
+    bool diffing;
 	while(1)
     {
 		scanKeys();
@@ -62,10 +66,17 @@ int main(int argc, char ** argv)
 
         if(PlayerState==PLAYING)
         {
+            if(counter==0) // vBlankOp
+            {
+                playerNextFrameVBlank0(&iPos,&kPos,&first_byte_header,&tX,&tY,&diffing);
+            }
+            else if(counter==1)
+            {
+                playerNextFrameVBlank1(&iPos,&kPos,&first_byte_header,&tX,&tY,&diffing);
+            }
             counter++;
             if(counter==frameTime[ppm_FramePlaybackSpeed])
             {
-                playerNextFrame();
                 counter=0;
             }
         }
