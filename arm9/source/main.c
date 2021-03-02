@@ -5,6 +5,13 @@
 #include "player.h"
 #include "tabsystem.h"
 
+time_t rawTime;
+
+void clockUpdater()
+{
+    rawTime++;
+}
+
 int main(int argc, char ** argv)
 {
     initConsole();
@@ -25,14 +32,12 @@ int main(int argc, char ** argv)
     playerClear();
     displayThumbnail();
 
-
+    time(&rawTime);
+    timerStart(0,ClockDivider_1024,TIMER_FREQ_1024(1),clockUpdater);
     u16 counter=0;
-    int iPos, kPos;
-    u8 first_byte_header;
-    s8 tX=0,tY=0; // translate parameters
-    bool diffing;
-	while(1)
+    while(1)
     {
+		swiWaitForVBlank();
 		scanKeys();
         uint32 input=keysDown();
         if(input == 0)
@@ -66,22 +71,23 @@ int main(int argc, char ** argv)
 
         if(PlayerState==PLAYING)
         {
-            if(counter==0) // vBlankOp
+            //playerNextFrame();
+            //counter++;
+            /*if(counter==1)
             {
-                playerNextFrameVBlank0(&iPos,&kPos,&first_byte_header,&tX,&tY,&diffing);
+                playerNextFrameVBlank0(&dt);
             }
-            else if(counter==1)
+            else*/ //if(counter==2)
             {
-                playerNextFrameVBlank1(&iPos,&kPos,&first_byte_header,&tX,&tY,&diffing);
+                //playerNextFrameVBlank1(&dt);
+                //playerNextFrame();
+                //counter=0;
             }
-            counter++;
-            if(counter==frameTime[ppm_FramePlaybackSpeed])
-            {
-                counter=0;
-            }
+            //playerNextFrameVBlank0(&dt);
+            //swiWaitForVBlank();
+            //playerNextFrameVBlank1(&dt);
+            playerNextFrame();
         }
-        else counter=0;
-        swiWaitForVBlank();
 	}
 
 	return 0;

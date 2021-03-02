@@ -93,16 +93,24 @@ const u16 FlipnoteColors[4] =
     0xFCE1  // Blue
 };
 
-void buildLayer(int *i, int *k, u8 *first_byte_header, s8 *tX, s8 *tY, bool *diffing)
+struct decodeType
 {
-    if((*diffing))
+    int i, k;
+    u8 first_byte_header;
+    s8 tX, tY;
+    bool diffing;
+};
+
+void buildLayer(struct decodeType* dt)
+{
+    /*if(dt->diffing)
     {
         memcpy(layerA,layer,LAYER_SIZE);
-    }
+    }*/
     for(u16 y=0;y<192;y++)
     {
         u16 yy=y<<5;
-        switch((ppm_AnimationData[(*i)+(y>>2)]>>((y&0x3)<<1)) & 0x3)
+        switch((ppm_AnimationData[dt->i+(y>>2)]>>((y&0x3)<<1)) & 0x3)
         {
             case 0:
                 {
@@ -112,12 +120,24 @@ void buildLayer(int *i, int *k, u8 *first_byte_header, s8 *tX, s8 *tY, bool *dif
                 }
             case 3:
                 {
-                    for(u16 c=0;c<32;c++)
+                    for(u16 c=32;c--;)
                     {
-                        u8 chunk=ppm_AnimationData[(*k)++];
-                        for(u8 b=0;b<8;b++)
-                            layer[yy] ^= ((-(u8)((chunk>>b)&1) ^ layer[yy]) & (1<<b));
-                        yy++;
+                        /**
+                          NIL, blindly translating from pixel-plotting to
+                          bit setting on buffer array:
+
+                            u8 chunk=ppm_AnimationData[dt->k++];
+                            for(int b=0;b<8;b++)
+                                layer[yy] ^= (-(u8)((chunk>>b)&1) ^ layer[yy]) & (1<<b);
+                            yy++;
+
+                          Hmm, I don't know why, this seems a lil bit costy.
+                          Let's see what can actually replace it:
+                        */
+                        /******************************/
+                            layer[yy++] = ppm_AnimationData[dt->k++];
+                        /******************************/
+                        /** Yes, I am THAT dumb =))) **/
                     }
                     break;
                 }
@@ -135,17 +155,17 @@ void buildLayer(int *i, int *k, u8 *first_byte_header, s8 *tX, s8 *tY, bool *dif
 
                     __DECODETYPE_1_2__: ;
 
-                    u32 bytes=ppm_AnimationData[(*k)++]<<24;
-                    bytes|=ppm_AnimationData[(*k)++]<<16;
-                    bytes|=ppm_AnimationData[(*k)++]<<8;
-                    bytes|=ppm_AnimationData[(*k)++];
+                    u32 bytes=ppm_AnimationData[dt->k++]<<24;
+                    bytes|=ppm_AnimationData[dt->k++]<<16;
+                    bytes|=ppm_AnimationData[dt->k++]<<8;
+                    bytes|=ppm_AnimationData[dt->k++];
                     for(;bytes;)
                     {
                         if(bytes & 0x80000000)
                         {
-                            u8 chunk=ppm_AnimationData[(*k)++];
-                            for(int b=0;b<8;b++)
-                                layer[yy] ^= (-(u8)((chunk>>b)&1) ^ layer[yy]) & (1<<b);
+                            /******************************/
+                                layer[yy] = ppm_AnimationData[dt->k++];
+                            /******************************/
                         }
                         bytes<<=1;
                         yy++;
@@ -154,60 +174,190 @@ void buildLayer(int *i, int *k, u8 *first_byte_header, s8 *tX, s8 *tY, bool *dif
                 }
         }
     }
-    if((*diffing))
+    /*if(dt->diffing)
     {
         for(u16 y=0;y<192;y++)
         {
-            if(y<(*tY)) continue;
-            if(y-(*tY)>=192) break;
-            u16 BL=y<<5,BA=(y-(*tY))<<5;
+            if(y<dt->tY) continue;
+            if(y-dt->tY>=192) break;
+            u16 BL=y<<5,BA=(y-dt->tY)<<5;
             for(u8 c=0;c<32;c++)
                 for(u8 b=0;b<8;b++)
                 {
                     u8 x=8*c+b;
-                    if(x<(*tX)) continue;
-                    if(x-(*tX)>=256) break;
-                    u8 dx=(x-(*tX));
+                    if(x<dt->tX) continue;
+                    if(x-dt->tX>=256) break;
+                    u8 dx=(x-dt->tX);
                     layer[BL+c]^= ((bool)(layerA[BA+(dx>>3)]&(1<<(dx&0x7))))<<b;
                 }
         }
-    }
+    }*/
 }
 
-/*  [ vBlank Op ] Because minimum flipnote frame rate is 30 fps (so a frame each 2 vBlanks)
+/*  [ vBlank Op ] Because maximum flipnote frame rate is 30 fps (so a frame each 2 vBlanks)
     I decided render each of the two layers on a separate vBlank
     Hope this will minimize the chances of missing vBlanks, which could cause
     synchronization troubles
 */
 
-void playerNextFrameVBlank0(int *i, int *k, u8 *first_byte_header, s8 *tX, s8 *tY, bool *diffing)
+void playerNextFrameVBlank0(struct decodeType* dt)
 {
-    (*i)=ppm_OffsetTable[PlayerFrameIndex];
-    (*first_byte_header)=ppm_AnimationData[(*i)++];
-    (*tX)=0,(*tY)=0; // translate parameters
-    (*diffing)=!((*first_byte_header) & 0b10000000);
-    if((*first_byte_header) & 0b01100000)
+    dt->i=ppm_OffsetTable[PlayerFrameIndex];
+    dt->first_byte_header=ppm_AnimationData[dt->i++];
+    dt->tX=0,dt->tY=0; // translate parameters
+    dt->diffing=!(dt->first_byte_header & 0b10000000);
+    if(dt->first_byte_header & 0b01100000)
     {
-        (*tX)=ppm_AnimationData[(*i)++];
-        (*tY)=ppm_AnimationData[(*i)++];
+        dt->tX=ppm_AnimationData[dt->i++];
+        dt->tY=ppm_AnimationData[dt->i++];
     }
 
     layer=layer1;
-    (*k)=(*i)+0x60;
-    buildLayer(i, k, first_byte_header, tX, tY, diffing);
+    dt->k=dt->i+0x60;
+    buildLayer(dt);
 }
 
-void playerNextFrameVBlank1(int *i, int *k, u8 *first_byte_header, s8 *tX, s8 *tY, bool *diffing)
+void playerNextFrameVBlank1(struct decodeType* dt)
 {
     layer=layer2;
-    (*i)+=0x30;
-    buildLayer(i, k, first_byte_header, tX, tY, diffing);
+    dt->i+=0x30;
+    buildLayer(dt);
 
-    u16 paperColor = ((*first_byte_header) & 1);
-    u16 layer1Color = ((*first_byte_header)>>1) & 0x3;
+    u16 paperColor = (dt->first_byte_header & 1);
+    u16 layer1Color = (dt->first_byte_header>>1) & 0x3;
     if(layer1Color<2)
         layer1Color = 1-paperColor;
-    u16 layer2Color = ((*first_byte_header)>>3) & 0x3;
+    u16 layer2Color = (dt->first_byte_header>>3) & 0x3;
+    if(layer2Color<2)
+        layer2Color = 1-paperColor;
+    paperColor=FlipnoteColors[paperColor];
+    layer1Color=FlipnoteColors[layer1Color];
+    layer2Color=FlipnoteColors[layer2Color];
+
+    for(u16 y=0,yy=0;y<192;y++)
+    {
+        //u16 yy=(y<<5);
+        for(u8 c=32;c--;yy++)
+        {
+            for(u8 b=0;b<8;b++)
+            {
+                u16 p=(yy<<3)+b;
+                if(layer1[yy]&(1<<b))
+                    mainGFX[p]=layer1Color;
+                else
+                    mainGFX[p]=(layer2[yy]&(1<<b))?layer2Color:paperColor;
+            }
+        }
+    }
+
+    playerSwapBuffers();
+    PlayerFrameIndex++;
+    if(PlayerFrameIndex==ppmHead_FrameCount)
+    {
+        PlayerFrameIndex=0;
+    }
+}
+
+void playerNextFrame()
+{
+    int i=ppm_OffsetTable[PlayerFrameIndex];
+    u8 first_byte_header=ppm_AnimationData[i++];
+    s8 tX=0,tY=0; // translate parameters
+    bool diffing=!(first_byte_header & 0b10000000);
+    if(first_byte_header & 0b01100000)
+    {
+        tX=ppm_AnimationData[i++];
+        tY=ppm_AnimationData[i++];
+    }
+
+    layer=layer1;
+    int k=i+0x60;
+
+    __LBL__BUILD_LAYER__:
+    if(diffing)
+    {
+        memcpy(layerA,layer,LAYER_SIZE);
+    }
+    for(u16 y=0;y<192;y++)
+    {
+        u16 yy=y<<5;
+        switch((ppm_AnimationData[i+(y>>2)]>>((y&0x3)<<1)) & 0x3)
+        {
+            case 0:
+                {
+                    for(u8 _i=0;_i<32;_i++)
+                        layer[yy++]=0;
+                    break;
+                }
+            case 3:
+                {
+                    for(u16 c=0;c<32;c++)
+                    {
+                        layer[yy++]=ppm_AnimationData[k++];
+                    }
+                    break;
+                }
+            case 2:
+                {
+                    // Fill line
+                    for(int _i=0; _i<32; layer[yy+(_i++)]=0xFF);
+                    goto __DECODETYPE_1_2__;
+                }
+
+            case 1:
+                {
+                    // Clear line
+                    for(int _i=0; _i<32; layer[yy+(_i++)]=0);
+
+                    __DECODETYPE_1_2__: ;
+
+                    u32 bytes=ppm_AnimationData[k++]<<24;
+                    bytes|=ppm_AnimationData[k++]<<16;
+                    bytes|=ppm_AnimationData[k++]<<8;
+                    bytes|=ppm_AnimationData[k++];
+                    for(;bytes;)
+                    {
+                        if(bytes & 0x80000000)
+                        {
+                            layer[yy]=ppm_AnimationData[k++];
+                        }
+                        bytes<<=1;
+                        yy++;
+                    }
+                    break;
+                }
+        }
+    }
+    if(diffing)
+    {
+        for(u16 y=0;y<192;y++)
+        {
+            if(y<tY) continue;
+            if(y-tY>=192) break;
+            u16 BL=y<<5,BA=(y-tY)<<5;
+            for(u8 c=0;c<32;c++)
+                for(u8 b=0;b<8;b++)
+                {
+                    u8 x=8*c+b;
+                    if(x<tX) continue;
+                    if(x-tX>=256) break;
+                    u8 dx=(x-tX);
+                    layer[BL+c]^= ((bool)(layerA[BA+(dx>>3)]&(1<<(dx&0x7))))<<b;
+                }
+        }
+    }
+    if(layer==layer1)
+    {
+        layer=layer2;
+        i+=0x30;
+        goto __LBL__BUILD_LAYER__;
+    }
+
+    u16 paperColor = (first_byte_header & 1);
+    u16 layer1Color = (first_byte_header>>1) & 0x3;
+    if(layer1Color<2)
+        layer1Color = 1-paperColor;
+    u16 layer2Color = (first_byte_header>>3) & 0x3;
     if(layer2Color<2)
         layer2Color = 1-paperColor;
     paperColor=FlipnoteColors[paperColor];
