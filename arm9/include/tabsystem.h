@@ -168,6 +168,7 @@ void PlayTabLeaving()
         playerClear();
         displayThumbnail();
         PlayerThumbnailNeedsRedraw=false;
+        counter=0;
     }
 }
 

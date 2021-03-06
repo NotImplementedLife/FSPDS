@@ -10,27 +10,6 @@ u16* mainGFX;
 
 #define LAYER_SIZE 32*192
 
-u8 *layer1, *layer2, *layerA;
-void initPlayer()
-{
-    vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
-    vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
-    videoSetMode(MODE_5_2D);
-    bgMain=bgInit(3, BgType_Bmp16, BgSize_B16_256x256, 0,0);
-    mainGFX = bgGetGfxPtr(bgMain)+256*256;
-
-    layer1=malloc(LAYER_SIZE);
-    layer2=malloc(LAYER_SIZE);
-    layerA=malloc(LAYER_SIZE); // auxiliary
-}
-
-void playerSwapBuffers()
-{
-    mainGFX=(u16*)bgGetGfxPtr(bgMain);
-    bgSetMapBase(bgMain,8-bgGetMapBase(bgMain));
-}
-
-
 const u16 THUMBNAIL_PALETTE[16]=
 {
     0xFFFF,0xA94A,0xFFFF,0xCE73,
@@ -39,20 +18,50 @@ const u16 THUMBNAIL_PALETTE[16]=
     0xD956,0x83E0,0x83E0,0x83E0
 };
 
+const u16 FlipnoteColors[4] =
+{
+    0x8421, // Black
+    0xFFFF, // White
+    0x94BF, // Red
+    0xFCE1  // Blue
+};
+
+static u8 layer1[LAYER_SIZE], layer2[LAYER_SIZE];
+static u8 layerA[LAYER_SIZE], layerB[LAYER_SIZE];
+void initPlayer()
+{
+    for(int i=0;i<16;i++)
+        BG_PALETTE[i]=THUMBNAIL_PALETTE[i];
+    BG_PALETTE[16]=ARGB16(1,12,12,12);
+    for(int i=0;i<4;i++)
+        BG_PALETTE[17+i]=FlipnoteColors[i];
+    vramSetBankA(VRAM_A_MAIN_BG_0x06000000);
+    vramSetBankB(VRAM_B_MAIN_BG_0x06020000);
+    videoSetMode(MODE_5_2D);
+    bgMain=bgInit(3, BgType_Bmp8, BgSize_B8_256x256, 0,0);
+    mainGFX = (u16*)bgGetGfxPtr(bgMain)+ 256*256;
+}
+
+void playerSwapBuffers()
+{
+    mainGFX=(u16*)bgGetGfxPtr(bgMain);
+    bgSetMapBase(bgMain,8-bgGetMapBase(bgMain));
+}
+
 void setPixelThumbnail(u8 x,u8 y,u16 c)
 {
-    int xx=64+2*x, yy=48+2*y;
-    mainGFX[256*yy+(xx++)]=c;
-    mainGFX[256*(yy++)+xx]=c;
-    mainGFX[256*yy+(xx--)]=c;
-    mainGFX[256*yy+xx]=c;
+    int xx=32+x, yy=48+2*y;
+    mainGFX[128*(yy++)+xx]=c+(c<<8);
+    //mainGFX[128*(yy++)+xx]=c;
+    mainGFX[128*yy+xx]=c+(c<<8);
+    //mainGFX[128*yy+xx]=c;
 }
 
 void playerClear()
 {
     for(int x=0;x<256;x++)
         for(int y=0;y<192;y++)
-            mainGFX[256*y+x]=ARGB16(1,12,12,12);
+            mainGFX[128*y+x]=0x1010;
 }
 
 void displayThumbnail()
@@ -73,25 +82,18 @@ void displayThumbnail()
                 for(int p=0;p<8;p+=2)
                 {
                     x=tx+p, y=ty+l;
-                    setPixelThumbnail(x,y,THUMBNAIL_PALETTE[bytes[offset]&0xF]);
-                    setPixelThumbnail(x+1,y,THUMBNAIL_PALETTE[(bytes[offset]>>4)&0xF]);
+                    setPixelThumbnail(x,y,bytes[offset]&0xF);
+                    setPixelThumbnail(x+1,y,(bytes[offset]>>4)&0xF);
                     offset++;
                 }
         }
     }
-
+    //bgSetScroll(bgMain, -50, -50);
+    //bgUpdate();
     playerSwapBuffers();
 }
 
-u8 *layer;
-
-const u16 FlipnoteColors[4] =
-{
-    0x8421, // Black
-    0xFFFF, // White
-    0x94BF, // Red
-    0xFCE1  // Blue
-};
+//u8 *layer;
 
 struct decodeType
 {
@@ -105,7 +107,8 @@ void buildLayer(struct decodeType* dt)
 {
     /*if(dt->diffing)
     {
-        memcpy(layerA,layer,LAYER_SIZE);
+        //memcpy(layerA,layer,LAYER_SIZE);
+        dmaCopy(layer,layerA,LAYER_SIZE);
     }*/
     for(u16 y=0;y<192;y++)
     {
@@ -114,44 +117,31 @@ void buildLayer(struct decodeType* dt)
         {
             case 0:
                 {
+                    //dmaFillWords((u32)0,(u8*)(layer+yy),8);
+                    //yy+=32;
                     for(u8 _i=0;_i<32;_i++)
-                        layer[yy++]=0;
+                        layer1[yy++]=0;
                     break;
                 }
             case 3:
                 {
                     for(u16 c=32;c--;)
                     {
-                        /**
-                          NIL, blindly translating from pixel-plotting to
-                          bit setting on buffer array:
-
-                            u8 chunk=ppm_AnimationData[dt->k++];
-                            for(int b=0;b<8;b++)
-                                layer[yy] ^= (-(u8)((chunk>>b)&1) ^ layer[yy]) & (1<<b);
-                            yy++;
-
-                          Hmm, I don't know why, this seems a lil bit costy.
-                          Let's see what can actually replace it:
-                        */
-                        /******************************/
-                            layer[yy++] = ppm_AnimationData[dt->k++];
-                        /******************************/
-                        /** Yes, I am THAT dumb =))) **/
+                        layer1[yy++] = ppm_AnimationData[dt->k++];
                     }
                     break;
                 }
             case 2:
                 {
                     // Fill line
-                    for(int _i=0; _i<32; layer[yy+(_i++)]=0xFF);
+                    for(int _i=0; _i<32; layer1[yy+(_i++)]=0xFF);
                     goto __DECODETYPE_1_2__;
                 }
 
             case 1:
                 {
                     // Clear line
-                    for(int _i=0; _i<32; layer[yy+(_i++)]=0);
+                    for(int _i=0; _i<32; layer1[yy+(_i++)]=0);
 
                     __DECODETYPE_1_2__: ;
 
@@ -163,9 +153,7 @@ void buildLayer(struct decodeType* dt)
                     {
                         if(bytes & 0x80000000)
                         {
-                            /******************************/
-                                layer[yy] = ppm_AnimationData[dt->k++];
-                            /******************************/
+                            layer1[yy] = ppm_AnimationData[dt->k++];
                         }
                         bytes<<=1;
                         yy++;
@@ -176,7 +164,7 @@ void buildLayer(struct decodeType* dt)
     }
     /*if(dt->diffing)
     {
-        for(u16 y=0;y<192;y++)
+        for(u16 y=0;y<96;y++)
         {
             if(y<dt->tY) continue;
             if(y-dt->tY>=192) break;
@@ -211,115 +199,62 @@ void playerNextFrameVBlank0(struct decodeType* dt)
         dt->tX=ppm_AnimationData[dt->i++];
         dt->tY=ppm_AnimationData[dt->i++];
     }
-
-    layer=layer1;
     dt->k=dt->i+0x60;
-    buildLayer(dt);
-}
 
-void playerNextFrameVBlank1(struct decodeType* dt)
-{
-    layer=layer2;
-    dt->i+=0x30;
-    buildLayer(dt);
-
-    u16 paperColor = (dt->first_byte_header & 1);
-    u16 layer1Color = (dt->first_byte_header>>1) & 0x3;
-    if(layer1Color<2)
-        layer1Color = 1-paperColor;
-    u16 layer2Color = (dt->first_byte_header>>3) & 0x3;
-    if(layer2Color<2)
-        layer2Color = 1-paperColor;
-    paperColor=FlipnoteColors[paperColor];
-    layer1Color=FlipnoteColors[layer1Color];
-    layer2Color=FlipnoteColors[layer2Color];
-
-    for(u16 y=0,yy=0;y<192;y++)
+    if(dt->diffing)
     {
-        //u16 yy=(y<<5);
-        for(u8 c=32;c--;yy++)
-        {
-            for(u8 b=0;b<8;b++)
-            {
-                u16 p=(yy<<3)+b;
-                if(layer1[yy]&(1<<b))
-                    mainGFX[p]=layer1Color;
-                else
-                    mainGFX[p]=(layer2[yy]&(1<<b))?layer2Color:paperColor;
-            }
-        }
-    }
-
-    playerSwapBuffers();
-    PlayerFrameIndex++;
-    if(PlayerFrameIndex==ppmHead_FrameCount)
-    {
-        PlayerFrameIndex=0;
-    }
-}
-
-void playerNextFrame()
-{
-    int i=ppm_OffsetTable[PlayerFrameIndex];
-    u8 first_byte_header=ppm_AnimationData[i++];
-    s8 tX=0,tY=0; // translate parameters
-    bool diffing=!(first_byte_header & 0b10000000);
-    if(first_byte_header & 0b01100000)
-    {
-        tX=ppm_AnimationData[i++];
-        tY=ppm_AnimationData[i++];
-    }
-
-    layer=layer1;
-    int k=i+0x60;
-
-    __LBL__BUILD_LAYER__:
-    if(diffing)
-    {
-        memcpy(layerA,layer,LAYER_SIZE);
+        //dmaCopy(layer1,layerA,LAYER_SIZE);
+        //dmaCopy(layer2,layerB,LAYER_SIZE);
+        memcpy(layerA,layer1,LAYER_SIZE);
+        memcpy(layerB,layer2,LAYER_SIZE);
     }
     for(u16 y=0;y<192;y++)
     {
         u16 yy=y<<5;
-        switch((ppm_AnimationData[i+(y>>2)]>>((y&0x3)<<1)) & 0x3)
+        switch((ppm_AnimationData[dt->i+(y>>2)]>>((y&0x3)<<1)) & 0x3)
         {
             case 0:
                 {
-                    for(u8 _i=0;_i<32;_i++)
-                        layer[yy++]=0;
+                    memset(layer1+yy,0,32);
+                    yy+=32;
                     break;
                 }
             case 3:
                 {
-                    for(u16 c=0;c<32;c++)
+                    /*for(u16 c=32;c--;)
                     {
-                        layer[yy++]=ppm_AnimationData[k++];
-                    }
+                        layer1[yy++] = ppm_AnimationData[dt->k++];
+                    }*/
+                    memcpy(layer1+yy,ppm_AnimationData+dt->k,32);
+                    yy+=32;
+                    dt->k+=32;
                     break;
                 }
             case 2:
                 {
                     // Fill line
-                    for(int _i=0; _i<32; layer[yy+(_i++)]=0xFF);
+                    memset(layer1+yy,0xFF,32);
+                    //for(int _i=0; _i<32; layer1[yy+(_i++)]=0xFF);
                     goto __DECODETYPE_1_2__;
                 }
 
             case 1:
                 {
                     // Clear line
-                    for(int _i=0; _i<32; layer[yy+(_i++)]=0);
+                    //memset(layer1+yy,0x00,32);
+                    for(int _i=0; _i<32; layer1[yy+(_i++)]=0);
 
                     __DECODETYPE_1_2__: ;
 
-                    u32 bytes=ppm_AnimationData[k++]<<24;
-                    bytes|=ppm_AnimationData[k++]<<16;
-                    bytes|=ppm_AnimationData[k++]<<8;
-                    bytes|=ppm_AnimationData[k++];
+                    u32 bytes=ppm_AnimationData[dt->k++]<<24;
+                    bytes|=ppm_AnimationData[dt->k++]<<16;
+                    bytes|=ppm_AnimationData[dt->k++]<<8;
+                    bytes|=ppm_AnimationData[dt->k++];
                     for(;bytes;)
                     {
                         if(bytes & 0x80000000)
                         {
-                            layer[yy]=ppm_AnimationData[k++];
+                            layer1[yy] = ppm_AnimationData[dt->k++];
                         }
                         bytes<<=1;
                         yy++;
@@ -328,42 +263,179 @@ void playerNextFrame()
                 }
         }
     }
-    if(diffing)
+    dt->i+=0x30;
+     for(u16 y=0;y<192;y++)
     {
-        for(u16 y=0;y<192;y++)
+        u16 yy=y<<5;
+        switch((ppm_AnimationData[dt->i+(y>>2)]>>((y&0x3)<<1)) & 0x3)
         {
-            if(y<tY) continue;
-            if(y-tY>=192) break;
-            u16 BL=y<<5,BA=(y-tY)<<5;
-            for(u8 c=0;c<32;c++)
-                for(u8 b=0;b<8;b++)
+            case 0:
                 {
-                    u8 x=8*c+b;
-                    if(x<tX) continue;
-                    if(x-tX>=256) break;
-                    u8 dx=(x-tX);
-                    layer[BL+c]^= ((bool)(layerA[BA+(dx>>3)]&(1<<(dx&0x7))))<<b;
+                    //dmaFillWords((u32)0,(u8*)(layer+yy),8);
+                    //yy+=32;
+                    //for(u8 _i=0;_i<32;_i++)
+                      //  layer2[yy++]=0;
+                    memset(layer2+yy,0,32);
+                    yy+=32;
+                    break;
+                }
+            case 3:
+                {
+                    memcpy(layer2+yy,ppm_AnimationData+dt->k,32);
+                    yy+=32;
+                    dt->k+=32;
+                    break;
+                }
+            case 2:
+                {
+                    // Fill line
+                    memset(layer2+yy,0xFF,32);
+                    //for(int _i=0; _i<32; layer2[yy+(_i++)]=0xFF);
+                    goto __DECODETYPE_1_2__L2;
+                }
+
+            case 1:
+                {
+                    // Clear line
+                    memset(layer2+yy,0x00,32);
+                    //for(int _i=0; _i<32; layer2[yy+(_i++)]=0);
+
+                    __DECODETYPE_1_2__L2: ;
+
+                    u32 bytes=ppm_AnimationData[dt->k++]<<24;
+                    bytes|=ppm_AnimationData[dt->k++]<<16;
+                    bytes|=ppm_AnimationData[dt->k++]<<8;
+                    bytes|=ppm_AnimationData[dt->k++];
+                    for(;bytes;)
+                    {
+                        if(bytes & 0x80000000)
+                        {
+                            layer2[yy] = ppm_AnimationData[dt->k++];
+                        }
+                        bytes<<=1;
+                        yy++;
+                    }
+                    break;
                 }
         }
     }
-    if(layer==layer1)
+    if(dt->diffing)
     {
-        layer=layer2;
-        i+=0x30;
-        goto __LBL__BUILD_LAYER__;
+        u16 ld0 = (dt->tX>=0) ? (dt->tX>>3) : 0;
+        u16 pi0 = (dt->tX>=0) ? 0 : (-dt->tX)>>3;
+        u8 del = dt->tX>=0 ? (dt->tX & 7) : ((126+dt->tX)&7);
+        u8 alpha = (1<<(8-del))-1;
+        u8 nalpha = ~alpha;
+        u16 pi=0,ld=0;
+        //c_goto(5,5);
+        //iprintf("%d %d %d %d  ",del, ld0, pi0,nalpha);
+        if(dt->tX>=0)
+        {
+            for(u16 y=0;y<120;y++)
+            {
+                if(y<dt->tY) continue;
+                if(y-dt->tY>=192) break;
+                ld=(y<<5)+ld0;
+                pi=((y-dt->tY)<<5)+pi0;
+                layer1[ld] ^= layerA[pi] & alpha;
+                layer2[ld++] ^= layerB[pi] & alpha;
+                while((ld&31)<31)
+                {
+                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
+                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    ld++; pi++;
+                }
+                layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
+                layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+            }
+        }
+        else
+        {
+            for(u16 y=0;y<120;y++)
+            {
+                if(y<dt->tY) continue;
+                if(y-dt->tY>=192) break;
+                ld=(y<<5)+ld0;
+                pi=((y-dt->tY)<<5)+pi0;
+                while((pi&31)<31)
+                {
+                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
+                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    ld++; pi++;
+                }
+                layer1[ld] ^= layerA[pi] & nalpha;
+                layer2[ld] ^= layerB[pi] & nalpha;
+            }
+        }
     }
 
-    u16 paperColor = (first_byte_header & 1);
-    u16 layer1Color = (first_byte_header>>1) & 0x3;
+}
+
+void playerNextFrameVBlank1(struct decodeType* dt)
+{
+    if(dt->diffing)
+    {
+        //c_goto(1,1);
+        //iprintf("%d   ",frameTime[ppm_FramePlaybackSpeed]);
+        u16 ld0 = (dt->tX>=0) ? (dt->tX>>3) : 0;
+        u16 pi0 = (dt->tX>=0) ? 0 : (-dt->tX)>>3;
+        u8 del = dt->tX>=0 ? (dt->tX & 7) : ((126+dt->tX)&7);
+        u8 alpha = (1<<(8-del))-1;
+        u8 nalpha = ~alpha;
+        u16 pi=0,ld=0;
+        if(dt->tX>=0)
+        {
+            for(u16 y=120;y<192;y++)
+            {
+                if(y<dt->tY) continue;
+                if(y-dt->tY>=192) break;
+                ld=(y<<5)+ld0;
+                pi=((y-dt->tY)<<5)+pi0;
+                layer1[ld] ^= layerA[pi] & alpha;
+                layer2[ld++] ^= layerB[pi] & alpha;
+                while((ld&31)<31)
+                {
+                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
+                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    ld++; pi++;
+                }
+                layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
+                layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+            }
+        }
+        else
+        {
+            for(u16 y=120;y<192;y++)
+            {
+                if(y<dt->tY) continue;
+                if(y-dt->tY>=192) break;
+                ld=(y<<5)+ld0;
+                pi=((y-dt->tY)<<5)+pi0;
+                while((pi&31)<31)
+                {
+                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
+                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    ld++; pi++;
+                }
+                layer1[ld] ^= layerA[pi] & nalpha;
+                layer2[ld] ^= layerB[pi] & nalpha;
+            }
+        }
+    }
+
+    u16 paperColor = (dt->first_byte_header & 1);
+    u16 layer1Color = (dt->first_byte_header>>1) & 0x3;
     if(layer1Color<2)
         layer1Color = 1-paperColor;
-    u16 layer2Color = (first_byte_header>>3) & 0x3;
+    u16 layer2Color = (dt->first_byte_header>>3) & 0x3;
     if(layer2Color<2)
         layer2Color = 1-paperColor;
-    paperColor=FlipnoteColors[paperColor];
-    layer1Color=FlipnoteColors[layer1Color];
-    layer2Color=FlipnoteColors[layer2Color];
 
+    paperColor+=17;
+    layer1Color+=17;
+    layer2Color+=17;
+
+    u16 p=0,val=0;
     for(u16 y=0,yy=0;y<192;y++)
     {
         //u16 yy=(y<<5);
@@ -371,11 +443,16 @@ void playerNextFrame()
         {
             for(u8 b=0;b<8;b++)
             {
-                u16 p=(yy<<3)+b;
+                //u16 p=(yy<<2)+(b>>1);
                 if(layer1[yy]&(1<<b))
-                    mainGFX[p]=layer1Color;
+                    val|=layer1Color<<((b&1)<<3);
                 else
-                    mainGFX[p]=(layer2[yy]&(1<<b))?layer2Color:paperColor;
+                    val|=((layer2[yy]&(1<<b))?layer2Color:paperColor)<<((b&1)<<3);
+                if(b&1)
+                {
+                    mainGFX[p++]=val;
+                    val=0;
+                }
             }
         }
     }
@@ -387,6 +464,5 @@ void playerNextFrame()
         PlayerFrameIndex=0;
     }
 }
-
 
 #endif // FSPDS_PLAYER_H_INCLUDED
