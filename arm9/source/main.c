@@ -10,13 +10,11 @@ int main(int argc, char ** argv)
     powerOn(POWER_ALL_2D);
 
     initConsole();
+
     initTabs();
     initPlayer();
 
     c_loadingBox();
-    c_goto(0,0);
-    iprintf("%i",bgGetMapBase(bgMain));
-
     loadFiles();
 
     PagesCount=filescount/7;
@@ -77,20 +75,13 @@ int main(int argc, char ** argv)
             else if(counter==2)
             {
                 playerNextFrameVBlank1(&dt);
+                /// counter=0; // <-- force 30fps [DEBUG]
             }
             if(counter==frameTime[ppm_FramePlaybackSpeed])
             {
-                //c_goto(1,1);
-                //iprintf("%d",ppm_FramePlaybackSpeed);
                 counter=0;
             }
         }
-        /**if(PlayerFrameIndex==252)
-        {
-            counter=100;
-            c_goto(1,1);
-            iprintf("%d %d %d   ",dt.diffing,dt.tX,dt.tY);
-        }*/
 	}
 
 	return 0;

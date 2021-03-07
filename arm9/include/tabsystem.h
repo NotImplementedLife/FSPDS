@@ -99,6 +99,7 @@ void PlayTabLoading()
     if(PlayerForceAnimationReload)
     {
         c_loadingBox();
+        ppm_loadMetadata();
         ppm_loadAnimationData();
         PlayerForceAnimationReload=false;
         PlayerLoadedFileIndex=7*CurrentPage+PageSelection;

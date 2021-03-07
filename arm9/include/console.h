@@ -31,6 +31,8 @@ void c_writeFrame()
     iprintf("\025");
     for(int i=1;i<31;i++) iprintf("\004");
     iprintf("\023");
+    c_goto(23,4);
+    iprintf("V0.1 - Created by N\032I\032L");
     //for(i=32;i--;) iprintf("\x02");
 }
 
@@ -98,7 +100,7 @@ static inline void initConsole()
     dmaFillWords(0xFFFFF000, (void*)0x62002B4, 4);
     dmaFillWords(0x00000000, (void*)0x62002B8, 8);
 
-    // Char #26
+    // Char #26 - Play Triangle Up 1
     void* address=(void*)0x62002C0;
     u32 word=0x000000FF;
     for(u8 i=3;i--;)
@@ -109,7 +111,7 @@ static inline void initConsole()
     }
     dmaFillWords(word, address,20);
 
-    // Char #27
+    // Char #27 - Play Triangle Up 2
     address=(void*)0x62002E0;
     word=0x00000000;
     dmaFillWords(word,address,16);
@@ -122,7 +124,7 @@ static inline void initConsole()
         address+=0x4;
     }
 
-    // Char #28
+    // Char #28 - Play Triangle Bottom 1
     address=(void*)0x6200300;
     word=0xFFFFFFFF;
 
@@ -136,7 +138,7 @@ static inline void initConsole()
         address+=0x4;
     }
 
-    // Char #29
+    // Char #29 - Play Triangle Bottom 2
     address=(void*)0x6200320;
     word=0xFFFFFFFF;
     for(int i=4;i--;)
@@ -147,6 +149,12 @@ static inline void initConsole()
     }
     dmaFillWords(word,address,16);
 
+    // Char #30 - Bullet
+    dmaFillWords(0x00000000, (void*)0x6200340, 8);
+    dmaFillWords(0x000FF000, (void*)0x6200348, 4);
+    dmaFillWords(0x00FFFF00, (void*)0x620034C, 8);
+    dmaFillWords(0x000FF000, (void*)0x6200354, 4);
+    dmaFillWords(0x00000000, (void*)0x6200358, 8);
 
 	BG_PALETTE[  0]=BG_PALETTE_SUB[  0]=0x7FFF; // used when clear screen
     BG_PALETTE[ 15]=BG_PALETTE_SUB[ 15]=0x7FFF; // used by \x1b[30m
@@ -183,7 +191,7 @@ void c_loadingBox()
     for(int i=10;i<13;i++)
     {
         c_goto(i,10);
-        for(int j=0;j<10;j++) iprintf(" ");
+        for(int j=0;j<12;j++) iprintf(" ");
     }
     consoleSelect(&consoleFG);
     iprintf("\x1b[39m");

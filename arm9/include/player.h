@@ -52,16 +52,12 @@ void setPixelThumbnail(u8 x,u8 y,u16 c)
 {
     int xx=32+x, yy=48+2*y;
     mainGFX[128*(yy++)+xx]=c+(c<<8);
-    //mainGFX[128*(yy++)+xx]=c;
     mainGFX[128*yy+xx]=c+(c<<8);
-    //mainGFX[128*yy+xx]=c;
 }
 
 void playerClear()
 {
-    for(int x=0;x<256;x++)
-        for(int y=0;y<192;y++)
-            mainGFX[128*y+x]=0x1010;
+    memset(mainGFX,0x10,256*192);
 }
 
 void displayThumbnail()
@@ -88,12 +84,8 @@ void displayThumbnail()
                 }
         }
     }
-    //bgSetScroll(bgMain, -50, -50);
-    //bgUpdate();
     playerSwapBuffers();
 }
-
-//u8 *layer;
 
 struct decodeType
 {
@@ -103,90 +95,22 @@ struct decodeType
     bool diffing;
 };
 
-void buildLayer(struct decodeType* dt)
-{
-    /*if(dt->diffing)
-    {
-        //memcpy(layerA,layer,LAYER_SIZE);
-        dmaCopy(layer,layerA,LAYER_SIZE);
-    }*/
-    for(u16 y=0;y<192;y++)
-    {
-        u16 yy=y<<5;
-        switch((ppm_AnimationData[dt->i+(y>>2)]>>((y&0x3)<<1)) & 0x3)
-        {
-            case 0:
-                {
-                    //dmaFillWords((u32)0,(u8*)(layer+yy),8);
-                    //yy+=32;
-                    for(u8 _i=0;_i<32;_i++)
-                        layer1[yy++]=0;
-                    break;
-                }
-            case 3:
-                {
-                    for(u16 c=32;c--;)
-                    {
-                        layer1[yy++] = ppm_AnimationData[dt->k++];
-                    }
-                    break;
-                }
-            case 2:
-                {
-                    // Fill line
-                    for(int _i=0; _i<32; layer1[yy+(_i++)]=0xFF);
-                    goto __DECODETYPE_1_2__;
-                }
+/*****************************  [ vBlank Op ] *****************************/
+/** > The maximum flipnote framerate is 30fps.                            */
+/** >    1/30 = 1/60 + 1/60, hence, in 1/30 seconds two vBlanks happen    */
+/** > Frame rendering is too expensive to be executed in < 1/60 = 16.6ms  */
+/** > So, I'll split the frame rendering into two separate subtasks, each */
+/** > to be executed in its own vBlank.                                   */
+/** >                                                                     */
+/** > The procedure is as follows:                                        */
+/** > vBlank 0 - parse animation data and do frame diffing up to ~68% of  */
+/** >            the lines                                                */
+/** > vBlank 1 - finish frame diffing and write graphics into memory      */
+/** >                                                                     */
+/** > If the playback speed is smaller (e.g. 12fps = 5 vBlanks), then the */
+/** > code does nothing during the additional vBlanks.                    */
+/** > The real rendering speed is adjusted using the {counter} in main()  */
 
-            case 1:
-                {
-                    // Clear line
-                    for(int _i=0; _i<32; layer1[yy+(_i++)]=0);
-
-                    __DECODETYPE_1_2__: ;
-
-                    u32 bytes=ppm_AnimationData[dt->k++]<<24;
-                    bytes|=ppm_AnimationData[dt->k++]<<16;
-                    bytes|=ppm_AnimationData[dt->k++]<<8;
-                    bytes|=ppm_AnimationData[dt->k++];
-                    for(;bytes;)
-                    {
-                        if(bytes & 0x80000000)
-                        {
-                            layer1[yy] = ppm_AnimationData[dt->k++];
-                        }
-                        bytes<<=1;
-                        yy++;
-                    }
-                    break;
-                }
-        }
-    }
-    /*if(dt->diffing)
-    {
-        for(u16 y=0;y<96;y++)
-        {
-            if(y<dt->tY) continue;
-            if(y-dt->tY>=192) break;
-            u16 BL=y<<5,BA=(y-dt->tY)<<5;
-            for(u8 c=0;c<32;c++)
-                for(u8 b=0;b<8;b++)
-                {
-                    u8 x=8*c+b;
-                    if(x<dt->tX) continue;
-                    if(x-dt->tX>=256) break;
-                    u8 dx=(x-dt->tX);
-                    layer[BL+c]^= ((bool)(layerA[BA+(dx>>3)]&(1<<(dx&0x7))))<<b;
-                }
-        }
-    }*/
-}
-
-/*  [ vBlank Op ] Because maximum flipnote frame rate is 30 fps (so a frame each 2 vBlanks)
-    I decided render each of the two layers on a separate vBlank
-    Hope this will minimize the chances of missing vBlanks, which could cause
-    synchronization troubles
-*/
 
 void playerNextFrameVBlank0(struct decodeType* dt)
 {
@@ -203,8 +127,6 @@ void playerNextFrameVBlank0(struct decodeType* dt)
 
     if(dt->diffing)
     {
-        //dmaCopy(layer1,layerA,LAYER_SIZE);
-        //dmaCopy(layer2,layerB,LAYER_SIZE);
         memcpy(layerA,layer1,LAYER_SIZE);
         memcpy(layerB,layer2,LAYER_SIZE);
     }
@@ -221,10 +143,6 @@ void playerNextFrameVBlank0(struct decodeType* dt)
                 }
             case 3:
                 {
-                    /*for(u16 c=32;c--;)
-                    {
-                        layer1[yy++] = ppm_AnimationData[dt->k++];
-                    }*/
                     memcpy(layer1+yy,ppm_AnimationData+dt->k,32);
                     yy+=32;
                     dt->k+=32;
@@ -234,15 +152,13 @@ void playerNextFrameVBlank0(struct decodeType* dt)
                 {
                     // Fill line
                     memset(layer1+yy,0xFF,32);
-                    //for(int _i=0; _i<32; layer1[yy+(_i++)]=0xFF);
                     goto __DECODETYPE_1_2__;
                 }
 
             case 1:
                 {
                     // Clear line
-                    //memset(layer1+yy,0x00,32);
-                    for(int _i=0; _i<32; layer1[yy+(_i++)]=0);
+                    memset(layer1+yy,0x00,32);
 
                     __DECODETYPE_1_2__: ;
 
@@ -271,10 +187,6 @@ void playerNextFrameVBlank0(struct decodeType* dt)
         {
             case 0:
                 {
-                    //dmaFillWords((u32)0,(u8*)(layer+yy),8);
-                    //yy+=32;
-                    //for(u8 _i=0;_i<32;_i++)
-                      //  layer2[yy++]=0;
                     memset(layer2+yy,0,32);
                     yy+=32;
                     break;
@@ -290,7 +202,6 @@ void playerNextFrameVBlank0(struct decodeType* dt)
                 {
                     // Fill line
                     memset(layer2+yy,0xFF,32);
-                    //for(int _i=0; _i<32; layer2[yy+(_i++)]=0xFF);
                     goto __DECODETYPE_1_2__L2;
                 }
 
@@ -298,7 +209,6 @@ void playerNextFrameVBlank0(struct decodeType* dt)
                 {
                     // Clear line
                     memset(layer2+yy,0x00,32);
-                    //for(int _i=0; _i<32; layer2[yy+(_i++)]=0);
 
                     __DECODETYPE_1_2__L2: ;
 
@@ -323,15 +233,14 @@ void playerNextFrameVBlank0(struct decodeType* dt)
     {
         u16 ld0 = (dt->tX>=0) ? (dt->tX>>3) : 0;
         u16 pi0 = (dt->tX>=0) ? 0 : (-dt->tX)>>3;
-        u8 del = dt->tX>=0 ? (dt->tX & 7) : ((126+dt->tX)&7);
+        u8 del = dt->tX>=0 ? (dt->tX & 7) : (((u8)(dt->tX))&7);
+        u8 ndel=8-del;
         u8 alpha = (1<<(8-del))-1;
         u8 nalpha = ~alpha;
         u16 pi=0,ld=0;
-        //c_goto(5,5);
-        //iprintf("%d %d %d %d  ",del, ld0, pi0,nalpha);
         if(dt->tX>=0)
         {
-            for(u16 y=0;y<120;y++)
+            for(u16 y=0;y<130;y++)
             {
                 if(y<dt->tY) continue;
                 if(y-dt->tY>=192) break;
@@ -341,8 +250,8 @@ void playerNextFrameVBlank0(struct decodeType* dt)
                 layer2[ld++] ^= layerB[pi] & alpha;
                 while((ld&31)<31)
                 {
-                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
-                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    layer1[ld]^=((layerA[pi]&nalpha)>>ndel) | ((layerA[pi+1]&alpha)<<del);
+                    layer2[ld]^=((layerB[pi]&nalpha)>>ndel) | ((layerB[pi+1]&alpha)<<del);
                     ld++; pi++;
                 }
                 layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
@@ -351,7 +260,7 @@ void playerNextFrameVBlank0(struct decodeType* dt)
         }
         else
         {
-            for(u16 y=0;y<120;y++)
+            for(u16 y=0;y<130;y++)
             {
                 if(y<dt->tY) continue;
                 if(y-dt->tY>=192) break;
@@ -359,8 +268,8 @@ void playerNextFrameVBlank0(struct decodeType* dt)
                 pi=((y-dt->tY)<<5)+pi0;
                 while((pi&31)<31)
                 {
-                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
-                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    layer1[ld]^=((layerA[pi]&nalpha)>>ndel) | ((layerA[pi+1]&alpha)<<del);
+                    layer2[ld]^=((layerB[pi]&nalpha)>>ndel) | ((layerB[pi+1]&alpha)<<del);
                     ld++; pi++;
                 }
                 layer1[ld] ^= layerA[pi] & nalpha;
@@ -375,37 +284,36 @@ void playerNextFrameVBlank1(struct decodeType* dt)
 {
     if(dt->diffing)
     {
-        //c_goto(1,1);
-        //iprintf("%d   ",frameTime[ppm_FramePlaybackSpeed]);
         u16 ld0 = (dt->tX>=0) ? (dt->tX>>3) : 0;
-        u16 pi0 = (dt->tX>=0) ? 0 : (-dt->tX)>>3;
-        u8 del = dt->tX>=0 ? (dt->tX & 7) : ((126+dt->tX)&7);
+        u16 pi0 = (dt->tX>=0) ? 0 : (((u8)(-dt->tX))>>3);
+        u8 del = (dt->tX>=0) ? (dt->tX & 7) : (((u8)(dt->tX))&7);
+        u8 ndel=8-del;
         u8 alpha = (1<<(8-del))-1;
         u8 nalpha = ~alpha;
         u16 pi=0,ld=0;
         if(dt->tX>=0)
         {
-            for(u16 y=120;y<192;y++)
+            for(u16 y=130;y<192;y++)
             {
                 if(y<dt->tY) continue;
                 if(y-dt->tY>=192) break;
                 ld=(y<<5)+ld0;
                 pi=((y-dt->tY)<<5)+pi0;
-                layer1[ld] ^= layerA[pi] & alpha;
-                layer2[ld++] ^= layerB[pi] & alpha;
+                layer1[ld] ^= (layerA[pi] & alpha)<<del;
+                layer2[ld++] ^= (layerB[pi] & alpha)<<del;
                 while((ld&31)<31)
                 {
-                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
-                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    layer1[ld]^=((layerA[pi]&nalpha)>>ndel) | ((layerA[pi+1]&alpha)<<del);
+                    layer2[ld]^=((layerB[pi]&nalpha)>>ndel) | ((layerB[pi+1]&alpha)<<del);
                     ld++; pi++;
                 }
-                layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
-                layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                layer1[ld]^=((layerA[pi]&nalpha)>>ndel) | ((layerA[pi+1]&alpha)<<del);
+                layer2[ld]^=((layerB[pi]&nalpha)>>ndel) | ((layerB[pi+1]&alpha)<<del);
             }
         }
         else
         {
-            for(u16 y=120;y<192;y++)
+            for(u16 y=130;y<192;y++)
             {
                 if(y<dt->tY) continue;
                 if(y-dt->tY>=192) break;
@@ -413,15 +321,17 @@ void playerNextFrameVBlank1(struct decodeType* dt)
                 pi=((y-dt->tY)<<5)+pi0;
                 while((pi&31)<31)
                 {
-                    layer1[ld]^=(layerA[pi]&nalpha) | (layerA[pi+1]&alpha);
-                    layer2[ld]^=(layerB[pi]&nalpha) | (layerB[pi+1]&alpha);
+                    layer1[ld]^=((layerA[pi]&nalpha)>>ndel) | ((layerA[pi+1]&alpha)<<del);
+                    layer2[ld]^=((layerB[pi]&nalpha)>>ndel) | ((layerB[pi+1]&alpha)<<del);
                     ld++; pi++;
                 }
-                layer1[ld] ^= layerA[pi] & nalpha;
-                layer2[ld] ^= layerB[pi] & nalpha;
+                layer1[ld] ^= (layerA[pi] & nalpha)>>ndel;
+                layer2[ld] ^= (layerB[pi] & nalpha)>>ndel;
             }
         }
     }
+
+    // prepare to draw frame
 
     u16 paperColor = (dt->first_byte_header & 1);
     u16 layer1Color = (dt->first_byte_header>>1) & 0x3;
@@ -438,12 +348,10 @@ void playerNextFrameVBlank1(struct decodeType* dt)
     u16 p=0,val=0;
     for(u16 y=0,yy=0;y<192;y++)
     {
-        //u16 yy=(y<<5);
         for(u8 c=32;c--;yy++)
         {
             for(u8 b=0;b<8;b++)
             {
-                //u16 p=(yy<<2)+(b>>1);
                 if(layer1[yy]&(1<<b))
                     val|=layer1Color<<((b&1)<<3);
                 else
@@ -456,12 +364,12 @@ void playerNextFrameVBlank1(struct decodeType* dt)
             }
         }
     }
-
     playerSwapBuffers();
-    PlayerFrameIndex++;
+
+    PlayerFrameIndex++; // go to next frame
     if(PlayerFrameIndex==ppmHead_FrameCount)
     {
-        PlayerFrameIndex=0;
+        PlayerFrameIndex=0; // Loop
     }
 }
 

@@ -32,7 +32,6 @@ const u8 frameTime[9]= { 2, 120, 60, 30, 15, 10, 5, 3, 2 };
 
 FILE* PPM_Current;
 
-///u16 ppmADat_0x6A0; // Size of frame offset table
 u16 ppmADat_0x6A6; // Flags
 static u32 ppm_OffsetTable[999];
 static u8  ppm_AnimationData[1<<20];
