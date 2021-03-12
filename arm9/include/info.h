@@ -1,7 +1,7 @@
 #ifndef FSPDS_INFO_H_INCLUDED
 #define FSPDS_INFO_H_INCLUDED
 
-#define INFO_COUNT 9
+#define INFO_COUNT 11
 
 void noprint(u8 r) {}
 
@@ -37,6 +37,11 @@ void InfoPrintFramePlaybackSpeed()
     iprintf("Playback Speed : %d",ppm_FramePlaybackSpeed);
 }
 
+void InfoPrintRecordingFramePlaybackSpeed()
+{
+    iprintf("Recording Playback Speed : %d",ppm_RecordedPlaybackSpeed);
+}
+
 void (*InfoLine[INFO_COUNT])()=
 {
     InfoPrintFileNameLabel,
@@ -47,6 +52,8 @@ void (*InfoLine[INFO_COUNT])()=
     InfoPrintLockState,
     InfoPrintSeparatorLine,
     InfoPrintFramePlaybackSpeed,
+    InfoPrintSeparatorLine,
+    InfoPrintRecordingFramePlaybackSpeed,
     InfoPrintSeparatorLine,
 };
 

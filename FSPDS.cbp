@@ -47,6 +47,9 @@
 		<Unit filename="arm9/include/info.h" />
 		<Unit filename="arm9/include/player.h" />
 		<Unit filename="arm9/include/ppm.h" />
+		<Unit filename="arm9/include/sound.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="arm9/include/tabsystem.h" />
 		<Unit filename="arm9/include/vars.h" />
 		<Unit filename="arm9/source/main.c">
@@ -54,6 +57,9 @@
 		</Unit>
 		<Extensions>
 			<lib_finder disable_auto="1" />
+			<code_completion />
+			<envvars />
+			<debugger />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

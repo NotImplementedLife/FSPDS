@@ -55,5 +55,32 @@ void ppm_loadAnimationData()
     fread(ppm_AnimationData,ppmHead_AnimationDataSize,1,PPM_Current);
 }
 
+void ppm_loadSoundData()
+{
+    char fn[40]="/flipnotes/";
+    strcat(fn,files[7*CurrentPage+PageSelection]);
+    FILE* PPM_Current=fopen(fn,"rb");
+    u32 offset=0x6A0+ppmHead_AnimationDataSize;
+    fseek(PPM_Current,offset,SEEK_SET);
+    fread(ppm_SfxUsage,ppmHead_FrameCount,1,PPM_Current);
+    offset+=ppmHead_FrameCount;
+    fseek(PPM_Current,(4-(offset&3))&3,SEEK_CUR);
+    fread(&ppm_BGMSize,4,1,PPM_Current);
+    fread(&ppm_SE1Size,4,1,PPM_Current);
+    fread(&ppm_SE2Size,4,1,PPM_Current);
+    fread(&ppm_SE3Size,4,1,PPM_Current);
+    fread(&ppm_FramePlaybackSpeed,1,1, PPM_Current);
+    ppm_FramePlaybackSpeed=8-ppm_FramePlaybackSpeed;
+    fread(&ppm_RecordedPlaybackSpeed,1,1, PPM_Current);
+    ppm_RecordedPlaybackSpeed=8-ppm_RecordedPlaybackSpeed;
+    soundFreq=8192*frameTime[ppm_RecordedPlaybackSpeed]/frameTime[ppm_FramePlaybackSpeed];
+    fseek(PPM_Current,14,SEEK_CUR);
+
+    fread(ppm_BGMData,ppm_BGMSize,1,PPM_Current);
+    fread(ppm_SE1Data,ppm_SE1Size,1,PPM_Current);
+    fread(ppm_SE2Data,ppm_SE2Size,1,PPM_Current);
+    fread(ppm_SE3Data,ppm_SE3Size,1,PPM_Current);
+}
+
 
 #endif // FSPDS_PPM_H_INCLUDED

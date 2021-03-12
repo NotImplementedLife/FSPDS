@@ -8,6 +8,7 @@
 int main(int argc, char ** argv)
 {
     powerOn(POWER_ALL_2D);
+    soundEnable();
 
     initConsole();
 

@@ -36,6 +36,26 @@ u16 ppmADat_0x6A6; // Flags
 static u32 ppm_OffsetTable[999];
 static u8  ppm_AnimationData[1<<20];
 
+// sound data
+static u8 ppm_SfxUsage[999];
+
+static u32 ppm_BGMSize;
+static u8 ppm_BGMData[1<<20];
+
+static u32 ppm_SE1Size;
+static u8 ppm_SE1Data[0x2000];
+
+static u32 ppm_SE2Size;
+static u8 ppm_SE2Data[0x2000];
+
+static u32 ppm_SE3Size;
+static u8 ppm_SE3Data[0x2000];
+
+u8 ppm_RecordedPlaybackSpeed;
+
+u16 soundFreq;
+int BGMId,SE1Id,SE2Id,SE3Id;
+
 enum
 {
     PLAYING,

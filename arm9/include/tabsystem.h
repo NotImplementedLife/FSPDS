@@ -93,16 +93,23 @@ void InfoTabKeyDown(u32 input)
     }
 }
 
+void loadFlipnote()
+{
+    soundKill(BGMId);
+    ppm_loadMetadata();
+    ppm_loadAnimationData();
+    ppm_loadSoundData();
+    PlayerForceAnimationReload=false;
+    PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
+    BGMId=soundPlaySample(ppm_BGMData,SoundFormat_ADPCM,ppm_BGMSize,soundFreq,100,64,false,0);
+}
 
 void PlayTabLoading()
 {
     if(PlayerForceAnimationReload)
     {
         c_loadingBox();
-        ppm_loadMetadata();
-        ppm_loadAnimationData();
-        PlayerForceAnimationReload=false;
-        PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
+        loadFlipnote();
     }
     else
     {
@@ -133,13 +140,19 @@ void PlayTabPlayButtonPressed()
         c_goto(18,10);
         iprintf("Loading...");
         PlayerFrameIndex=0;
-        ppm_loadAnimationData();
-        PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
+        loadFlipnote();
         c_goto(18,10);
         iprintf("          ");
-        PlayerLoadedFileIndex=index;
     }
     PlayerState=1-PlayerState;
+    if(PlayerState==PLAYING)
+    {
+        soundResume(BGMId);
+    }
+    else
+    {
+        soundPause(BGMId);
+    }
     iprintf(PlayerState ? PlayButton : PauseButton);
     PlayerThumbnailNeedsRedraw=true;
 }
