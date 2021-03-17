@@ -27,23 +27,25 @@
 		distribution.
 
 ---------------------------------------------------------------------------------*/
-/// To process touch input and (hopefully) sound
+/// Removed wifi
 #include <nds.h>
-#include <maxmod7.h>
 
 void VblankHandler(void) { }
 
-void VcountHandler() {
+void VcountHandler()
+{
 	inputGetAndSend();
 }
 
 volatile bool exitflag = false;
 
-void powerButtonCB() {
+void powerButtonCB()
+{
 	exitflag = true;
 }
 
-int main() {
+int main()
+{
 	// clear sound registers
 	dmaFillWords(0, (void*)0x04000400, 0x100);
 
@@ -55,26 +57,25 @@ int main() {
 	ledBlink(0);
 
 	irqInit();
-	// Start the RTC tracking IRQ
-	initClockIRQ();
+	//initClockIRQ();
 	fifoInit();
 	touchInit();
 
 	SetYtrigger(80);
 
 	installSoundFIFO();
-
 	installSystemFIFO();
 
 	irqSet(IRQ_VCOUNT, VcountHandler);
 	irqSet(IRQ_VBLANK, VblankHandler);
 
-	irqEnable( IRQ_VBLANK | IRQ_VCOUNT | IRQ_NETWORK);
+	irqEnable( IRQ_VBLANK | IRQ_VCOUNT);
 
 	setPowerButtonCB(powerButtonCB);
 
 	while (!exitflag) {
-		if ( 0 == (REG_KEYINPUT & (KEY_SELECT | KEY_START | KEY_L | KEY_R))) {
+		if ( 0 == (REG_KEYINPUT & (KEY_SELECT | KEY_START | KEY_L | KEY_R)))
+        {
 			exitflag = true;
 		}
 		swiWaitForVBlank();

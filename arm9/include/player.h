@@ -370,6 +370,8 @@ void playerNextFrameVBlank1(struct decodeType* dt)
     if(PlayerFrameIndex==ppmHead_FrameCount)
     {
         PlayerFrameIndex=0; // Loop
+        soundPause(BGMId);
+        soundResume(BGMId); // restart the track
     }
 }
 

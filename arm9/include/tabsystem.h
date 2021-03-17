@@ -147,11 +147,13 @@ void PlayTabPlayButtonPressed()
     PlayerState=1-PlayerState;
     if(PlayerState==PLAYING)
     {
-        soundResume(BGMId);
+        // to resume the song, restore the frequency
+        soundSetFreq(BGMId,soundFreq);
     }
     else
     {
-        soundPause(BGMId);
+        // to pause the song, set the frequency to 0
+        soundSetFreq(BGMId,0);
     }
     iprintf(PlayerState ? PlayButton : PauseButton);
     PlayerThumbnailNeedsRedraw=true;
@@ -177,6 +179,7 @@ void PlayTabLeaving()
     PlayerState=PAUSED;
     if(PlayerThumbnailNeedsRedraw)
     {
+        soundSetFreq(BGMId,0); //pause the song
         playerClear();
         playerSwapBuffers();
         playerClear();

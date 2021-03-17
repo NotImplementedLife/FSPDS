@@ -2,6 +2,7 @@
 #define FSPDS_VARS_H_INCLUDED
 
 #include <nds.h>
+#include <maxmod9.h>
 /// Filesystem variables
 
 touchPosition touch;

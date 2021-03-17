@@ -38,7 +38,7 @@ This simple ROM allows you to play flipnotes on Nintendo DS (Lite) using your fl
 - FSPDS doesn't detect/play flipnotes larger than 1MB (this is intentional behavior)
 - Don't place more than 1024 files in ```/flipnotes``` directory, otherwise FSPDS won't be capable to see them all 
 (also intentional behavior, probably will be changed in the future)
-- No sound currently
+- Sound playback is supported. However, don't keep the flipnote paused for a long time, otherwise the sound will no longer be synchronized with the animation.
 - ~~It's possible to encounter some graphical glitches (they'll be fixed soon)~~ [*Hopefully not!*]
 
 ### Tested on DeSmuMe emulator and R4(i) flashcards
