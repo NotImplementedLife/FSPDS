@@ -178,7 +178,7 @@ bool c_displayError(const char* message,bool isfatal)
 
     if(isfatal)
     {
-        exit(-1);
+		while(1) swiWaitForVBlank();        
     }
     consoleSetWindow(&consoleFG,0,0,32,24);
     return true;

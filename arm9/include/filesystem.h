@@ -95,7 +95,7 @@ void loadFiles()
         closedir(root);
     }
     else
-    {
+    {		
         c_displayError("Fatal :\n\nOpen directory failed.\n\nMake sure the /flipnotes\ndirectory exists on the rootof your SD card.",true);
     }
 }
