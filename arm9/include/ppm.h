@@ -2,6 +2,7 @@
 #define FSPDS_PPM_H_INCLUDED
 
 #include "filesystem.h"
+#include "sound.h"
 
 void ppm_loadMetadata()
 {
@@ -53,6 +54,8 @@ void ppm_loadAnimationData()
     fread(ppm_OffsetTable,ppmHead_FrameCount*sizeof(u32),1,PPM_Current);
     // read animation data
     fread(ppm_AnimationData,ppmHead_AnimationDataSize,1,PPM_Current);
+	
+	fclose(PPM_Current);
 }
 
 void ppm_loadSoundData()
@@ -72,14 +75,21 @@ void ppm_loadSoundData()
     fread(&ppm_FramePlaybackSpeed,1,1, PPM_Current);
     ppm_FramePlaybackSpeed=8-ppm_FramePlaybackSpeed;
     fread(&ppm_RecordedPlaybackSpeed,1,1, PPM_Current);
-    ppm_RecordedPlaybackSpeed=8-ppm_RecordedPlaybackSpeed;
+    ppm_RecordedPlaybackSpeed=8-ppm_RecordedPlaybackSpeed;	
     soundFreq=8192*frameTime[ppm_RecordedPlaybackSpeed]/frameTime[ppm_FramePlaybackSpeed];
+	// what happens when recordedPlaybackSpeed==30Hz && framePlaybackSpeed==0.5Hz ?
+	// soundFreq = 8195 
     fseek(PPM_Current,14,SEEK_CUR);
 
-    fread(ppm_BGMData,ppm_BGMSize,1,PPM_Current);
-    fread(ppm_SE1Data,ppm_SE1Size,1,PPM_Current);
-    fread(ppm_SE2Data,ppm_SE2Size,1,PPM_Current);
-    fread(ppm_SE3Data,ppm_SE3Size,1,PPM_Current);
+    fread(ppm_BGMData + (1<<20), ppm_BGMSize,1,PPM_Current);
+    fread(ppm_SE1Data          , ppm_SE1Size,1,PPM_Current);
+    fread(ppm_SE2Data          , ppm_SE2Size,1,PPM_Current);
+    fread(ppm_SE3Data          , ppm_SE3Size,1,PPM_Current);
+	
+	fclose(PPM_Current);
+	
+	// creade decoded BGM	
+	toPCM(ppm_BGMData + (1<<20), ppm_BGMSize, ppm_BGMData);
 }
 
 

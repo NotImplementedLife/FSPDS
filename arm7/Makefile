@@ -24,7 +24,7 @@ INCLUDES	:=	include ../include
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv4t -mthumb -mthumb-interwork
 
-CFLAGS	:=	-g -Wall -Wno-psabi -O2\
+CFLAGS	:=	-g -Wall -Wno-psabi -O3\
  		-mcpu=arm7tdmi -mtune=arm7tdmi -fomit-frame-pointer\
 		-ffast-math \
 		$(ARCH)

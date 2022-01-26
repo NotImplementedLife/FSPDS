@@ -41,7 +41,17 @@ static u8  ppm_AnimationData[1<<20];
 static u8 ppm_SfxUsage[999];
 
 static u32 ppm_BGMSize;
-static u8 ppm_BGMData[1<<20];
+/**
+	! Memory limitation-proof measure
+	ppm_BGMData -  normally <1MB sized (1<<20), but its size grows 4 times after
+	converting ADPCM to PCM. The conversion is done in-place:
+	- the original ADPCM data is stored in the second half of the array 
+	  (ppm_BGMData + (1<<20))
+	- the toPCM destination array starts from offset 0 of ppm_BGMData
+	- the original ADPCM raw data is therefore overwritten by the converted PCM 
+	- FSPDS assumes BGM data is no bigger than 512KB !!! (The tested flipnotes had <240KB BGM size data)
+*/
+static u8 ppm_BGMData[1<<21];
 
 static u32 ppm_SE1Size;
 static u8 ppm_SE1Data[0x2000];
@@ -69,7 +79,9 @@ bool PlayerThumbnailNeedsRedraw = false;
 
 u16 PlayerFrameIndex=0;
 
-static u16 counter=0;
+static u8 counter=0;
 static struct decodeType dt;
+
+static int sound_frame_counter = 0; // counter for BGM
 
 #endif // FSPDS_VARS_H_INCLUDED

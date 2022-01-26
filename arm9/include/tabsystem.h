@@ -4,6 +4,7 @@
 #include "console.h"
 #include "ppm.h"
 #include "info.h"
+#include "sound.h"
 
 
 struct ConsoleTab
@@ -93,6 +94,11 @@ void InfoTabKeyDown(u32 input)
     }
 }
 
+void timerCallBack()
+{
+    sound_frame_counter+=4;
+}
+
 void loadFlipnote()
 {
     soundKill(BGMId);
@@ -100,8 +106,12 @@ void loadFlipnote()
     ppm_loadAnimationData();
     ppm_loadSoundData();
     PlayerForceAnimationReload=false;
-    PlayerLoadedFileIndex=7*CurrentPage+PageSelection;
-    BGMId=soundPlaySample(ppm_BGMData,SoundFormat_ADPCM,ppm_BGMSize,soundFreq,100,64,false,0);
+    PlayerLoadedFileIndex=7*CurrentPage+PageSelection;	
+    BGMId=soundPlaySample(ppm_BGMData,SoundFormat_16Bit,4*ppm_BGMSize,soundFreq,100,64,false,0);
+	/// timer: make it tick at a lower frequnece to avoid letting the image and sound out of sync
+	/// due to many timer interrupts inside vBlank
+	timerStart(0, ClockDivider_1, TIMER_FREQ(soundFreq/4), timerCallBack);
+	sound_frame_counter = 0;
 }
 
 void PlayTabLoading()
@@ -147,13 +157,17 @@ void PlayTabPlayButtonPressed()
     PlayerState=1-PlayerState;
     if(PlayerState==PLAYING)
     {
-        // to resume the song, restore the frequency
-        soundSetFreq(BGMId,soundFreq);
+        // to resume the song, reset the play offset to sound_frame_counter        	
+		soundKill(BGMId);		
+        BGMId = soundPlaySample(ppm_BGMData+2*sound_frame_counter,SoundFormat_16Bit,4*ppm_BGMSize-2*sound_frame_counter,soundFreq,100,64,false,0);
+        timerUnpause(0);
+		//iprintf("\033[%d;%dH %i %i", 5, 2, 2*sound_frame_counter,4*ppm_BGMSize);
     }
     else
     {
-        // to pause the song, set the frequency to 0
-        soundSetFreq(BGMId,0);
+        // pause the song
+        timerPause(0);
+        soundPause(BGMId);
     }
     iprintf(PlayerState ? PlayButton : PauseButton);
     PlayerThumbnailNeedsRedraw=true;

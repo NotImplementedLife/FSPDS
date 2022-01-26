@@ -1,7 +1,7 @@
 #ifndef FSPDS_INFO_H_INCLUDED
 #define FSPDS_INFO_H_INCLUDED
 
-#define INFO_COUNT 11
+#define INFO_COUNT 15
 
 void noprint(u8 r) {}
 
@@ -42,6 +42,18 @@ void InfoPrintRecordingFramePlaybackSpeed()
     iprintf("Recording Playback Speed : %d",ppm_RecordedPlaybackSpeed);
 }
 
+void infoPrintSoundFrequency()
+{
+	iprintf("Sound Frequency (Hz) : %d",soundFreq);
+}
+
+void infoPrintSoundSize()
+{
+	char szstr[7];
+	long_to_size_string(szstr,ppm_BGMSize);
+	iprintf("BGM Size : %s",szstr);
+}
+
 void (*InfoLine[INFO_COUNT])()=
 {
     InfoPrintFileNameLabel,
@@ -54,7 +66,11 @@ void (*InfoLine[INFO_COUNT])()=
     InfoPrintFramePlaybackSpeed,
     InfoPrintSeparatorLine,
     InfoPrintRecordingFramePlaybackSpeed,
+	InfoPrintSeparatorLine,
+	infoPrintSoundSize,
     InfoPrintSeparatorLine,
+	infoPrintSoundFrequency,
+    InfoPrintSeparatorLine
 };
 
 u8 InfoScrollPos=0;

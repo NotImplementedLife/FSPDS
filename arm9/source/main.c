@@ -8,6 +8,16 @@
 int main(int argc, char ** argv)
 {
     powerOn(POWER_ALL_2D);
+	
+	// Reserve VRAM 0x06040000 - 0x0607FFFF for flipnote work data 
+	// 0x40000 = 256KB
+	//vramSetBankC(VRAM_C_MAIN_BG_0x06040000);
+	//vramSetBankD(VRAM_D_MAIN_BG_0x06060000);
+	
+	//vramSetBankE(VRAM_E_MAIN_SPRITE);
+	//vramSetBankF(VRAM_F_MAIN_SPRITE_0x06410000);
+	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);
+	
     soundEnable();
 
     initConsole();
