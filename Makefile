@@ -10,6 +10,7 @@ include $(DEVKITARM)/ds_rules
 export GAME_TITLE	:=	FSPDS
 export GAME_ICON	:=	$(CURDIR)/icon.bmp
 export TARGET		:=	FSPDS
+export NDS_FILE     := $(TARGET)
 
 
 .PHONY: arm7/$(TARGET).elf arm9/$(TARGET).elf
@@ -23,6 +24,7 @@ all: $(TARGET).nds
 $(TARGET).nds	:	arm7/$(TARGET).elf arm9/$(TARGET).elf
 	@ndstool -7 arm7/$(TARGET).elf -9 arm9/$(TARGET).elf -b $(GAME_ICON) "$(GAME_TITLE)" -c $(TARGET).nds
 	@echo built ... $(notdir $@)
+	mv $(TARGET).nds $(TARGET)-V${shell python build_counter.py}.nds
 
 #---------------------------------------------------------------------------------
 arm7/$(TARGET).elf:

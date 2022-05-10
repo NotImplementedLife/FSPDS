@@ -1,3 +1,4 @@
+__pycache__/
 .git/
 arm7/build/
 arm9/build/
@@ -5,5 +6,5 @@ build/
 flipnotes-example/
 FSPDS.layout
 *.elf
-FSPDS.nds
+*.nds
 run.bat
