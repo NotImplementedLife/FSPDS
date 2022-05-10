@@ -1,95 +1,29 @@
-#ifndef FSPDS_INFO_H_INCLUDED
-#define FSPDS_INFO_H_INCLUDED
+#pragma once
 
 #define INFO_COUNT 15
 
-void noprint(u8 r) {}
+void noprint(u8 r);
 
-void InfoPrintSeparatorLine()
-{
-    for(u8 i=0;i<10;i++) iprintf("---");
-}
+void InfoPrintSeparatorLine();
 
-void InfoPrintFileNameLabel()
-{
-    iprintf("File name:");
-}
+void InfoPrintFileNameLabel();
 
-void InfoPrintFileNameValue()
-{
-    iprintf(" ");
-    iprintf(files[7*CurrentPage+PageSelection]);
-}
+void InfoPrintFileNameValue();
 
-void InfoPrintFramesCount()
-{
-    iprintf("Frames count: %u",ppmHead_FrameCount);
-}
+void InfoPrintFramesCount();
 
-void InfoPrintLockState()
-{
-    iprintf("Locked : ");
-    iprintf(ppmMeta_Lock?"YES":"NO ");
-}
+void InfoPrintLockState();
 
-void InfoPrintFramePlaybackSpeed()
-{
-    iprintf("Playback Speed : %d",ppm_FramePlaybackSpeed);
-}
+void InfoPrintFramePlaybackSpeed();
 
-void InfoPrintRecordingFramePlaybackSpeed()
-{
-    iprintf("Recording Playback Speed : %d",ppm_RecordedPlaybackSpeed);
-}
+void InfoPrintRecordingFramePlaybackSpeed();
 
-void infoPrintSoundFrequency()
-{
-	iprintf("Sound Frequency (Hz) : %d",soundFreq);
-}
+void infoPrintSoundFrequency();
 
-void infoPrintSoundSize()
-{
-	char szstr[7];
-	long_to_size_string(szstr,ppm_BGMSize);
-	iprintf("BGM Size : %s",szstr);
-}
+void infoPrintSoundSize();
 
-void (*InfoLine[INFO_COUNT])()=
-{
-    InfoPrintFileNameLabel,
-    InfoPrintFileNameValue,
-    InfoPrintSeparatorLine,
-    InfoPrintFramesCount,
-    InfoPrintSeparatorLine,
-    InfoPrintLockState,
-    InfoPrintSeparatorLine,
-    InfoPrintFramePlaybackSpeed,
-    InfoPrintSeparatorLine,
-    InfoPrintRecordingFramePlaybackSpeed,
-	InfoPrintSeparatorLine,
-	infoPrintSoundSize,
-    InfoPrintSeparatorLine,
-	infoPrintSoundFrequency,
-    InfoPrintSeparatorLine
-};
+extern void (*InfoLine[INFO_COUNT])();
 
-u8 InfoScrollPos=0;
+extern u8 InfoScrollPos;
 
-void InfoDisplay()
-{
-    consoleSetWindow(&consoleFG,1,1,30,22);
-    consoleClear();
-    c_goto(0,0);
-    for(u8 i=1,p=InfoScrollPos;i<31;i++)
-    {
-        if(p>=INFO_COUNT)
-            break;
-        InfoLine[p++](i);
-        iprintf("\n");
-    }
-    consoleSetWindow(&consoleFG,0,0,32,24);
-}
-
-
-
-#endif // INFO_H_INCLUDED
+void InfoDisplay();
