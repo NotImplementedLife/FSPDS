@@ -7,41 +7,67 @@
 #include "tabsystem.h"
 
 #include "ui_list.h"
+#include "ppm_list.h"
 
-void write_entry(void* item,int listpos, int is_highlighted)
+void ppm_write_entry(void* item, int listpos, int is_highlighted)
 {	
-	c_goto(listpos+1 , 1);
-	if(item==NULL) iprintf("___");
+	c_goto(2*listpos+1, 0);
+	if(is_highlighted) iprintf("*");
+	else iprintf(" ");
+	if(item==NULL) iprintf("[NULL]\n");
 	else
-	{
-		if(is_highlighted) iprintf("*");
-		else iprintf(" ");
-		iprintf("item % 3i",(int)item);
+	{		
+		file_data* fd = (file_data*)item;
+		iprintf("%s\n             %s\n",fd->name, fd->size_str);
 	}
 }
 
-ItemsChunk* ld_chunk(int id) 
-{	
-	//iprintf("ld %i\n",id);
-	ItemsChunk* chk = malloc(sizeof(ItemsChunk));	
-	for(int i=0;i<CHUNK_SIZE;i++) 
-	{
-		int x=CHUNK_SIZE*id + i+1;
-		(*chk)[i]=(void*)x;		
-		//iprintf("%i %i\n",x,(*chk)[i]);
-	}
-	return chk;
-}
 
-void rl_chunk(ItemsChunk* chk)
-{	
-	free(chk);
+void callback(file_data* fd, void* arg)
+{
+	iprintf("%s\n",fd->name);
+	int *y=(int*)arg;
+	(*y)++;	
 }
 
 int main(int argc, char ** argv)
 {
 	consoleDemoInit();
-	UiList list;
+	fsInit();
+	initPPMLists();
+	
+	uilist_set_write_entry_proc(&ppm_list, ppm_write_entry);
+	iprintf("123\n");		
+	
+	UiList* list = &ppm_list;
+	ListItemsSource* lis = &ppm_source;
+	
+	c_cls();
+	uilist_write_page(list);
+
+	while(1)
+    {
+		swiWaitForVBlank();
+		
+		
+		scanKeys();
+        uint32 input=keysDown();		
+		if(input & KEY_DOWN) {
+			lis_select(lis, lis->selected_index+1);
+			c_cls();
+			c_goto(0,0); 			
+			iprintf("% 3i",lis->selected_index);
+			uilist_write_page(list);
+		}
+		else if(input & KEY_UP) {
+			lis_select(lis, lis->selected_index-1);
+			c_cls();
+			c_goto(0,0); 
+			iprintf("% 3i",lis->selected_index);
+			uilist_write_page(list);
+		}
+	}
+	/*UiList list;
 	uilist_init(&list);
 	uilist_set_write_entry_proc(&list, write_entry);
 	
@@ -71,9 +97,12 @@ int main(int argc, char ** argv)
 			iprintf("% 3i",lis.selected_index);
 			uilist_write_page(&list);
 		}
-	}
+	}*/
 	
 	return 0;
+	
+	
+	//fsInit();
 	
     powerOn(POWER_ALL_2D);
 	

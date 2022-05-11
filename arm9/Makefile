@@ -20,6 +20,11 @@ SOURCES		:=	source
 INCLUDES	:=	include ../include
 DATA		:=
 
+ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
+
+NITROFS_INC := $(ROOT_DIR)/nitrofs
+include $(NITROFS_INC)
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
@@ -45,6 +50,11 @@ LDFLAGS	=	-specs=ds_arm9.specs $(ARCH) -Wl,-Map,$(notdir $*.map)
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
 LIBS	:=	-lfat -lnds9
+
+# automatigically add libraries for NitroFS
+ifneq ($(strip $(NITRO)),)
+LIBS := -lfilesystem -lfat $(LIBS)
+endif
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -72,6 +82,11 @@ CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 GFX_FILES   :=  $(foreach dir, $(GFX),$(notdir $(wildcard $(dir)/*.png)))
+
+# prepare NitroFS directory
+ifneq ($(strip $(NITRO)),)
+  export NITRO_FILES := $(CURDIR)/$(NITRO)
+endif
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -105,7 +120,7 @@ $(BUILD):
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
-clean:
+clean:	
 	@echo clean ...
 	@rm -fr $(BUILD) *.elf *.nds* *.bin
 
@@ -117,8 +132,10 @@ else
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-$(ARM9ELF)	:	$(OFILES)
-	@echo linking $(notdir $@)
+$(ARM9ELF)	:	$(OFILES) 		
+	echo $(NITROFS_INC)
+	@echo linking $(notdir $@)	
+	echo $(NITRO_FILES)
 	@$(LD)  $(LDFLAGS) $(OFILES) $(LIBPATHS) $(LIBS) -o $@
 
 

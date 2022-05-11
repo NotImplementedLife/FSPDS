@@ -5,12 +5,14 @@
 #include <string.h>
 #include <dirent.h>
 
+#include <filesystem.h>
+
 #include "vars.h"
 #include "console.h"
 #include "player.h"
 
 // Converts file size to string ( e.g. 2704 => "2.64KB" )
-void long_to_size_string(char dest[7],long sz)
+void long_to_size_string(char dest[7], long sz)
 {
     dest[5]='B';
     dest[6]='\0';
@@ -57,47 +59,77 @@ void long_to_size_string(char dest[7],long sz)
     dest[0]=q+'0';
 }
 
-void loadFiles()
+void fsInit()
 {
-    if(!fatInitDefault())
+	if(!nitroFSInit(NULL)) {
+		c_displayError("Fatal :\n\nNTFS init failed.",true);
+	}
+	return;
+	if(!fatInitDefault())
     {
         c_displayError("Fatal :\n\nFAT init failed.",true);
-    }
+    }	
+}
+
+void loadFiles()
+{
+	loadFilesFrom("/flipnotes", 0, 0, 0, 0);
+}
+
+long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_file_callback callback, void* arg)
+{
     DIR *root;
     struct dirent *entry;
-    root=opendir("/flipnotes");
+    root=opendir(source);		
     if (root)
     {
-        while((entry=readdir(root))!=NULL && filescount<MAXFILESCOUNT)
+		int ppm_offset = strlen(source);
+		char* fn = malloc(ppm_offset+32);
+		strcpy(fn, source);
+		strcat(fn, "/");
+		ppm_offset++;
+		
+		int count = 0;
+		seekdir(root, nskip);
+		long result=0;
+        while((entry=readdir(root))!=NULL && count<max_files)
         {
+			result = telldir(root);
             if(strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0)
-                continue;
+                continue;		
             if(entry->d_type != DT_DIR)
-            {
-                if(strlen(entry->d_name)==28 && strcmp(".ppm",entry->d_name+24)==0)
-                {
-                    char fn[40]="/flipnotes/";
-                    strcat(fn,entry->d_name);
-                    FILE* fp=fopen(fn,"rb");
-                    fseek(fp,0L,SEEK_END);
-                    long fsize=ftell(fp);
+            {				
+                if(strlen(entry->d_name)==28 && strcmp(".ppm", entry->d_name+24)==0)
+                {					                   					
+                    strcpy(fn + ppm_offset, entry->d_name);
+					//iprintf("%s\n", entry->d_name);
+                    //FILE* fp=fopen(fn, "rb");
+                    //fseek(fp, 0L, SEEK_END);
+                    //long fsize=ftell(fp);					
+					//fclose(fp);
+					long fsize=1;
+					//iprintf("%i\n", fsize);
                     /// Accept only files under 1MB
                     if(fsize<=1024*1024)
-                    {
-                        strcpy(files[filescount],entry->d_name);
-                        long_to_size_string(sizes[filescount],fsize);
-                        fclose(fp);
-                        filescount++;
+                    {					
+						file_data* fd = malloc(sizeof(file_data));				
+                        strcpy(fd->name, entry->d_name);
+						fd->size = fsize;
+						long_to_size_string(fd->size_str, fsize);
+						callback(fd, arg);
+                        count++;						
                     }
                 }
             }
-        }
+        }		
         closedir(root);
+		return result;
     }
     else
     {		
-        c_displayError("Fatal :\n\nOpen directory failed.\n\nMake sure the /flipnotes\ndirectory exists on the rootof your SD card.",true);
+        c_displayError("Fatal :\n\nOpen directory failed.\n\nMake sure the /flipnotes\ndirectory exists on the rootof your SD card.", true);
     }
+	return -1;
 }
 
 // UI

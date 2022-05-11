@@ -4,6 +4,7 @@ arm7/build/
 arm9/build/
 build/
 flipnotes-example/
+fs/
 FSPDS.layout
 *.elf
 *.nds

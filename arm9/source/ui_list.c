@@ -7,6 +7,7 @@ void lis_init(ListItemsSource* lis)
 	lis->previous = NULL;
 	lis->current = NULL;
 	lis->next = NULL;
+	lis->next2 = NULL;
 	lis->current_chunk_id = -100;
 	lis->load_chunk = 0;
 	lis->items_count = 0;
@@ -40,16 +41,25 @@ void lis_set_current_chunk(ListItemsSource* lis, int chunk_id)
 		return;	
 	}
 	
-	if(chunk_id == lis->current_chunk_id + 1) {
-		lis->release_chunk(lis->previous);
-		lis->previous = lis->current;
-		lis->current = lis->next;
+	if(chunk_id == lis->current_chunk_id + 1) 
+	{		
+		return;	
+	}
+	
+	if(chunk_id == lis->current_chunk_id + 2) {
+		lis->release_chunk(lis->previous);		
+		lis->release_chunk(lis->current);
+		lis->previous = lis->next;
+		lis->current = lis->next2;	
 		lis->next = lis_load_chunk(lis, chunk_id+1);
+		lis->next2 = lis_load_chunk(lis, chunk_id+2);		
+		
 		lis->current_chunk_id = chunk_id;
 		return;
 	}
 	if(chunk_id == lis->current_chunk_id - 1) {
-		lis->release_chunk(lis->next);
+		lis->release_chunk(lis->next2);
+		lis->next2 = lis->next;
 		lis->next = lis->current;
 		lis->current = lis->previous;
 		lis->previous = lis_load_chunk(lis, chunk_id-1);
@@ -60,10 +70,12 @@ void lis_set_current_chunk(ListItemsSource* lis, int chunk_id)
 	lis->release_chunk(lis->previous);
 	lis->release_chunk(lis->current);
 	lis->release_chunk(lis->next);
+	lis->release_chunk(lis->next2);
 		
 	lis->previous = lis_load_chunk(lis, chunk_id-1);
 	lis->current = lis_load_chunk(lis, chunk_id);
 	lis->next = lis_load_chunk(lis, chunk_id+1);
+	lis->next2 = lis_load_chunk(lis, chunk_id+2);
 	
 	lis->current_chunk_id = chunk_id;
 }
@@ -71,9 +83,12 @@ void lis_set_current_chunk(ListItemsSource* lis, int chunk_id)
 void* lis_get_item(ListItemsSource* lis, int id)
 {
 	if(lis==NULL) return NULL;
-	if(id<0) return NULL;
-	//iprintf("id=%i %i\n",id, id>>CHUNK_MAGNITUDE);
-	lis_set_current_chunk(lis, id>>CHUNK_MAGNITUDE);	
+	if(id<0) return NULL;		
+	lis_set_current_chunk(lis, id>>CHUNK_MAGNITUDE);
+	int chunk = id>>CHUNK_MAGNITUDE;
+	
+	if(chunk == lis->current_chunk_id+1)
+		return (*lis->next)[id & (CHUNK_SIZE-1)];
 	return (*lis->current)[id & (CHUNK_SIZE-1)];
 }
 
@@ -117,8 +132,7 @@ void uilist_write_page(UiList* ul)
     {
 		int pos = ul->top_visible + i;
 		ul->write_entry(lis_get_item(ul->lis, pos), i, lis_item_is_selected(ul->lis, pos));
-		//ul->write_entry();
-        //writeEntry(7*CurrentPage+i,i,i==PageSelection);
+		//iprintf("id=%i         ",pos);		
     }
 }
 

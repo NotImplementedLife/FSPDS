@@ -194,7 +194,9 @@ void PlayTabLeaving()
 }
 
 void initTabs()
-{
+{	
+	initLists();
+	
     FilesTab.loadingProc=TabNoAction;
     FilesTab.drawingProc=FilesTabDrawing;
     FilesTab.keyDownProc=FilesTabKeyDown;

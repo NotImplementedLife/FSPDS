@@ -1,6 +1,6 @@
 #pragma once
 
-#define CHUNK_MAGNITUDE 5
+#define CHUNK_MAGNITUDE 4
 #define CHUNK_SIZE (1<<CHUNK_MAGNITUDE)
 
 typedef void* ItemsChunk[CHUNK_SIZE];
@@ -13,6 +13,7 @@ typedef struct
 	ItemsChunk* previous;
 	ItemsChunk* current;
 	ItemsChunk* next;
+	ItemsChunk* next2;
 	int current_chunk_id;
 	load_chunk_proc load_chunk;
 	release_chunk_proc release_chunk;
