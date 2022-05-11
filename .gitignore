@@ -8,3 +8,4 @@ FSPDS.layout
 *.elf
 *.nds
 run.bat
+arm9/source/build_counter.c
