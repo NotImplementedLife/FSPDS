@@ -9,100 +9,44 @@
 #include "ui_list.h"
 #include "ppm_list.h"
 
-void ppm_write_entry(void* item, int listpos, int is_highlighted)
-{	
-	c_goto(2*listpos+1, 0);
-	if(is_highlighted) iprintf("*");
-	else iprintf(" ");
-	if(item==NULL) iprintf("[NULL]\n");
-	else
-	{		
-		file_data* fd = (file_data*)item;
-		iprintf("%s\n             %s\n",fd->name, fd->size_str);
-	}
-}
-
-
-void callback(file_data* fd, void* arg)
-{
-	iprintf("%s\n",fd->name);
-	int *y=(int*)arg;
-	(*y)++;	
-}
-
-int main(int argc, char ** argv)
+void run_dbg()
 {
 	consoleDemoInit();
 	fsInit();
 	initPPMLists();
 	
-	uilist_set_write_entry_proc(&ppm_list, ppm_write_entry);
-	iprintf("123\n");		
-	
-	UiList* list = &ppm_list;
-	ListItemsSource* lis = &ppm_source;
+	uilist_set_write_entry_proc(&ppm_list, ppmwr);
 	
 	c_cls();
-	uilist_write_page(list);
+	uilist_write_page(&ppm_list);
 
 	while(1)
     {
 		swiWaitForVBlank();
-		
-		
 		scanKeys();
         uint32 input=keysDown();		
 		if(input & KEY_DOWN) {
-			lis_select(lis, lis->selected_index+1);
+			lis_select(&ppm_source, ppm_source.selected_index+1);
 			c_cls();
 			c_goto(0,0); 			
-			iprintf("% 3i",lis->selected_index);
-			uilist_write_page(list);
+			iprintf("% 3i",ppm_source.selected_index);
+			uilist_write_page(&ppm_list);
 		}
 		else if(input & KEY_UP) {
-			lis_select(lis, lis->selected_index-1);
+			lis_select(&ppm_source, ppm_source.selected_index-1);
 			c_cls();
 			c_goto(0,0); 
-			iprintf("% 3i",lis->selected_index);
-			uilist_write_page(list);
+			iprintf("% 3i",ppm_source.selected_index);
+			uilist_write_page(&ppm_list);
 		}
 	}
-	/*UiList list;
-	uilist_init(&list);
-	uilist_set_write_entry_proc(&list, write_entry);
 	
-	ListItemsSource lis;
-	lis_init(&lis);
-	lis_set_chunk_procs(&lis, ld_chunk, rl_chunk);
-	lis_select(&lis, 1);
-	
-	uilist_attach_lis(&list, &lis);
-	
-	uilist_write_page(&list);
-	
-	while(1)
-    {
-		swiWaitForVBlank();
-		scanKeys();
-        uint32 input=keysDown();		
-		if(input & KEY_DOWN) {
-			lis_select(&lis, lis.selected_index+1);
-			c_goto(0,0); 
-			iprintf("% 3i",lis.selected_index);
-			uilist_write_page(&list);
-		}
-		else if(input & KEY_UP) {
-			lis_select(&lis, lis.selected_index-1);
-			c_goto(0,0); 
-			iprintf("% 3i",lis.selected_index);
-			uilist_write_page(&list);
-		}
-	}*/
-	
-	return 0;
-	
-	
-	//fsInit();
+	exit(0);
+}
+
+int main(int argc, char ** argv)
+{
+	//run_dbg();
 	
     powerOn(POWER_ALL_2D);
 	
@@ -117,6 +61,7 @@ int main(int argc, char ** argv)
 	
     soundEnable();
 
+	fsInit();
     initConsole();
 
     initTabs();
@@ -137,7 +82,7 @@ int main(int argc, char ** argv)
     playerClear();
     playerSwapBuffers();
     playerClear();
-    displayThumbnail();
+    //displayThumbnail();
 
     while(1)
     {

@@ -7,6 +7,125 @@
 #include "sound.h"
 #include "player.h"
 #include "vars.h"
+#include "ppm_list.h"
+
+void ppm_write_entry(void* item, int listpos, int is_highlighted)
+{			
+	if(item==NULL) 
+	{
+		consoleSelect(&consoleFG);
+        for(int i=0;i<3-2*(listpos==7);i++)
+        {
+            c_goto(1+3*listpos+i,1);
+            for(int j=1;j<31;j++) iprintf(" ");
+        }
+        consoleSelect(&consoleBG);
+        for(int i=0;i<3-2*(listpos==7);i++)
+        {
+            c_goto(1+3*listpos+i,1);
+            for(int j=1;j<31;j++) iprintf(" ");
+        }		
+        return;
+	}
+		
+	file_data* fd = (file_data*)item;	
+	
+	consoleSelect(&consoleBG);
+    iprintf(is_highlighted?"\x1b[39m":"\x1b[30m");
+    for(int i=0;i<3;i++)
+    {
+        c_goto(1+3*listpos+i,1);
+        for(int j=0;j<30;j++) iprintf("\x02");
+    }
+    consoleSelect(&consoleFG);
+    c_goto(1+3*listpos,2);
+    iprintf(is_highlighted?"\x1b[30m":"\x1b[39m");
+    iprintf(fd->name);	
+    if(listpos==7) return;
+    c_goto(3+3*listpos,1);
+	iprintf("                              ");
+	c_goto(2+3*listpos,1);
+	iprintf("                              ");
+    c_goto(2+3*listpos,20);	
+    iprintf(fd->size_str);
+}
+
+void ppmwr(void* item, int listpos, int is_highlighted)
+{				
+	c_goto(1+listpos,1);
+	if(is_highlighted) iprintf("*");
+	else iprintf(" ");
+	if(item==NULL) 
+	{				
+		iprintf("[NULL]");
+        return;
+	}
+	file_data* fd = (file_data*)item;			    
+	iprintf(fd->name);	
+	
+	if(is_highlighted)
+	{
+		c_goto(0,0);
+		iprintf("%p", (void*)fd->name);
+	}
+	return;
+	
+	
+	/*for(int i=0;i<3-2*(listpos==7);i++)
+        {
+            c_goto(1+3*listpos+i,1);
+            for(int j=1;j<31;j++) iprintf(" ");
+        }
+	if(item==NULL) 
+	{		
+		c_goto(1+3*listpos+1,1);		
+		iprintf("[NULL]");
+        return;
+	}
+		
+	file_data* fd = (file_data*)item;			    
+    c_goto(1+3*listpos,2);    
+    iprintf(fd->name);
+	if(is_highlighted) iprintf("*");
+	else iprintf(" ");
+    if(listpos==7) return;*/
+	
+}
+
+void nextPage()
+{
+    if(CurrentPage+1>=PagesCount)
+        return;
+    CurrentPage++;
+    PageSelection=0;
+    displayThumbnail();
+    uilist_write_page(&ppm_list);
+}
+
+void prevPage()
+{
+    if(CurrentPage==0)
+        return;
+    CurrentPage--;
+    PageSelection=0;
+    displayThumbnail();	
+    uilist_write_page(&ppm_list);
+}
+
+void nextEntry()
+{
+	lis_select(&ppm_source, ppm_source.selected_index+1);
+	//displayThumbnail();	
+    uilist_write_page(&ppm_list);   
+}
+
+void prevEntry()
+{
+	lis_select(&ppm_source, ppm_source.selected_index-1);
+	//displayThumbnail();
+    uilist_write_page(&ppm_list);   
+}
+
 
 ConsoleTab* CurrentTab;
 
@@ -23,7 +142,7 @@ void FilesTabDrawing()
     c_writeFrame();
     c_goto(0,13);
     iprintf("Files");
-    writePage();
+	uilist_write_page(&ppm_list);    
 }
 
 void FilesTabKeyDown(u32 input)
@@ -195,7 +314,9 @@ void PlayTabLeaving()
 
 void initTabs()
 {	
-	initLists();
+	initPPMLists();
+	uilist_set_write_entry_proc(&ppm_list, ppm_write_entry);
+	//uilist_set_write_entry_proc(&ppm_list, ppmwr);
 	
     FilesTab.loadingProc=TabNoAction;
     FilesTab.drawingProc=FilesTabDrawing;

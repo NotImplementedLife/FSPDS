@@ -99,8 +99,15 @@ void lis_set_count(ListItemsSource* lis, int items_count)
 
 void lis_select(ListItemsSource* lis, int index)
 {
+	int old_index = lis->selected_index;
+	if(index<0) return;
 	lis->selected_index = index;
-	lis_get_item(lis, index); // update chunks to fit selected item
+	void* item = lis_get_item(lis, index); // update chunks to fit selected item
+	if(item==NULL) // end of list
+	{
+		lis->selected_index = old_index;
+		lis_get_item(lis, old_index); // update chunks to fit selected item
+	}
 }
 
 int lis_item_is_selected(ListItemsSource* lis, int index)
@@ -126,13 +133,12 @@ void uilist_attach_lis(UiList* ul, ListItemsSource* lis)
 }
 
 void uilist_write_page(UiList* ul)
-{
+{	
 	ul->top_visible=7*(ul->lis->selected_index/7);
 	for(int i=0;i<8;i++)
     {
 		int pos = ul->top_visible + i;
-		ul->write_entry(lis_get_item(ul->lis, pos), i, lis_item_is_selected(ul->lis, pos));
-		//iprintf("id=%i         ",pos);		
+		ul->write_entry(lis_get_item(ul->lis, pos), i, lis_item_is_selected(ul->lis, pos));		
     }
 }
 

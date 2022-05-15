@@ -51,3 +51,6 @@ void PlayTabRdTouch();
 void PlayTabLeaving();
 
 void initTabs();
+
+
+void ppmwr(void* item, int listpos, int is_highlighted);

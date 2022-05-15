@@ -1,6 +1,7 @@
 #include "ppm_list.h"
 
 #include "filesystem.h"
+#include "console.h"
 
 #include <stdlib.h>
 
@@ -47,11 +48,7 @@ ItemsChunk* load_ppm_files_chunk(int id)
 	}
 	
 	long len = loadFilesFrom("/flipnotes", offset,  CHUNK_SIZE, discovered_ppm_callback, &cip);
-	chk_offset[id+1] = len;
-	iprintf("%i\n",chk_offset[id+1]);
-	
-	
-	iprintf("%i\n",cip.index);
+	chk_offset[id+1] = len;	
 	
 	return chk;
 }

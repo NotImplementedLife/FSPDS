@@ -112,7 +112,16 @@ long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_fil
                     /// Accept only files under 1MB
                     if(fsize<=1024*1024)
                     {					
-						file_data* fd = malloc(sizeof(file_data));				
+						file_data* fd = malloc(sizeof(file_data));
+						if((u32)fd < 0x00200000) 
+						{
+							c_displayError("MALLOC FAILED", false);
+							c_goto(10,2);
+							if(fd==NULL)
+								iprintf("NULL");
+							else iprintf("%08p",fd);
+							while(1) { swiWaitForVBlank(); }
+						}
                         strcpy(fd->name, entry->d_name);
 						fd->size = fsize;
 						long_to_size_string(fd->size_str, fsize);
@@ -121,7 +130,7 @@ long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_fil
                     }
                 }
             }
-        }		
+        }			
         closedir(root);
 		return result;
     }
@@ -132,106 +141,3 @@ long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_fil
 	return -1;
 }
 
-// UI
-
-void writeEntry(int i,int listpos, bool highlight)
-{
-    if(i>=filescount)
-    {
-        consoleSelect(&consoleFG);
-        for(int i=0;i<3-2*(listpos==7);i++)
-        {
-            c_goto(1+3*listpos+i,1);
-            for(int j=1;j<31;j++) iprintf(" ");
-        }
-        consoleSelect(&consoleBG);
-        for(int i=0;i<3-2*(listpos==7);i++)
-        {
-            c_goto(1+3*listpos+i,1);
-            for(int j=1;j<31;j++) iprintf(" ");
-        }
-        return;
-    }
-    consoleSelect(&consoleBG);
-    iprintf(highlight?"\x1b[39m":"\x1b[30m");
-    for(int i=0;i<3;i++)
-    {
-        c_goto(1+3*listpos+i,1);
-        for(int j=0;j<30;j++) iprintf("\x02");
-    }
-    consoleSelect(&consoleFG);
-    c_goto(1+3*listpos,2);
-    iprintf(highlight?"\x1b[30m":"\x1b[39m");
-    iprintf(files[i]);
-    if(listpos==7) return;
-    c_goto(2+3*listpos,20);
-    iprintf(sizes[i]);
-}
-
-void writePage()
-{
-    for(int i=0;i<8;i++)
-    {
-        writeEntry(7*CurrentPage+i,i,i==PageSelection);
-    }
-}
-
-void nextPage()
-{
-    if(CurrentPage+1>=PagesCount)
-        return;
-    CurrentPage++;
-    PageSelection=0;
-    displayThumbnail();
-    writePage();
-}
-
-void prevPage()
-{
-    if(CurrentPage==0)
-        return;
-    CurrentPage--;
-    PageSelection=0;
-    displayThumbnail();
-    writePage();
-}
-
-void nextEntry()
-{
-    int id=7*CurrentPage+PageSelection;
-    if(id+1==filescount)
-        return;
-    if(PageSelection==6)
-    {
-        CurrentPage++;
-        PageSelection=0;
-        displayThumbnail();
-        writePage();
-    }
-    else
-    {
-        writeEntry(id++,PageSelection++,false);
-        writeEntry(id  ,PageSelection  ,true);
-        displayThumbnail();
-    }
-}
-
-void prevEntry()
-{
-    int id=7*CurrentPage+PageSelection;
-    if(id==0)
-        return;
-    if(PageSelection==0)
-    {
-        CurrentPage--;
-        PageSelection=6;
-        displayThumbnail();
-        writePage();
-    }
-    else
-    {
-        writeEntry(id--,PageSelection--,false);
-        writeEntry(id  ,PageSelection  ,true);
-        displayThumbnail();
-    }
-}

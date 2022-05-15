@@ -7,7 +7,7 @@ typedef struct
 {
 	char name[32];
 	long size;
-	char size_str[7];
+	char size_str[8];
 } file_data;
 
 void fsInit();
@@ -17,17 +17,3 @@ typedef void (*discovered_file_callback)(file_data*, void* arg);
 long loadFilesFrom(const char* source, int nskip, int max_files, discovered_file_callback callback, void* arg);
 
 void loadFiles();
-
-// UI
-
-void writeEntry(int i,int listpos, bool highlight);
-
-void writePage();
-
-void nextPage();
-
-void prevPage();
-
-void nextEntry();
-
-void prevEntry();
