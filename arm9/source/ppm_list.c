@@ -4,6 +4,8 @@
 #include "console.h"
 
 #include <stdlib.h>
+#include <dirent.h>
+#include <errno.h>
 
 // https://playnote.studio/filehelp/
 const ppm_location ppm_locations[] = 
@@ -115,9 +117,17 @@ ItemsChunk* load_path_chunk(int id)
 	
 	for(int i=0;i<ppm_locations_length;i++)
 	{	
-		// pass int as void*, not sure how safe is, but I can't think it better :))
-		// at least make sure it is not null 
-		(*chk)[i]=(void*)(i+1); 		
+		DIR* dir = opendir(ppm_locations[i].path);
+		if (dir) {
+			// pass int as void*, not sure how safe is, but I can't think it better :))
+			// at least make sure it is not null 
+			(*chk)[i]=(void*)(i+1); 		
+			closedir(dir);
+		} else if (ENOENT == errno) {
+			/* Directory does not exist. */
+		} else {
+			/* opendir() failed for some other reason. */
+		}
 	}
 	
 	return chk;	

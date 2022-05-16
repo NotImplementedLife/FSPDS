@@ -257,6 +257,16 @@ void PathSelectorTabKeyDown(u32 input)
 		lis_select(&path_selector_source, path_selector_source.selected_index-1);
 		uilist_write_page(&path_selector_list);  ;
 	}
+	else if(input & KEY_A)
+	{
+		int index = (int)lis_get_selected_item(&path_selector_source);
+		index--;		
+		strcpy(ppm_current_path, ppm_locations[index].path);		
+		CurrentTab->leavingProc();
+		CurrentTab=&FilesTab;
+		CurrentTab->loadingProc();
+		CurrentTab->drawingProc();		
+	}
 }
 
 void initTabs()
