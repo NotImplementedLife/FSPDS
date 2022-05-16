@@ -68,28 +68,7 @@ void ppmwr(void* item, int listpos, int is_highlighted)
 		c_goto(0,0);
 		iprintf("%p", (void*)fd->name);
 	}
-	return;
-	
-	
-	/*for(int i=0;i<3-2*(listpos==7);i++)
-        {
-            c_goto(1+3*listpos+i,1);
-            for(int j=1;j<31;j++) iprintf(" ");
-        }
-	if(item==NULL) 
-	{		
-		c_goto(1+3*listpos+1,1);		
-		iprintf("[NULL]");
-        return;
-	}
-		
-	file_data* fd = (file_data*)item;			    
-    c_goto(1+3*listpos,2);    
-    iprintf(fd->name);
-	if(is_highlighted) iprintf("*");
-	else iprintf(" ");
-    if(listpos==7) return;*/
-	
+	return;	
 }
 
 void nextPage()
@@ -115,14 +94,14 @@ void prevPage()
 void nextEntry()
 {
 	lis_select(&ppm_source, ppm_source.selected_index+1);
-	//displayThumbnail();	
+	displayThumbnail();	
     uilist_write_page(&ppm_list);   
 }
 
 void prevEntry()
 {
 	lis_select(&ppm_source, ppm_source.selected_index-1);
-	//displayThumbnail();
+	displayThumbnail();
     uilist_write_page(&ppm_list);   
 }
 

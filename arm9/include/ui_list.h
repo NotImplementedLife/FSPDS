@@ -31,6 +31,8 @@ void lis_set_chunk_procs(ListItemsSource* lis, load_chunk_proc ld_chk_proc, rele
 
 void* lis_get_item(ListItemsSource* lis, int id);
 
+void* lis_get_selected_item(ListItemsSource* lis);
+
 void lis_set_count(ListItemsSource* lis, int items_count);
 
 void lis_select(ListItemsSource* lis, int index);

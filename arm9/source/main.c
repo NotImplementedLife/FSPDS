@@ -82,7 +82,7 @@ int main(int argc, char ** argv)
     playerClear();
     playerSwapBuffers();
     playerClear();
-    //displayThumbnail();
+    displayThumbnail();
 
     while(1)
     {

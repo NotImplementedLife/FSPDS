@@ -92,6 +92,13 @@ void* lis_get_item(ListItemsSource* lis, int id)
 	return (*lis->current)[id & (CHUNK_SIZE-1)];
 }
 
+void* lis_get_selected_item(ListItemsSource* lis)
+{
+	// selected item should already exist in memory,
+	// therefore no extra chunk loading is expected
+	return lis_get_item(lis, lis->selected_index);
+}
+
 void lis_set_count(ListItemsSource* lis, int items_count)
 {
 	lis->items_count = items_count;

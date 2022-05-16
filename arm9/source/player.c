@@ -1,5 +1,8 @@
 #include "player.h"
 
+#include "ppm_list.h"
+#include "console.h"
+
 int bgMain;
 u16* mainGFX;
 
@@ -57,12 +60,13 @@ void playerClear()
 
 void displayThumbnail()
 {
-    char fn[40]="/flipnotes/";
-    strcat(fn,files[7*CurrentPage+PageSelection]);
+	char* fn = get_selected_file_name();
+	
     FILE* fp=fopen(fn,"rb");
     fseek(fp,0xA0,SEEK_SET);
     u8 bytes[1536];
     fread(bytes,1536,1,fp);
+	free(fn);
 
     int offset=0,x,y;
     for(u8 ty=0;ty<48;ty+=8)
@@ -79,7 +83,7 @@ void displayThumbnail()
                 }
         }
     }
-    playerSwapBuffers();
+    playerSwapBuffers();	
 }
 
 /*****************************  [ vBlank Op ] *****************************/
