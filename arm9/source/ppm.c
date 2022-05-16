@@ -2,11 +2,11 @@
 #include "filesystem.h"
 #include "sound.h"
 #include "vars.h"
+#include "ppm_list.h"
 
 void ppm_loadMetadata()
 {
-    char fn[40]="/flipnotes/";
-    strcat(fn,files[7*CurrentPage+PageSelection]);
+	char* fn = get_selected_file_name();    
     FILE* fp=fopen(fn,"rb");
     // Parse header
     fread(ppmHead_Magic,4,1,fp);  ppmHead_Magic[4]=0;
@@ -33,12 +33,12 @@ void ppm_loadMetadata()
     fread(&ppm_FramePlaybackSpeed,1,1, fp);
     ppm_FramePlaybackSpeed=8-ppm_FramePlaybackSpeed;
     fclose(fp);
+	free(fn);
 }
 
 void ppm_loadAnimationData()
 {
-    char fn[40]="/flipnotes/";
-    strcat(fn,files[7*CurrentPage+PageSelection]);
+    char* fn = get_selected_file_name();    
     FILE* PPM_Current=fopen(fn,"rb");
     fseek(PPM_Current,0x4,SEEK_SET);
     fread(&ppmHead_AnimationDataSize,4,1,PPM_Current);
@@ -55,12 +55,12 @@ void ppm_loadAnimationData()
     fread(ppm_AnimationData,ppmHead_AnimationDataSize,1,PPM_Current);
 	
 	fclose(PPM_Current);
+	free(fn);
 }
 
 void ppm_loadSoundData()
 {
-    char fn[40]="/flipnotes/";
-    strcat(fn,files[7*CurrentPage+PageSelection]);
+    char* fn = get_selected_file_name();    
     FILE* PPM_Current=fopen(fn,"rb");
     u32 offset=0x6A0+ppmHead_AnimationDataSize;
     fseek(PPM_Current,offset,SEEK_SET);
@@ -86,6 +86,7 @@ void ppm_loadSoundData()
     fread(ppm_SE3Data          , ppm_SE3Size,1,PPM_Current);
 	
 	fclose(PPM_Current);
+	free(fn);
 	
 	// creade decoded BGM	
 	toPCM(ppm_BGMData + (1<<20), ppm_BGMSize, ppm_BGMData);

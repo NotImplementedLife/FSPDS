@@ -2,12 +2,6 @@
 
 touchPosition touch;
 
-int filescount=0;
-char files[MAXFILESCOUNT][29];
-char sizes[MAXFILESCOUNT][7];
-
-int PagesCount, PageSelection=0, CurrentPage=0;
-
 /// PPM file data
 
 char ppmHead_Magic[5]="NULL";

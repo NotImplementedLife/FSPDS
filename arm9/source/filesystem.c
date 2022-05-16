@@ -71,11 +71,6 @@ void fsInit()
     }	
 }
 
-void loadFiles()
-{
-	loadFilesFrom("/flipnotes", 0, 0, 0, 0);
-}
-
 long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_file_callback callback, void* arg)
 {
     DIR *root;

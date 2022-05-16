@@ -73,22 +73,16 @@ void ppmwr(void* item, int listpos, int is_highlighted)
 
 void nextPage()
 {
-    if(CurrentPage+1>=PagesCount)
-        return;
-    CurrentPage++;
-    PageSelection=0;
-    displayThumbnail();
-    uilist_write_page(&ppm_list);
+	lis_select(&ppm_source, (ppm_source.selected_index/7+1)*7);
+	displayThumbnail();
+    uilist_write_page(&ppm_list);      
 }
 
 void prevPage()
-{
-    if(CurrentPage==0)
-        return;
-    CurrentPage--;
-    PageSelection=0;
-    displayThumbnail();	
-    uilist_write_page(&ppm_list);
+{    
+	lis_select(&ppm_source, (ppm_source.selected_index/7-1)*7);
+	displayThumbnail();
+    uilist_write_page(&ppm_list);   
 }
 
 void nextEntry()
@@ -194,7 +188,8 @@ void loadFlipnote()
     ppm_loadAnimationData();
     ppm_loadSoundData();
     PlayerForceAnimationReload=false;
-    PlayerLoadedFileIndex=7*CurrentPage+PageSelection;	
+    //PlayerLoadedFileIndex=7*CurrentPage+PageSelection;	
+    PlayerLoadedFileIndex = get_selected_file_index();
     BGMId=soundPlaySample(ppm_BGMData,SoundFormat_16Bit,4*ppm_BGMSize,soundFreq,100,64,false,0);
 	/// timer: make it tick at a lower frequnece to avoid letting the image and sound out of sync
 	/// due to many timer interrupts inside vBlank
@@ -231,8 +226,9 @@ void PlayTabDrawing()
 }
 
 void PlayTabPlayButtonPressed()
-{
-    s16 index=7*CurrentPage+PageSelection;
+{	
+    //s16 index=7*CurrentPage+PageSelection;
+    s16 index = get_selected_file_index();
     if(PlayerLoadedFileIndex!=index)
     {
         c_goto(18,10);
@@ -258,7 +254,7 @@ void PlayTabPlayButtonPressed()
         soundPause(BGMId);
     }
     iprintf(PlayerState ? PlayButton : PauseButton);
-    PlayerThumbnailNeedsRedraw=true;
+    PlayerThumbnailNeedsRedraw = true;
 }
 
 void PlayTabKeyDown(uint32 input)

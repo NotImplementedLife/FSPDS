@@ -15,5 +15,3 @@ void fsInit();
 typedef void (*discovered_file_callback)(file_data*, void* arg);
 
 long loadFilesFrom(const char* source, int nskip, int max_files, discovered_file_callback callback, void* arg);
-
-void loadFiles();

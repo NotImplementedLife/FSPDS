@@ -68,15 +68,9 @@ int main(int argc, char ** argv)
     initPlayer();
 
     c_loadingBox();
-    loadFiles();
 
-    PagesCount=filescount/7;
-    if(filescount%7>0)
-        PagesCount++;
-    if(filescount>0)
-    {
-        ppm_loadMetadata();
-    }
+	// error source if no flipnotes have been loaded:       
+    ppm_loadMetadata();
 
     CurrentTab->drawingProc();
     playerClear();

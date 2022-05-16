@@ -18,6 +18,11 @@ char* get_selected_file_name()
 	return result;
 }
 
+int get_selected_file_index()
+{
+	return ppm_source.selected_index;
+}
+
 UiList ppm_list;
 ListItemsSource ppm_source;
 

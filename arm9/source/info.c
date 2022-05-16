@@ -19,7 +19,9 @@ void InfoPrintFileNameLabel()
 void InfoPrintFileNameValue()
 {
     iprintf(" ");
-    iprintf(files[7*CurrentPage+PageSelection]);
+	char* fn = get_selected_file_name();    
+    iprintf(fn);
+	free(fn);
 }
 
 void InfoPrintFramesCount()
