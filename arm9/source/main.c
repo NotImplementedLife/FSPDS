@@ -114,8 +114,6 @@ int main(int argc, char ** argv)
 
         if(PlayerState==PLAYING)
         {
-			//c_goto(0,0);
-			//iprintf("%i %i %i", ppm_FramePlaybackSpeed, frameTime[ppm_FramePlaybackSpeed], counter);
             counter++;
             if(counter==1)
             {

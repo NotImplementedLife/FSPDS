@@ -3,6 +3,15 @@
 #include "ui_list.h"
 #include "filesystem.h"
 
+typedef struct
+{
+	const char* path;
+	const char* description;
+} ppm_location;
+
+extern const ppm_location ppm_locations[];
+extern const int ppm_locations_length;
+
 extern char* ppm_current_path;
 
 char* get_selected_file_name();

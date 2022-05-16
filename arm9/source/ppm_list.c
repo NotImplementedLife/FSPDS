@@ -5,6 +5,17 @@
 
 #include <stdlib.h>
 
+// https://playnote.studio/filehelp/
+const ppm_location ppm_locations[] = 
+{
+	{ "/flipnotes", "Default FSPDS path" },
+	{ "/private/ds/app/4b475556", "Flipnote Studio EUR SD path" },
+	{ "/private/ds/app/4B475545", "Flipnote Studio US SD path" },
+	{ "/private/ds/app/4B47554A", "Flipnote Studio JPN SD path" }
+};
+
+const int ppm_locations_length = sizeof(ppm_locations) / sizeof(ppm_location);
+
 char* ppm_current_path = "/flipnotes";
 
 char* get_selected_file_name()
