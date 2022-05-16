@@ -22,7 +22,7 @@ void infoPrintSoundFrequency();
 
 void infoPrintSoundSize();
 
-extern void (*InfoLine[INFO_COUNT])();
+extern const void (*InfoLine[INFO_COUNT])();
 
 extern u8 InfoScrollPos;
 

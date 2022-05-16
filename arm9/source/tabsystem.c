@@ -50,7 +50,7 @@ void ppm_write_entry(void* item, int listpos, int is_highlighted)
     iprintf(fd->size_str);
 }
 
-void ppmwr(void* item, int listpos, int is_highlighted)
+/*void ppmwr(void* item, int listpos, int is_highlighted)
 {				
 	c_goto(1+listpos,1);
 	if(is_highlighted) iprintf("*");
@@ -69,7 +69,7 @@ void ppmwr(void* item, int listpos, int is_highlighted)
 		iprintf("%p", (void*)fd->name);
 	}
 	return;	
-}
+}*/
 
 void nextPage()
 {
@@ -203,6 +203,10 @@ void PlayTabLoading()
     {
         c_loadingBox();
         loadFlipnote();
+		//c_goto(2,2);
+		//c_displayError("CHECKPOINT!\nYou need custom papers\n\n",false);
+		//iprintf("%i %i", ppm_FramePlaybackSpeed, frameTime[ppm_FramePlaybackSpeed]);
+		//while(1) { swiWaitForVBlank();}
     }
     else
     {
@@ -226,8 +230,7 @@ void PlayTabDrawing()
 }
 
 void PlayTabPlayButtonPressed()
-{	
-    //s16 index=7*CurrentPage+PageSelection;
+{	    
     s16 index = get_selected_file_index();
     if(PlayerLoadedFileIndex!=index)
     {

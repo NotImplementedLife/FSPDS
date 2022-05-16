@@ -23,6 +23,11 @@ int get_selected_file_index()
 	return ppm_source.selected_index;
 }
 
+file_data* get_selected_file_data()
+{
+	return (file_data*)lis_get_selected_item(&ppm_source);
+}
+
 UiList ppm_list;
 ListItemsSource ppm_source;
 

@@ -10,11 +10,6 @@
 
 extern touchPosition touch;
 
-#define MAXFILESCOUNT 1024
-extern int filescount;
-extern char files[MAXFILESCOUNT][29];
-extern char sizes[MAXFILESCOUNT][7];
-
 extern int PagesCount, PageSelection, CurrentPage;
 
 /// PPM file data
@@ -33,8 +28,6 @@ extern u32 ppmMeta_Timestamp;
 
 extern u8 ppm_FramePlaybackSpeed;
 extern const u8 frameTime[9];
-
-extern FILE* PPM_Current;
 
 extern u16 ppmADat_0x6A6; // Flags
 extern u32 ppm_OffsetTable[999];

@@ -3,6 +3,7 @@
 #include "console.h"
 #include "vars.h"
 #include "filesystem.h"
+#include "ppm_list.h"
 
 void noprint(u8 r) {}
 
@@ -18,10 +19,9 @@ void InfoPrintFileNameLabel()
 
 void InfoPrintFileNameValue()
 {
-    iprintf(" ");
-	char* fn = get_selected_file_name();    
-    iprintf(fn);
-	free(fn);
+    iprintf(" ");	
+	char* fn = get_selected_file_data()->name;
+    iprintf(fn);	
 }
 
 void InfoPrintFramesCount()
@@ -37,7 +37,7 @@ void InfoPrintLockState()
 
 void InfoPrintFramePlaybackSpeed()
 {
-    iprintf("Playback Speed : %d",ppm_FramePlaybackSpeed);
+    iprintf("Playback Speed : %d", ppm_FramePlaybackSpeed);
 }
 
 void InfoPrintRecordingFramePlaybackSpeed()
@@ -57,7 +57,7 @@ void infoPrintSoundSize()
 	iprintf("BGM Size : %s",szstr);
 }
 
-void (*InfoLine[INFO_COUNT])()=
+const void (*InfoLine[INFO_COUNT])()=
 {
     InfoPrintFileNameLabel,
     InfoPrintFileNameValue,

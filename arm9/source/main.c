@@ -9,7 +9,7 @@
 #include "ui_list.h"
 #include "ppm_list.h"
 
-void run_dbg()
+/*void run_dbg()
 {
 	consoleDemoInit();
 	fsInit();
@@ -42,7 +42,7 @@ void run_dbg()
 	}
 	
 	exit(0);
-}
+}*/
 
 int main(int argc, char ** argv)
 {
@@ -77,9 +77,9 @@ int main(int argc, char ** argv)
     playerSwapBuffers();
     playerClear();
     displayThumbnail();
-
+	
     while(1)
-    {
+    {		
 		swiWaitForVBlank();
 		scanKeys();
         uint32 input=keysDown();
@@ -114,6 +114,8 @@ int main(int argc, char ** argv)
 
         if(PlayerState==PLAYING)
         {
+			//c_goto(0,0);
+			//iprintf("%i %i %i", ppm_FramePlaybackSpeed, frameTime[ppm_FramePlaybackSpeed], counter);
             counter++;
             if(counter==1)
             {
