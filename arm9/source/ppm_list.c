@@ -90,9 +90,7 @@ ItemsChunk* load_ppm_files_chunk(int id)
 	for(int i=0;i<CHUNK_SIZE;i++) 
 	{
 		(*chk)[i] = NULL;
-	}
-	if(ppm_current_path==NULL) 
-		return chk;
+	}	
 	
 	chk_index_pair cip;
 	cip.chk = chk;
@@ -105,6 +103,7 @@ ItemsChunk* load_ppm_files_chunk(int id)
 		offset = chk_offset[id];
 		if(offset==-1) 
 		{
+			return chk;
 			c_displayError("Chunk Id Error.", true);
 		}
 	}

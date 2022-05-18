@@ -51,6 +51,7 @@ void FilesTabDrawing()
 {
     consoleSelect(&consoleBG); c_cls();
     consoleSelect(&consoleFG); c_cls();
+	iprintf("\x1b[39m");
     c_writeFrame();
     c_goto(0,13);
     iprintf("Files");
