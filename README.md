@@ -1,12 +1,13 @@
 
 
-# <img src="icon.bmp"></img> FSPDS V0.2.0
+# <img src="icon.bmp"></img> FSPDS
+
+## Flipnote Studio Player for Nintendo DS
+
 <img alt="GitHub Top Language" src="https://img.shields.io/github/languages/top/NotImplementedLife/FSPDS" /> <img alt="Github License" src="https://img.shields.io/github/license/NotImplementedLife/FSPDS" /> <img alt="GitHub Issues" src="https://img.shields.io/github/issues/NotImplementedLife/FSPDS" /> <img alt="GitHub Closed Issues" src="https://img.shields.io/github/issues-closed/NotImplementedLife/FSPDS" /> <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/NotImplementedLife/FSPDS" /> 
 
 <a href="https://notimplementedlife.itch.io/fspds">![itch.io](https://img.shields.io/badge/Itch-%23FF0B34.svg?style=for-the-badge&logo=Itch.io&logoColor=white)</a>
 <a href="https://youtu.be/3NL79zHFvF8">![YouTube](https://img.shields.io/badge/YouTube-%23FF0000.svg?style=for-the-badge&logo=YouTube&logoColor=white)</a>
-
-## Flipnote Studio Player for Nintendo DS
 
 Note from January 2021 : *"Unburied" dekvkitPro from a 3yo hard disk backup, so I decided to give it a go :)*
 
