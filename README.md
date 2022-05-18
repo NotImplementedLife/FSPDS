@@ -1,7 +1,9 @@
 
 
 # <img src="icon.bmp"></img> FSPDS V0.2.0
-<img alt="GitHub Top Language" src="https://img.shields.io/github/languages/top/NotImplementedLife/FSPDS" /> <img alt="Github License" src="https://img.shields.io/github/license/NotImplementedLife/FSPDS" /> <img alt="GitHub Issues" src="https://img.shields.io/github/issues/NotImplementedLife/FSPDS" /> <img alt="GitHub Closed Issues" src="https://img.shields.io/github/issues-closed/NotImplementedLife/FSPDS" /> <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/NotImplementedLife/FSPDS" />
+<img alt="GitHub Top Language" src="https://img.shields.io/github/languages/top/NotImplementedLife/FSPDS" /> <img alt="Github License" src="https://img.shields.io/github/license/NotImplementedLife/FSPDS" /> <img alt="GitHub Issues" src="https://img.shields.io/github/issues/NotImplementedLife/FSPDS" /> <img alt="GitHub Closed Issues" src="https://img.shields.io/github/issues-closed/NotImplementedLife/FSPDS" /> <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/NotImplementedLife/FSPDS" /> 
+
+<a href="https://notimplementedlife.itch.io/fspds">![itch.io](https://img.shields.io/badge/Itch-%23FF0B34.svg?style=for-the-badge&logo=Itch.io&logoColor=white)</a>
 
 ## Flipnote Studio Player for Nintendo DS
 
