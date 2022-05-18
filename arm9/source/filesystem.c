@@ -61,10 +61,10 @@ void long_to_size_string(char dest[7], long sz)
 
 void fsInit()
 {
-	if(!nitroFSInit(NULL)) {
+	/*if(!nitroFSInit(NULL)) {
 		c_displayError("Fatal :\n\nNTFS init failed.",true);
 	}
-	return;
+	return;*/
 	if(!fatInitDefault())
     {
         c_displayError("Fatal :\n\nFAT init failed.",true);
