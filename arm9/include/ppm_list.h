@@ -15,7 +15,9 @@ extern ListItemsSource path_selector_source;
 extern const ppm_location ppm_locations[];
 extern const int ppm_locations_length;
 
-extern char* ppm_current_path;
+extern const char* ppm_current_path;
+
+void set_current_path(const char* path);
 
 char* get_selected_file_name();
 int get_selected_file_index();

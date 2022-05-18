@@ -21,7 +21,15 @@ const int ppm_locations_length = sizeof(ppm_locations) / sizeof(ppm_location);
 UiList path_selector_list;
 ListItemsSource path_selector_source;
 
-char* ppm_current_path = "/flipnotes";
+void ppm_list_reset();
+
+const char *ppm_current_path = ppm_locations[0].path;
+
+void set_current_path(const char* path)
+{
+	ppm_current_path = path;
+	ppm_list_reset();
+}
 
 char* get_selected_file_name()
 {
@@ -30,7 +38,7 @@ char* get_selected_file_name()
 	strcpy(result, ppm_current_path);
 	strcat(result, "/");	
 	file_data* fd = (file_data*)lis_get_selected_item(&ppm_source);
-	strcat(result, fd->name);
+	strcat(result, fd->name);	
 	return result;
 }
 
@@ -67,6 +75,15 @@ void discovered_ppm_callback(file_data* fd, void* arg)
 	(*(cip->chk))[cip->index++] = fd;
 }
 
+void ppm_list_reset()
+{
+	chk_offset[0] = 0;
+	for(int i=1;i<MAX_CHUNKS;i++)
+		chk_offset[i]=-1;
+	uilist_reset(&ppm_list);
+	lis_select(&ppm_source, 0);	
+}
+
 ItemsChunk* load_ppm_files_chunk(int id) 
 {		
 	ItemsChunk* chk = malloc(sizeof(ItemsChunk));	
@@ -74,6 +91,8 @@ ItemsChunk* load_ppm_files_chunk(int id)
 	{
 		(*chk)[i] = NULL;
 	}
+	if(ppm_current_path==NULL) 
+		return chk;
 	
 	chk_index_pair cip;
 	cip.chk = chk;
@@ -207,7 +226,7 @@ void path_write_entry(void* item, int listpos, int is_highlighted)
     {
         c_goto(1+3*listpos+i,1);
         for(int j=0;j<30;j++) iprintf("\x02");
-    }
+    }	
 	
 	consoleSelect(&consoleFG);
 	c_goto(1+3*listpos+1, 2);	

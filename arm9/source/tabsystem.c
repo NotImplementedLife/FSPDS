@@ -82,6 +82,13 @@ void FilesTabKeyDown(u32 input)
         CurrentTab->loadingProc();
         CurrentTab->drawingProc();
     }
+	else if(input & KEY_B)
+	{
+		CurrentTab->leavingProc();
+		CurrentTab=&PathSelectorTab;
+		CurrentTab->loadingProc();
+		CurrentTab->drawingProc();	
+	}
 }
 
 void InfoTabLoading()
@@ -261,7 +268,7 @@ void PathSelectorTabKeyDown(u32 input)
 	{
 		int index = (int)lis_get_selected_item(&path_selector_source);
 		index--;		
-		strcpy(ppm_current_path, ppm_locations[index].path);		
+		set_current_path(ppm_locations[index].path);
 		CurrentTab->leavingProc();
 		CurrentTab=&FilesTab;
 		CurrentTab->loadingProc();

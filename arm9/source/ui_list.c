@@ -149,5 +149,22 @@ void uilist_write_page(UiList* ul)
     }
 }
 
+void uilist_reset(UiList* ul)
+{
+	ul->lis->release_chunk(ul->lis->previous);
+	ul->lis->release_chunk(ul->lis->current);
+	ul->lis->release_chunk(ul->lis->next);
+	ul->lis->release_chunk(ul->lis->next2);
+	
+	ul->lis->previous = NULL;
+	ul->lis->current = NULL;
+	ul->lis->next = NULL;
+	ul->lis->next2 = NULL;
+	ul->lis->current_chunk_id = -100;	
+	ul->lis->items_count = 0;
+	ul->lis->selected_index=-1;	
+	ul->top_visible = 0;
+	
+}
 
 

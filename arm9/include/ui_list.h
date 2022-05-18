@@ -52,6 +52,8 @@ typedef struct
 
 void uilist_init(UiList* ul);
 
+void uilist_reset(UiList* ul);
+
 void uilist_set_write_entry_proc(UiList* ul, write_entry_proc wr_ent_proc);
 
 void uilist_attach_lis(UiList* ul, ListItemsSource* lis);

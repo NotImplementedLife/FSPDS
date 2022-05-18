@@ -73,6 +73,7 @@ void fsInit()
 
 long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_file_callback callback, void* arg)
 {
+	if(source==NULL) return -1;
     DIR *root;
     struct dirent *entry;
     root=opendir(source);		
