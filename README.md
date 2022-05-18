@@ -1,6 +1,7 @@
 
 
 # <img src="icon.bmp"></img> FSPDS V0.2.0
+<img alt="GitHub Top Language" src="https://img.shields.io/github/languages/top/NotImplementedLife/FSPDS" /> <img alt="Github License" src="https://img.shields.io/github/license/NotImplementedLife/FSPDS" /> <img alt="GitHub Issues" src="https://img.shields.io/github/issues/NotImplementedLife/FSPDS" /> <img alt="GitHub Closed Issues" src="https://img.shields.io/github/issues-closed/NotImplementedLife/FSPDS" /> <img alt="GitHub Last Commit" src="https://img.shields.io/github/last-commit/NotImplementedLife/FSPDS" />
 
 ## Flipnote Studio Player for Nintendo DS
 
