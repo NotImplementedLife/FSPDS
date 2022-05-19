@@ -13,7 +13,8 @@ const ppm_location ppm_locations[] =
 	{ "/flipnotes", "    Default FSPDS path" },
 	{ "/private/ds/app/4b475556", "    Flipnote Studio EU/AU SD" },
 	{ "/private/ds/app/4B475545", "    Flipnote Studio NA SD" },
-	{ "/private/ds/app/4B47554A", "    Flipnote Studio JP SD" }
+	{ "/private/ds/app/4B47554A", "    Flipnote Studio JP SD" },	
+	{ "/", "About FSPDS"}
 };
 
 const int ppm_locations_length = sizeof(ppm_locations) / sizeof(ppm_location);
@@ -133,14 +134,14 @@ ItemsChunk* load_path_chunk(int id)
 	{
 		(*chk)[i]=NULL;
 	}
-	
+	int k=0;
 	for(int i=0;i<ppm_locations_length;i++)
 	{	
 		DIR* dir = opendir(ppm_locations[i].path);
 		if (dir) {
 			// pass int as void*, not sure how safe is, but I can't think it better :))
 			// at least make sure it is not null 
-			(*chk)[i]=(void*)(i+1); 		
+			(*chk)[k++]=(void*)(i+1);
 			closedir(dir);
 		} else if (ENOENT == errno) {
 			/* Directory does not exist. */
@@ -177,7 +178,7 @@ void ppm_write_entry(void* item, int listpos, int is_highlighted)
         return;
 	}
 		
-	file_data* fd = (file_data*)item;	
+	file_data* fd = (file_data*)item;		
 	
 	consoleSelect(&consoleBG);
     iprintf(is_highlighted?"\x1b[39m":"\x1b[30m");
@@ -218,7 +219,7 @@ void path_write_entry(void* item, int listpos, int is_highlighted)
         return;
 	}
 	int index = (int)item;
-	index--;
+	index--;	
 	
 	consoleSelect(&consoleBG);	
     iprintf(is_highlighted?"\x1b[39m":"\x1b[30m");

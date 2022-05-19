@@ -44,14 +44,20 @@ ConsoleTab FilesTab;
 ConsoleTab InfoTab;
 ConsoleTab PlayTab;
 ConsoleTab PathSelectorTab;
+ConsoleTab AboutTab;
 
 void TabNoAction() { }
 
 int files_tab_empty = 0;
 
+void FilesTabLoading()
+{   
+	displayThumbnail(); 
+}
+
 void FilesTabDrawing()
-{
-    consoleSelect(&consoleBG); c_cls();
+{		
+	consoleSelect(&consoleBG); c_cls();
     consoleSelect(&consoleFG); c_cls();
 	iprintf("\x1b[39m");
     c_writeFrame();
@@ -62,18 +68,19 @@ void FilesTabDrawing()
 	if(ppm_loadMetadata()!=0) // try to load the first ppm file (pos 0 in ppm list), if exists
 	{
 		files_tab_empty = 1;
-		c_goto(8,9);
+		char* msg=malloc(256);
+		strcpy(msg,"Folder is empty\nThere are no flipnotes here\n\n\n\n");
+		strcat(msg, ppm_current_path);
+		c_displayError(msg,false);
+		free(msg);
+		/*c_goto(8,9);
 		iprintf("Folder is empty");
 		c_goto(13,5);
 		iprintf("There are no flipnotes");
 		c_goto(14,14);
-		iprintf("here");
+		iprintf("here");*/
+		return;
 	}
-}
-
-void FilesTabLoading()
-{
-	displayThumbnail();
 }
 
 void FilesTabKeyDown(u32 input)
@@ -287,18 +294,52 @@ void PathSelectorTabKeyDown(u32 input)
 	else if(input & KEY_UP)
 	{
 		lis_select(&path_selector_source, path_selector_source.selected_index-1);
-		uilist_write_page(&path_selector_list);  ;
+		uilist_write_page(&path_selector_list); 
 	}
 	else if(input & KEY_A)
 	{
 		int index = (int)lis_get_selected_item(&path_selector_source);
 		index--;		
+		if(strcmp(ppm_locations[index].description,"About FSPDS")==0)
+		{
+			CurrentTab->leavingProc();
+			CurrentTab=&AboutTab;
+			CurrentTab->loadingProc();
+			CurrentTab->drawingProc();					
+			return;
+		}
 		set_current_path(ppm_locations[index].path);
 		CurrentTab->leavingProc();
 		CurrentTab=&FilesTab;
 		CurrentTab->loadingProc();
 		CurrentTab->drawingProc();		
 	}
+}
+
+#include "version.h"
+
+void AboutTabDrawing()
+{
+	consoleSelect(&consoleBG); c_cls();
+    consoleSelect(&consoleFG); c_cls();
+	iprintf("\x1b[39m");
+    c_writeFrame();
+    c_goto(0,13);
+    iprintf("About");
+	c_goto(2,2);
+	iprintf("Build V%u.%u.%lu.%c",MAJOR, MINOR, BUILD, BUILD_TYPE);	
+	c_goto(3,2);
+	iprintf("Created by:");
+	c_goto(4,2);
+	iprintf("    NotImplementedLife");
+}
+
+void AboutTabKeyDown(u32 input)
+{
+	CurrentTab->leavingProc();
+	CurrentTab=&PathSelectorTab;
+	CurrentTab->loadingProc();
+	CurrentTab->drawingProc();	
 }
 
 void initTabs()
@@ -328,12 +369,17 @@ void initTabs()
     PlayTab.leavingProc=PlayTabLeaving;
     PlayTab.left=&InfoTab;
     PlayTab.right=&FilesTab;
-	
+		
 	PathSelectorTab.loadingProc = TabNoAction;
 	PathSelectorTab.drawingProc = PathSelectorDrawing;
 	PathSelectorTab.keyDownProc = PathSelectorTabKeyDown;
 	PathSelectorTab.leavingProc = TabNoAction;
 
+	AboutTab.loadingProc=TabNoAction;
+    AboutTab.drawingProc=AboutTabDrawing;
+    AboutTab.keyDownProc=AboutTabKeyDown;
+    AboutTab.touchRdProc=TabNoAction;
+    AboutTab.leavingProc=TabNoAction;
 
     CurrentTab=&PathSelectorTab;
     //CurrentTab=&FilesTab;
