@@ -25,6 +25,8 @@ endif
 
 .PHONY: arm7/$(TARGET).elf arm9/$(TARGET).elf
 
+TARGET_BUILD_VERSION := ${shell python build_counter.py}
+
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
@@ -40,7 +42,7 @@ else
 $(TARGET).nds	:	arm7/$(TARGET).elf arm9/$(TARGET).elf
 	@ndstool -7 arm7/$(TARGET).elf -9 arm9/$(TARGET).elf -b $(GAME_ICON) "$(GAME_TITLE)" -c $(TARGET).nds
 	@echo built ... $(notdir $@)
-	mv $(TARGET).nds $(TARGET)-V${shell python build_counter.py}.nds
+	mv $(TARGET).nds $(TARGET)-V$(TARGET_BUILD_VERSION).nds
 endif
 
 #---------------------------------------------------------------------------------
