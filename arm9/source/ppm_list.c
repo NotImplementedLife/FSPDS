@@ -33,11 +33,12 @@ void set_current_path(const char* path)
 
 char* get_selected_file_name()
 {
+	file_data* fd = (file_data*)lis_get_selected_item(&ppm_source);
+	if(fd==NULL) return NULL;
 	int dir_path_len = strlen(ppm_current_path);
 	char* result = malloc(dir_path_len + 33);
 	strcpy(result, ppm_current_path);
-	strcat(result, "/");	
-	file_data* fd = (file_data*)lis_get_selected_item(&ppm_source);
+	strcat(result, "/");		
 	strcat(result, fd->name);	
 	return result;
 }
@@ -72,7 +73,7 @@ typedef struct
 void discovered_ppm_callback(file_data* fd, void* arg)
 {
 	chk_index_pair* cip = (chk_index_pair*)arg;
-	(*(cip->chk))[cip->index++] = fd;
+	(*(cip->chk))[cip->index++] = fd;	
 }
 
 void ppm_list_reset()

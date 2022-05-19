@@ -47,6 +47,8 @@ ConsoleTab PathSelectorTab;
 
 void TabNoAction() { }
 
+int files_tab_empty = 0;
+
 void FilesTabDrawing()
 {
     consoleSelect(&consoleBG); c_cls();
@@ -56,6 +58,17 @@ void FilesTabDrawing()
     c_goto(0,13);
     iprintf("Files");
 	uilist_write_page(&ppm_list);    
+	files_tab_empty = 0;
+	if(ppm_loadMetadata()!=0)
+	{
+		files_tab_empty = 1;
+		c_goto(11,9);
+		iprintf("Folder is empty");
+		c_goto(13,5);
+		iprintf("There are no flipnotes");
+		c_goto(14,14);
+		iprintf("here");
+	}
 }
 
 void FilesTabLoading()
@@ -64,17 +77,26 @@ void FilesTabLoading()
 }
 
 void FilesTabKeyDown(u32 input)
-{
+{	
     if(input & KEY_RIGHT)
-        nextPage();
+	{
+        if(!files_tab_empty) nextPage();
+	}
     else if(input & KEY_LEFT)
-        prevPage();
+	{
+        if(!files_tab_empty) prevPage();
+	}
     else if(input & KEY_DOWN)
-        nextEntry();
+	{
+        if(!files_tab_empty) nextEntry();
+	}
     else if(input & KEY_UP)
-        prevEntry();
+	{
+        if(!files_tab_empty) prevEntry();
+	}
     else if(input & KEY_A)
     {
+		if(files_tab_empty) return;
         PlayerState=PLAYING;
         PlayerFrameIndex=0;
         PlayerForceAnimationReload=true;
@@ -133,10 +155,11 @@ void timerCallBack()
     sound_frame_counter+=4;
 }
 
-void loadFlipnote()
+int loadFlipnote()
 {
     soundKill(BGMId);
-    ppm_loadMetadata();
+    if(ppm_loadMetadata()!=0)
+		return -1;
     ppm_loadAnimationData();
     ppm_loadSoundData();
     PlayerForceAnimationReload=false;
@@ -147,6 +170,7 @@ void loadFlipnote()
 	/// due to many timer interrupts inside vBlank
 	timerStart(0, ClockDivider_1, TIMER_FREQ(soundFreq/4), timerCallBack);
 	sound_frame_counter = 0;
+	return 0;
 }
 
 void PlayTabLoading()

@@ -1,6 +1,6 @@
 #pragma once
 
-void ppm_loadMetadata();
+int ppm_loadMetadata();
 
 void ppm_loadAnimationData();
 

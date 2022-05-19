@@ -61,10 +61,10 @@ void long_to_size_string(char dest[7], long sz)
 
 void fsInit()
 {
-	/*if(!nitroFSInit(NULL)) {
+	if(!nitroFSInit(NULL)) {
 		c_displayError("Fatal :\n\nNTFS init failed.",true);
 	}
-	return;*/
+	return;
 	if(!fatInitDefault())
     {
         c_displayError("Fatal :\n\nFAT init failed.",true);
@@ -119,7 +119,7 @@ long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_fil
 						if((u32)fd < 0x00200000) 
 						{
 							//c_displayError(fn, true);
-							c_displayError("MALLOC FAILED", false);
+							c_displayError("MALLOC FAILED", false); // here
 							c_goto(10,2);
 							if(fd==NULL)
 								iprintf("NULL");
