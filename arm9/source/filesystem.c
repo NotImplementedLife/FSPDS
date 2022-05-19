@@ -71,6 +71,14 @@ void fsInit()
     }	
 }
 
+long get_file_size(const char* path)
+{	
+	FILE* fp=fopen(path, "rb");
+	long fsize = lseek(fileno(fp), 0, SEEK_END)+1;
+	fclose(fp);
+	return fsize;
+}
+
 long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_file_callback callback, void* arg)
 {	
 	if(source==NULL) 
@@ -105,13 +113,8 @@ long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_fil
                 if(strlen(entry->d_name)==28 && strcmp(".ppm", entry->d_name+24)==0)
                 {					                   					
                     strcpy(fn + ppm_offset, entry->d_name);
-					//iprintf("%s\n", entry->d_name);
-                    //FILE* fp=fopen(fn, "rb");
-                    //fseek(fp, 0L, SEEK_END);
-                    //long fsize=ftell(fp);					
-					//fclose(fp);					
-					long fsize=1;
-					//iprintf("%i\n", fsize);
+					
+					long fsize = get_file_size(fn);					
                     /// Accept only files under 1MB
                     if(fsize<=1024*1024)
                     {					
