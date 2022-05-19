@@ -59,10 +59,10 @@ void FilesTabDrawing()
     iprintf("Files");
 	uilist_write_page(&ppm_list);    
 	files_tab_empty = 0;
-	if(ppm_loadMetadata()!=0)
+	if(ppm_loadMetadata()!=0) // try to load the first ppm file (pos 0 in ppm list), if exists
 	{
 		files_tab_empty = 1;
-		c_goto(11,9);
+		c_goto(8,9);
 		iprintf("Folder is empty");
 		c_goto(13,5);
 		iprintf("There are no flipnotes");
