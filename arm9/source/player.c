@@ -59,8 +59,13 @@ void playerClear()
 }
 
 void displayThumbnail()
-{
-	char* fn = get_selected_file_name();
+{	
+	char* fn = get_selected_file_name();	
+	if(fn==NULL)
+	{		
+		return;
+	}
+	
     FILE* fp=fopen(fn,"rb");
     fseek(fp,0xA0,SEEK_SET);
     u8 bytes[1536];

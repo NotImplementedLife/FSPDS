@@ -71,12 +71,13 @@ int main(int argc, char ** argv)
 
 	// error source if no flipnotes have been loaded:       
     ppm_loadMetadata();
-
-    CurrentTab->drawingProc();
+	
     playerClear();
     playerSwapBuffers();
     playerClear();
-    displayThumbnail();
+	
+	CurrentTab->loadingProc();
+    CurrentTab->drawingProc();    
 	
     while(1)
     {		
@@ -89,17 +90,23 @@ int main(int argc, char ** argv)
         }
         if(input & KEY_L)
         {
-            CurrentTab->leavingProc();
-            CurrentTab=CurrentTab->left;
-            CurrentTab->loadingProc();
-            CurrentTab->drawingProc();
+			if(CurrentTab->left !=NULL)
+			{
+				CurrentTab->leavingProc();
+				CurrentTab=CurrentTab->left;
+				CurrentTab->loadingProc();
+				CurrentTab->drawingProc();
+			}
         }
         else if (input & KEY_R)
         {
-            CurrentTab->leavingProc();
-            CurrentTab=CurrentTab->right;
-            CurrentTab->loadingProc();
-            CurrentTab->drawingProc();
+			if(CurrentTab->right !=NULL)
+			{
+				CurrentTab->leavingProc();
+				CurrentTab=CurrentTab->right;
+				CurrentTab->loadingProc();
+				CurrentTab->drawingProc();
+			}
         }
         else if (input & KEY_TOUCH)
         {
@@ -114,8 +121,6 @@ int main(int argc, char ** argv)
 
         if(PlayerState==PLAYING)
         {
-			//c_goto(0,0);
-			//iprintf("%i %i %i", ppm_FramePlaybackSpeed, frameTime[ppm_FramePlaybackSpeed], counter);
             counter++;
             if(counter==1)
             {

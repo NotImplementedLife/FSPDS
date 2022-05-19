@@ -4,9 +4,13 @@
 #include "vars.h"
 #include "ppm_list.h"
 
-void ppm_loadMetadata()
+int ppm_loadMetadata()
 {
 	char* fn = get_selected_file_name();    
+	if(fn==NULL)
+	{		
+		return -1;
+	}
     FILE* fp=fopen(fn,"rb");
     // Parse header
     fread(ppmHead_Magic,4,1,fp);  ppmHead_Magic[4]=0;
@@ -34,11 +38,16 @@ void ppm_loadMetadata()
     ppm_FramePlaybackSpeed=8-ppm_FramePlaybackSpeed;
     fclose(fp);
 	free(fn);
+	return 0;
 }
 
 void ppm_loadAnimationData()
 {
     char* fn = get_selected_file_name();    
+	if(fn==NULL)
+	{		
+		return;
+	}
     FILE* PPM_Current=fopen(fn,"rb");
     fseek(PPM_Current,0x4,SEEK_SET);
     fread(&ppmHead_AnimationDataSize,4,1,PPM_Current);
@@ -61,6 +70,10 @@ void ppm_loadAnimationData()
 void ppm_loadSoundData()
 {
     char* fn = get_selected_file_name();    
+	if(fn==NULL)
+	{		
+		return;
+	}
     FILE* PPM_Current=fopen(fn,"rb");
     u32 offset=0x6A0+ppmHead_AnimationDataSize;
     fseek(PPM_Current,offset,SEEK_SET);

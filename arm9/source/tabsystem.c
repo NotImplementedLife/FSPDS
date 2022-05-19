@@ -9,68 +9,6 @@
 #include "vars.h"
 #include "ppm_list.h"
 
-void ppm_write_entry(void* item, int listpos, int is_highlighted)
-{			
-	if(item==NULL) 
-	{
-		consoleSelect(&consoleFG);
-        for(int i=0;i<3-2*(listpos==7);i++)
-        {
-            c_goto(1+3*listpos+i,1);
-            for(int j=1;j<31;j++) iprintf(" ");
-        }
-        consoleSelect(&consoleBG);
-        for(int i=0;i<3-2*(listpos==7);i++)
-        {
-            c_goto(1+3*listpos+i,1);
-            for(int j=1;j<31;j++) iprintf(" ");
-        }		
-        return;
-	}
-		
-	file_data* fd = (file_data*)item;	
-	
-	consoleSelect(&consoleBG);
-    iprintf(is_highlighted?"\x1b[39m":"\x1b[30m");
-    for(int i=0;i<3;i++)
-    {
-        c_goto(1+3*listpos+i,1);
-        for(int j=0;j<30;j++) iprintf("\x02");
-    }
-    consoleSelect(&consoleFG);
-    c_goto(1+3*listpos,2);
-    iprintf(is_highlighted?"\x1b[30m":"\x1b[39m");
-    iprintf(fd->name);	
-    if(listpos==7) return;
-    c_goto(3+3*listpos,1);
-	iprintf("                              ");
-	c_goto(2+3*listpos,1);
-	iprintf("                              ");
-    c_goto(2+3*listpos,20);	
-    iprintf(fd->size_str);
-}
-
-/*void ppmwr(void* item, int listpos, int is_highlighted)
-{				
-	c_goto(1+listpos,1);
-	if(is_highlighted) iprintf("*");
-	else iprintf(" ");
-	if(item==NULL) 
-	{				
-		iprintf("[NULL]");
-        return;
-	}
-	file_data* fd = (file_data*)item;			    
-	iprintf(fd->name);	
-	
-	if(is_highlighted)
-	{
-		c_goto(0,0);
-		iprintf("%p", (void*)fd->name);
-	}
-	return;	
-}*/
-
 void nextPage()
 {
 	lis_select(&ppm_source, (ppm_source.selected_index/7+1)*7);
@@ -105,31 +43,67 @@ ConsoleTab* CurrentTab;
 ConsoleTab FilesTab;
 ConsoleTab InfoTab;
 ConsoleTab PlayTab;
+ConsoleTab PathSelectorTab;
+ConsoleTab AboutTab;
 
 void TabNoAction() { }
 
+int files_tab_empty = 0;
+
+void FilesTabLoading()
+{   
+	displayThumbnail(); 
+}
+
 void FilesTabDrawing()
-{
-    consoleSelect(&consoleBG); c_cls();
+{		
+	consoleSelect(&consoleBG); c_cls();
     consoleSelect(&consoleFG); c_cls();
+	iprintf("\x1b[39m");
     c_writeFrame();
     c_goto(0,13);
     iprintf("Files");
 	uilist_write_page(&ppm_list);    
+	files_tab_empty = 0;
+	if(ppm_loadMetadata()!=0) // try to load the first ppm file (pos 0 in ppm list), if exists
+	{
+		files_tab_empty = 1;
+		char* msg=malloc(256);
+		strcpy(msg,"Folder is empty\nThere are no flipnotes here\n\n\n\n");
+		strcat(msg, ppm_current_path);
+		c_displayError(msg,false);
+		free(msg);
+		/*c_goto(8,9);
+		iprintf("Folder is empty");
+		c_goto(13,5);
+		iprintf("There are no flipnotes");
+		c_goto(14,14);
+		iprintf("here");*/
+		return;
+	}
 }
 
 void FilesTabKeyDown(u32 input)
-{
+{	
     if(input & KEY_RIGHT)
-        nextPage();
+	{
+        if(!files_tab_empty) nextPage();
+	}
     else if(input & KEY_LEFT)
-        prevPage();
+	{
+        if(!files_tab_empty) prevPage();
+	}
     else if(input & KEY_DOWN)
-        nextEntry();
+	{
+        if(!files_tab_empty) nextEntry();
+	}
     else if(input & KEY_UP)
-        prevEntry();
+	{
+        if(!files_tab_empty) prevEntry();
+	}
     else if(input & KEY_A)
     {
+		if(files_tab_empty) return;
         PlayerState=PLAYING;
         PlayerFrameIndex=0;
         PlayerForceAnimationReload=true;
@@ -138,6 +112,13 @@ void FilesTabKeyDown(u32 input)
         CurrentTab->loadingProc();
         CurrentTab->drawingProc();
     }
+	else if(input & KEY_B)
+	{
+		CurrentTab->leavingProc();
+		CurrentTab=&PathSelectorTab;
+		CurrentTab->loadingProc();
+		CurrentTab->drawingProc();	
+	}
 }
 
 void InfoTabLoading()
@@ -181,10 +162,11 @@ void timerCallBack()
     sound_frame_counter+=4;
 }
 
-void loadFlipnote()
+int loadFlipnote()
 {
     soundKill(BGMId);
-    ppm_loadMetadata();
+    if(ppm_loadMetadata()!=0)
+		return -1;
     ppm_loadAnimationData();
     ppm_loadSoundData();
     PlayerForceAnimationReload=false;
@@ -195,6 +177,7 @@ void loadFlipnote()
 	/// due to many timer interrupts inside vBlank
 	timerStart(0, ClockDivider_1, TIMER_FREQ(soundFreq/4), timerCallBack);
 	sound_frame_counter = 0;
+	return 0;
 }
 
 void PlayTabLoading()
@@ -290,13 +273,80 @@ void PlayTabLeaving()
     }
 }
 
+void PathSelectorDrawing()
+{
+	consoleSelect(&consoleBG); c_cls();
+    consoleSelect(&consoleFG); c_cls();
+    iprintf("\x1b[39m");
+    c_writeFrame();	    
+	c_goto(0,14);
+    iprintf("Path");
+	uilist_write_page(&path_selector_list);
+}
+
+void PathSelectorTabKeyDown(u32 input)
+{
+	if(input & KEY_DOWN)
+	{
+		lis_select(&path_selector_source, path_selector_source.selected_index+1);
+		uilist_write_page(&path_selector_list);   
+	}
+	else if(input & KEY_UP)
+	{
+		lis_select(&path_selector_source, path_selector_source.selected_index-1);
+		uilist_write_page(&path_selector_list); 
+	}
+	else if(input & KEY_A)
+	{
+		int index = (int)lis_get_selected_item(&path_selector_source);
+		index--;		
+		if(strcmp(ppm_locations[index].description,"About FSPDS")==0)
+		{
+			CurrentTab->leavingProc();
+			CurrentTab=&AboutTab;
+			CurrentTab->loadingProc();
+			CurrentTab->drawingProc();					
+			return;
+		}
+		set_current_path(ppm_locations[index].path);
+		CurrentTab->leavingProc();
+		CurrentTab=&FilesTab;
+		CurrentTab->loadingProc();
+		CurrentTab->drawingProc();		
+	}
+}
+
+#include "version.h"
+
+void AboutTabDrawing()
+{
+	consoleSelect(&consoleBG); c_cls();
+    consoleSelect(&consoleFG); c_cls();
+	iprintf("\x1b[39m");
+    c_writeFrame();
+    c_goto(0,13);
+    iprintf("About");
+	c_goto(2,2);
+	iprintf("Build V%u.%u.%lu.%c",MAJOR, MINOR, BUILD, BUILD_TYPE);	
+	c_goto(3,2);
+	iprintf("Created by:");
+	c_goto(4,2);
+	iprintf("    NotImplementedLife");
+}
+
+void AboutTabKeyDown(u32 input)
+{
+	CurrentTab->leavingProc();
+	CurrentTab=&PathSelectorTab;
+	CurrentTab->loadingProc();
+	CurrentTab->drawingProc();	
+}
+
 void initTabs()
 {	
-	initPPMLists();
-	uilist_set_write_entry_proc(&ppm_list, ppm_write_entry);
-	//uilist_set_write_entry_proc(&ppm_list, ppmwr);
+	initPPMLists();	
 	
-    FilesTab.loadingProc=TabNoAction;
+    FilesTab.loadingProc=FilesTabLoading;
     FilesTab.drawingProc=FilesTabDrawing;
     FilesTab.keyDownProc=FilesTabKeyDown;
     FilesTab.touchRdProc=TabNoAction;
@@ -319,7 +369,18 @@ void initTabs()
     PlayTab.leavingProc=PlayTabLeaving;
     PlayTab.left=&InfoTab;
     PlayTab.right=&FilesTab;
+		
+	PathSelectorTab.loadingProc = TabNoAction;
+	PathSelectorTab.drawingProc = PathSelectorDrawing;
+	PathSelectorTab.keyDownProc = PathSelectorTabKeyDown;
+	PathSelectorTab.leavingProc = TabNoAction;
 
+	AboutTab.loadingProc=TabNoAction;
+    AboutTab.drawingProc=AboutTabDrawing;
+    AboutTab.keyDownProc=AboutTabKeyDown;
+    AboutTab.touchRdProc=TabNoAction;
+    AboutTab.leavingProc=TabNoAction;
 
-    CurrentTab=&FilesTab;
+    CurrentTab=&PathSelectorTab;
+    //CurrentTab=&FilesTab;
 }
