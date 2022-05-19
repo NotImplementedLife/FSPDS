@@ -17,8 +17,7 @@ void c_writeFrame()
     iprintf("\025");
     for(int i=1;i<31;i++) iprintf("\004");
     iprintf("\023");
-    c_goto(23,3);
-    iprintf("V0.2.1 - Created by N\032I\032L");
+    c_goto(23,3);    
     //for(i=32;i--;) iprintf("\x02");
 }
 
