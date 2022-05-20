@@ -1,7 +1,8 @@
 #include "ppm_list.h"
 
-#include "filesystem.h"
+#include "filemanager.h"
 #include "console.h"
+#include "flipnote_provider.h"
 
 #include <stdlib.h>
 #include <dirent.h>
@@ -35,13 +36,11 @@ void set_current_path(const char* path)
 char* get_selected_file_name()
 {
 	file_data* fd = (file_data*)lis_get_selected_item(&ppm_source);
-	if(fd==NULL) return NULL;
-	int dir_path_len = strlen(ppm_current_path);
-	char* result = malloc(dir_path_len + 33);
-	strcpy(result, ppm_current_path);
-	strcat(result, "/");		
-	strcat(result, fd->name);	
-	return result;
+	if(fd==NULL) 
+	{
+		c_displayError("yeah",true);
+	}
+	return provider_get_flipnote_full_path(fd);
 }
 
 int get_selected_file_index()
@@ -72,7 +71,7 @@ typedef struct
 } chk_index_pair;
 
 void discovered_ppm_callback(file_data* fd, void* arg)
-{
+{	
 	chk_index_pair* cip = (chk_index_pair*)arg;
 	(*(cip->chk))[cip->index++] = fd;	
 }
@@ -91,27 +90,8 @@ ItemsChunk* load_ppm_files_chunk(int id)
 	ItemsChunk* chk = malloc(sizeof(ItemsChunk));	
 	for(int i=0;i<CHUNK_SIZE;i++) 
 	{
-		(*chk)[i] = NULL;
-	}	
-	
-	chk_index_pair cip;
-	cip.chk = chk;
-	cip.index = 0;
-	
-	
-	int offset = 0;
-	if(id>=0)
-	{		
-		offset = chk_offset[id];
-		if(offset==-1) 
-		{
-			return chk;
-			c_displayError("Chunk Id Error.", true);
-		}
-	}
-	
-	long len = loadFilesFrom(ppm_current_path, offset,  CHUNK_SIZE, discovered_ppm_callback, &cip);
-	chk_offset[id+1] = len;	
+		(*chk)[i] = provider_get_nth_flipnote((id<<CHUNK_MAGNITUDE)|i);		
+	}		
 	
 	return chk;
 }
@@ -120,7 +100,8 @@ void release_ppm_files_chunk(ItemsChunk* chunk)
 {
 	for(int i=0;i<CHUNK_SIZE;i++) 
 	{
-		free((*chunk)[i]);
+		//free((*chunk)[i]);
+		(*chunk)[i] = NULL;
 	}
 	free(chunk);
 }
@@ -196,8 +177,8 @@ void ppm_write_entry(void* item, int listpos, int is_highlighted)
 	iprintf("                              ");
 	c_goto(2+3*listpos,1);
 	iprintf("                              ");
-    c_goto(2+3*listpos,20);	
-    iprintf(fd->size_str);
+    c_goto(2+3*listpos,20);		
+	iprintf(fd->size_str);
 }
 
 void path_write_entry(void* item, int listpos, int is_highlighted)

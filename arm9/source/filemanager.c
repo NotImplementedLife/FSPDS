@@ -1,19 +1,30 @@
-#include "filesystem.h"
+#include "filemanager.h"
+
+#define NITRO
 
 #include <fat.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 
+#ifdef NITRO
 #include <filesystem.h>
+#endif
 
 #include "vars.h"
 #include "console.h"
 #include "player.h"
+#include "ppm_list.h"
 
 // Converts file size to string ( e.g. 2704 => "2.64KB" )
-void long_to_size_string(char dest[7], long sz)
+// dest-> array of length at least 7
+void long_to_size_string(char* dest, long sz)
 {
+	if(sz<0)
+	{
+		dest[0]='\0';
+		return;
+	}
     dest[5]='B';
     dest[6]='\0';
     for(int i=0;i<5;i++) dest[i]=' ';
@@ -61,22 +72,76 @@ void long_to_size_string(char dest[7], long sz)
 
 void fsInit()
 {
+	#ifdef NITRO
 	if(!nitroFSInit(NULL)) {
 		c_displayError("Fatal :\n\nNTFS init failed.",true);
-	}
-	return;
+	}	
+	#else
 	if(!fatInitDefault())
     {
         c_displayError("Fatal :\n\nFAT init failed.",true);
-    }	
+    }
+	#endif
 }
 
 long get_file_size(const char* path)
 {	
 	FILE* fp=fopen(path, "rb");
+	if(fp==NULL)
+	{
+		char* msg=malloc(256);
+		strcpy(msg, "Failed to open file\n\n");
+		strcat(msg, path);
+		c_displayError(msg, false);		
+		while(1) {swiWaitForVBlank();}		
+	}
 	long fsize = lseek(fileno(fp), 0, SEEK_END)+1;
 	fclose(fp);
 	return fsize;
+}
+
+void* __open_dir(const char* source, int seek_offset)
+{	
+	DIR* root = opendir(source);
+	if(!root)
+	{
+		c_displayError("Failed to open directory", true);
+	}
+	seekdir(root, seek_offset);	
+	return root;
+}
+
+file_data* __read_dir(void* dir, long* offset)
+{
+	struct dirent *entry;
+	while((entry=readdir(dir))!=NULL)
+	{
+		*offset = telldir(dir);
+        if(entry->d_name[0]=='.') // includes '.' and '..' special paths
+            continue;
+		if(entry->d_type == DT_REG)
+		{				
+			if(strlen(entry->d_name)==28 && strcmp(".ppm", entry->d_name+24)==0)
+			{					                   					                    											
+				file_data* fd = malloc(sizeof(file_data));
+				if((u32)fd < 0x00200000) 
+				{							
+					c_displayError("MALLOC FAILED", true);						
+				}					
+				strcpy(fd->name, entry->d_name);
+				fd->size = -1; // dummy size					
+				fd->size_str[0]='\0';												               
+				
+				return fd;
+			}
+		}		
+	}	
+	return NULL;
+}
+
+void __close_dir(void* dir)
+{
+	closedir(dir);	
 }
 
 long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_file_callback callback, void* arg)
@@ -84,57 +149,34 @@ long loadFilesFrom(const char* source, int nskip,  int max_files, discovered_fil
 	if(source==NULL) 
 	{		
 		return -1;
-	}
-	else
-	{		
-		//c_displayError(source,true);
-	}
+	}	
     DIR *root;
     struct dirent *entry;
     root=opendir(source);		
     if (root)
-    {
-		int ppm_offset = strlen(source);
-		char* fn = malloc(ppm_offset+32);
-		strcpy(fn, source);
-		strcat(fn, "/");
-		ppm_offset++;
-		
+    {			
 		int count = 0;
 		seekdir(root, nskip);
 		long result=0;
         while((entry=readdir(root))!=NULL && count<max_files)
         {
 			result = telldir(root);
-            if(strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0)
+            if(entry->d_name[0]=='.') // includes '.' and '..' special paths
                 continue;		
-            if(entry->d_type != DT_DIR)
+            if(entry->d_type == DT_REG)
             {				
                 if(strlen(entry->d_name)==28 && strcmp(".ppm", entry->d_name+24)==0)
-                {					                   					
-                    strcpy(fn + ppm_offset, entry->d_name);
-					
-					long fsize = get_file_size(fn);					
-                    /// Accept only files under 1MB
-                    if(fsize<=1024*1024)
-                    {					
-						file_data* fd = malloc(sizeof(file_data));
-						if((u32)fd < 0x00200000) 
-						{
-							//c_displayError(fn, true);
-							c_displayError("MALLOC FAILED", false); // here
-							c_goto(10,2);
-							if(fd==NULL)
-								iprintf("NULL");
-							else iprintf("%08p",fd);
-							while(1) { swiWaitForVBlank(); }
-						}
-                        strcpy(fd->name, entry->d_name);
-						fd->size = fsize;
-						long_to_size_string(fd->size_str, fsize);
-						callback(fd, arg);
-                        count++;						
-                    }
+                {					                   					                    											
+					file_data* fd = malloc(sizeof(file_data));
+					if((u32)fd < 0x00200000) 
+					{							
+						c_displayError("MALLOC FAILED", true);						
+					}					
+					strcpy(fd->name, entry->d_name);
+					fd->size = -1; // dummy size					
+					fd->size_str[0]='\0';
+					callback(fd, arg);
+					count++;						                    
                 }
             }
         }			

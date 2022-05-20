@@ -14,5 +14,6 @@ struct _ConsoleTab
 typedef struct _ConsoleTab ConsoleTab;
 
 extern ConsoleTab* CurrentTab;
+extern ConsoleTab FilesTab;
 
 void initTabs();

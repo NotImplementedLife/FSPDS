@@ -1,13 +1,14 @@
 #include "tabsystem.h"
 
 #include "console.h"
-#include "filesystem.h"
+#include "filemanager.h"
 #include "ppm.h"
 #include "info.h"
 #include "sound.h"
 #include "player.h"
 #include "vars.h"
 #include "ppm_list.h"
+#include "flipnote_provider.h"
 
 void nextPage()
 {
@@ -297,7 +298,7 @@ void PathSelectorTabKeyDown(u32 input)
 		uilist_write_page(&path_selector_list); 
 	}
 	else if(input & KEY_A)
-	{
+	{		
 		int index = (int)lis_get_selected_item(&path_selector_source);
 		index--;		
 		if(strcmp(ppm_locations[index].description,"About FSPDS")==0)
@@ -308,6 +309,7 @@ void PathSelectorTabKeyDown(u32 input)
 			CurrentTab->drawingProc();					
 			return;
 		}
+		provider_init(ppm_locations[index].path);
 		set_current_path(ppm_locations[index].path);
 		CurrentTab->leavingProc();
 		CurrentTab=&FilesTab;
