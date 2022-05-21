@@ -47,7 +47,7 @@ void provider_file_discovered(file_data* fd, void* arg)
 u8 file_size_checker_active = 0;
 int file_size_checker_index = 0;
 
-void start_loading_slot(int slot_id);
+int start_loading_slot(int slot_id);
 
 void provider_init(const char* flipnotes_path)
 {	
@@ -72,7 +72,7 @@ void provider_init(const char* flipnotes_path)
 	file_size_checker_active = 1;
 	file_size_checker_index = FILES_PER_SLOT;
 	
-	//start_loading_slot(NXT_SLOT);
+	start_loading_slot(NXT_SLOT);
 }
 
 u8 slot_half=0;
@@ -85,15 +85,19 @@ file_data* provider_get_nth_flipnote(int n)
 	if(crt_first-FILES_PER_SLOT<=n && n<crt_first)
 	{
 		rel_id = n-crt_first+FILES_PER_SLOT;
+		c_goto(23,0);
+		iprintf("PRV %i %i      ", n,rel_id);
 		result = PPM_FILES_SLOT[PRV_SLOT][rel_id];		
 	}
 	else if(crt_first <= n && n<crt_first+FILES_PER_SLOT)
-	{	
+	{			
 		rel_id = n-crt_first;
+		c_goto(23,0);
+		iprintf("CRT %i %i      ", n,rel_id);
 		result = PPM_FILES_SLOT[CRT_SLOT][rel_id];
 				
-		if(rel_id>=3*FILES_PER_SLOT/4)
-		{
+		if(rel_id>=FILES_PER_SLOT/2)
+		{			
 			if(slot_half==0)
 			{
 				slot_half = 1;
@@ -102,7 +106,16 @@ file_data* provider_get_nth_flipnote(int n)
 				CRT_SLOT = NXT_SLOT;			
 				NXT_SLOT = tmp;
 				CRT_GLOBAL++;
-				start_loading_slot(NXT_SLOT);
+				if(!start_loading_slot(NXT_SLOT))
+				{
+					// revert changes
+					slot_half = 0;
+					tmp = NXT_SLOT;
+					NXT_SLOT = CRT_SLOT;
+					CRT_SLOT = PRV_SLOT;			
+					PRV_SLOT = tmp;
+					CRT_GLOBAL--;
+				}
 			}
 		}
 		else slot_half=0;		
@@ -111,6 +124,8 @@ file_data* provider_get_nth_flipnote(int n)
 	else if(crt_first+FILES_PER_SLOT<=n && n<crt_first+2*FILES_PER_SLOT)
 	{		
 		rel_id = n-crt_first-FILES_PER_SLOT;
+		c_goto(23,0);
+		iprintf("NXT %i %i      ", n,rel_id);
 		result = PPM_FILES_SLOT[NXT_SLOT][rel_id];
 	}	
 	return result;
@@ -133,12 +148,12 @@ int global_slot_id = 0;
 int loading_dir_index = 0;
 void* loading_dir_ptr = NULL;
 
-void start_loading_slot(int slot_id)
+int start_loading_slot(int slot_id)
 {
 	if(loading_slot_active) 
 	{
 		c_displayError("Slot already loading",true);
-		return;
+		return 0;
 	}
 	for(int i=0;i<FILES_PER_SLOT;i++) 
 	{
@@ -148,13 +163,15 @@ void start_loading_slot(int slot_id)
 	
 	loading_slot_id = slot_id;
 	global_slot_id = get_global_slot_id(loading_slot_id);
-	if(global_slot_id<0) return;
-	if(global_slot_id>=MAX_SLOTS) return;
+	if(global_slot_id<0) return 0;
+	if(global_slot_id>=MAX_SLOTS) return 0;
 	long loading_dir_offset = SEEK_DIR_OFFSETS[global_slot_id];
+	if(loading_dir_offset<0) return 0;
 	
 	loading_dir_ptr = __open_dir(PPM_PATH, loading_dir_offset);	
 	loading_dir_index = 0;
 	loading_slot_active = 1;
+	return 1;
 }
 
 #include "console.h"
