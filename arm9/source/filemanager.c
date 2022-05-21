@@ -1,6 +1,6 @@
 #include "filemanager.h"
 
-#define NITRO
+//#define NITRO
 
 #include <fat.h>
 #include <stdlib.h>

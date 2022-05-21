@@ -57,6 +57,8 @@ void provider_init(const char* flipnotes_path)
 		for(int i=0;i<FILES_PER_SLOT;i++)
 			PPM_FILES_SLOT[s][i]=NULL;
 	}
+	for(int i=0;i<=MAX_SLOTS;i++)
+		SEEK_DIR_OFFSETS[i]=-1;
 	CRT_GLOBAL = 0;
 	PRV_SLOT = 0;
 	CRT_SLOT = 1;
@@ -76,6 +78,7 @@ void provider_init(const char* flipnotes_path)
 }
 
 u8 slot_half=0;
+u8 slot_half_p=0;
 file_data* provider_get_nth_flipnote(int n)
 {
 	if(n<0) return NULL;
@@ -85,16 +88,49 @@ file_data* provider_get_nth_flipnote(int n)
 	if(crt_first-FILES_PER_SLOT<=n && n<crt_first)
 	{
 		rel_id = n-crt_first+FILES_PER_SLOT;
+		result = PPM_FILES_SLOT[PRV_SLOT][rel_id];	
+		strcpy(result->size_str,"PRV");
 		c_goto(23,0);
-		iprintf("PRV %i %i      ", n,rel_id);
-		result = PPM_FILES_SLOT[PRV_SLOT][rel_id];		
+		iprintf("PRV %i %i  %i    ", n,rel_id, CRT_GLOBAL);
+		if(rel_id<FILES_PER_SLOT/2)
+		{
+			if(slot_half_p==0)
+			{
+				slot_half_p = 1;
+				int tmp = NXT_SLOT;
+				NXT_SLOT = CRT_SLOT;
+				CRT_SLOT = PRV_SLOT;			
+				PRV_SLOT = tmp;
+				CRT_GLOBAL--;
+				if(CRT_GLOBAL==0)
+				{
+					// clear previous slot (<0)
+					for(int i=0;i<FILES_PER_SLOT;i++) 
+					{
+						free(PPM_FILES_SLOT[PRV_SLOT][i]);
+						PPM_FILES_SLOT[PRV_SLOT][i] = NULL;
+					}
+				}
+				else if(!start_loading_slot(PRV_SLOT))
+				{
+					// revert changes				
+					tmp = PRV_SLOT;
+					PRV_SLOT = CRT_SLOT;
+					CRT_SLOT = NXT_SLOT;			
+					NXT_SLOT = tmp;
+					CRT_GLOBAL++;
+				}
+			}
+		}
+		else slot_half_p = 0;
 	}
 	else if(crt_first <= n && n<crt_first+FILES_PER_SLOT)
 	{			
 		rel_id = n-crt_first;
 		c_goto(23,0);
-		iprintf("CRT %i %i      ", n,rel_id);
+		iprintf("PRV %i %i  %i    ", n,rel_id, CRT_SLOT);
 		result = PPM_FILES_SLOT[CRT_SLOT][rel_id];
+		strcpy(result->size_str,"CRt");
 				
 		if(rel_id>=FILES_PER_SLOT/2)
 		{			
@@ -108,8 +144,7 @@ file_data* provider_get_nth_flipnote(int n)
 				CRT_GLOBAL++;
 				if(!start_loading_slot(NXT_SLOT))
 				{
-					// revert changes
-					slot_half = 0;
+					// revert changes					
 					tmp = NXT_SLOT;
 					NXT_SLOT = CRT_SLOT;
 					CRT_SLOT = PRV_SLOT;			
@@ -125,8 +160,9 @@ file_data* provider_get_nth_flipnote(int n)
 	{		
 		rel_id = n-crt_first-FILES_PER_SLOT;
 		c_goto(23,0);
-		iprintf("NXT %i %i      ", n,rel_id);
+		iprintf("PRV %i %i  %i    ", n,rel_id, CRT_SLOT);
 		result = PPM_FILES_SLOT[NXT_SLOT][rel_id];
+		strcpy(result->size_str,"NXT");
 	}	
 	return result;
 }
@@ -220,7 +256,8 @@ void provider_background(u8* trigger)
 		iprintf("%i    ",loading_dir_index);
 		if(loading_dir_index == FILES_PER_SLOT)
 		{
-			SEEK_DIR_OFFSETS[global_slot_id+1]=dir_offset;
+			if(SEEK_DIR_OFFSETS[global_slot_id+1]==-1)
+				SEEK_DIR_OFFSETS[global_slot_id+1]=dir_offset;
 			loading_slot_active = 0;
 			return;
 		}				
