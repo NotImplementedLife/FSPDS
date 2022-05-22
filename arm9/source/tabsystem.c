@@ -164,7 +164,7 @@ void timerCallBack()
 }
 
 int loadFlipnote()
-{
+{	
     soundKill(BGMId);
     if(ppm_loadMetadata()!=0)
 		return -1;

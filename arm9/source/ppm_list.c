@@ -34,11 +34,11 @@ void set_current_path(const char* path)
 }
 
 char* get_selected_file_name()
-{
+{	
 	file_data* fd = (file_data*)lis_get_selected_item(&ppm_source);
 	if(fd==NULL) 
 	{
-		c_displayError("yeah",true);
+		c_displayError("Selected file name empty", 1);
 	}
 	return provider_get_flipnote_full_path(fd);
 }

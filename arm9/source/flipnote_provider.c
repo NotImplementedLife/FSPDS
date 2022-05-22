@@ -13,16 +13,74 @@ const char* PPM_PATH = NULL;
 #define MAX_SLOTS (65536 / FILES_PER_SLOT)
 long SEEK_DIR_OFFSETS[MAX_SLOTS + 1];
 
-file_data* PPM_FILES_SLOT[3][FILES_PER_SLOT];
+s8 LOAD_SLOT[MAX_SLOTS+1];
 
-u8 CRT_SLOT;
-u8 PRV_SLOT;
-u8 NXT_SLOT;
-int CRT_GLOBAL;
+file_data* PPM_FILES_SLOT[5][FILES_PER_SLOT] = { 0 };
+int redundant[5] = { 0 };
+int chunk[5] = {-1, -1, -1, -1, -1};
 
-int get_global_slot_id(u8 slot)
+struct 
 {
-	return CRT_GLOBAL + (slot==PRV_SLOT ? -1 : 0) + (slot==NXT_SLOT ? 1 : 0);
+	u8 loading_chunk_active;
+	long loading_dir_offset;
+	void* loading_dir_ptr;
+	u16 loading_dir_index;
+	u16 loading_chunk_index;
+	u16 loading_target_slot;
+} background_provider_data = {0,0,NULL,0,0,0};
+
+int unload_slot(int slot_id)
+{	
+	for(int i=0;i<FILES_PER_SLOT;i++)
+	{
+		free(PPM_FILES_SLOT[slot_id][i]);
+		PPM_FILES_SLOT[slot_id][i]=NULL;
+	}
+	int chk_id = chunk[slot_id];
+	chunk[slot_id]=-1;
+	redundant[slot_id]=-1;
+	SEEK_DIR_OFFSETS[chk_id]=-1;	
+	return chk_id;
+}
+
+int load_to_slot(int chunk_id)
+{
+	int slot_id=5;
+	for(;slot_id--;)
+	{
+		if(chunk[slot_id]==-1)
+			break;
+	}
+	if(slot_id==-1) 
+		c_displayError("All slots are full", 1);
+	
+	if(chunk_id<0) return -1;
+	if(chunk_id>=MAX_SLOTS) return -1;		
+	
+	background_provider_data.loading_dir_offset = SEEK_DIR_OFFSETS[chunk_id];
+	if(background_provider_data.loading_dir_offset<0)
+	{
+		char* c="Cannot load directory";
+		c[0]='0'+chunk_id;
+		c_displayError(c,1);
+		return -1;		
+	}
+	
+	background_provider_data.loading_dir_ptr = __open_dir(PPM_PATH, background_provider_data.loading_dir_offset);		
+	background_provider_data.loading_dir_index = 0;	
+	background_provider_data.loading_chunk_index = chunk_id;
+	background_provider_data.loading_target_slot = slot_id;
+	background_provider_data.loading_chunk_active = 1;
+			
+	return slot_id;
+}
+
+void wait_loading_slot()
+{
+	while(background_provider_data.loading_chunk_active)
+	{
+		provider_background(NULL);
+	}
 }
 
 typedef struct 
@@ -42,129 +100,60 @@ void provider_file_discovered(file_data* fd, void* arg)
 {
 	__provider_register_data* rd = (__provider_register_data*)arg;
 	rd->slot[rd->len++] = fd;	
+	rd->slot[rd->len-1]->size = rd->len;
+	long_to_size_string(rd->slot[rd->len-1]->size_str, rd->slot[rd->len-1]->size);
 }
 
 u8 file_size_checker_active = 0;
 int file_size_checker_index = 0;
 
-int start_loading_slot(int slot_id);
-
 void provider_init(const char* flipnotes_path)
 {	
 	PPM_PATH = flipnotes_path;
-	for(int s=0;s<3;s++)
+	for(int s=0;s<5;s++)
 	{
 		for(int i=0;i<FILES_PER_SLOT;i++)
 			PPM_FILES_SLOT[s][i]=NULL;
 	}
 	for(int i=0;i<=MAX_SLOTS;i++)
+	{
 		SEEK_DIR_OFFSETS[i]=-1;
-	CRT_GLOBAL = 0;
-	PRV_SLOT = 0;
-	CRT_SLOT = 1;
-	NXT_SLOT = 2;
-	SEEK_DIR_OFFSETS[CRT_GLOBAL] = 0;	
-	
-	__provider_register_data reg_data = create_register_data(CRT_SLOT);	
-	SEEK_DIR_OFFSETS[CRT_GLOBAL+1] = loadFilesFrom(PPM_PATH, 0, FILES_PER_SLOT, provider_file_discovered, &reg_data);
+		LOAD_SLOT[i]=-1;
+	}					
+	// manually (sync) load first chunk
+	SEEK_DIR_OFFSETS[0]=0;
+	__provider_register_data reg_data = create_register_data(0);
+	SEEK_DIR_OFFSETS[1] = loadFilesFrom(PPM_PATH, 0, FILES_PER_SLOT, provider_file_discovered, &reg_data);
 	if(reg_data.len<FILES_PER_SLOT) // last slot can be incomplete
 	{
-		SEEK_DIR_OFFSETS[CRT_GLOBAL+1]=-1; // there's no need to further load slots
-	}		
-	file_size_checker_active = 1;
-	file_size_checker_index = FILES_PER_SLOT;
+		SEEK_DIR_OFFSETS[1]=-1; // there's no need to further load slots
+	}
+	chunk[0]=0;
+	LOAD_SLOT[0]=0;
+	redundant[0]=0;
 	
-	start_loading_slot(NXT_SLOT);
+	load_to_slot(1); wait_loading_slot();
+	
+	load_to_slot(2); wait_loading_slot();
+	
+	load_to_slot(3); wait_loading_slot();
+	
+	load_to_slot(4); wait_loading_slot();	
+	
+	file_size_checker_active = 1;
+	file_size_checker_index = FILES_PER_SLOT;	
 }
 
-u8 slot_half=0;
-u8 slot_half_p=0;
 file_data* provider_get_nth_flipnote(int n)
 {
-	if(n<0) return NULL;
-	file_data* result = NULL;
-	int crt_first = CRT_GLOBAL<<SLOT_MAGNITUDE;
-	int rel_id=-1;
-	if(crt_first-FILES_PER_SLOT<=n && n<crt_first)
-	{
-		rel_id = n-crt_first+FILES_PER_SLOT;
-		result = PPM_FILES_SLOT[PRV_SLOT][rel_id];	
-		strcpy(result->size_str,"PRV");
-		c_goto(23,0);
-		iprintf("PRV %i %i  %i    ", n,rel_id, CRT_GLOBAL);
-		if(rel_id<FILES_PER_SLOT/2)
-		{
-			if(slot_half_p==0)
-			{
-				slot_half_p = 1;
-				int tmp = NXT_SLOT;
-				NXT_SLOT = CRT_SLOT;
-				CRT_SLOT = PRV_SLOT;			
-				PRV_SLOT = tmp;
-				CRT_GLOBAL--;
-				if(CRT_GLOBAL==0)
-				{
-					// clear previous slot (<0)
-					for(int i=0;i<FILES_PER_SLOT;i++) 
-					{
-						free(PPM_FILES_SLOT[PRV_SLOT][i]);
-						PPM_FILES_SLOT[PRV_SLOT][i] = NULL;
-					}
-				}
-				else if(!start_loading_slot(PRV_SLOT))
-				{
-					// revert changes				
-					tmp = PRV_SLOT;
-					PRV_SLOT = CRT_SLOT;
-					CRT_SLOT = NXT_SLOT;			
-					NXT_SLOT = tmp;
-					CRT_GLOBAL++;
-				}
-			}
-		}
-		else slot_half_p = 0;
-	}
-	else if(crt_first <= n && n<crt_first+FILES_PER_SLOT)
-	{			
-		rel_id = n-crt_first;
-		c_goto(23,0);
-		iprintf("PRV %i %i  %i    ", n,rel_id, CRT_SLOT);
-		result = PPM_FILES_SLOT[CRT_SLOT][rel_id];
-		strcpy(result->size_str,"CRt");
-				
-		if(rel_id>=FILES_PER_SLOT/2)
-		{			
-			if(slot_half==0)
-			{
-				slot_half = 1;
-				int tmp = PRV_SLOT;
-				PRV_SLOT = CRT_SLOT;
-				CRT_SLOT = NXT_SLOT;			
-				NXT_SLOT = tmp;
-				CRT_GLOBAL++;
-				if(!start_loading_slot(NXT_SLOT))
-				{
-					// revert changes					
-					tmp = NXT_SLOT;
-					NXT_SLOT = CRT_SLOT;
-					CRT_SLOT = PRV_SLOT;			
-					PRV_SLOT = tmp;
-					CRT_GLOBAL--;
-				}
-			}
-		}
-		else slot_half=0;		
-		
-	}	
-	else if(crt_first+FILES_PER_SLOT<=n && n<crt_first+2*FILES_PER_SLOT)
-	{		
-		rel_id = n-crt_first-FILES_PER_SLOT;
-		c_goto(23,0);
-		iprintf("PRV %i %i  %i    ", n,rel_id, CRT_SLOT);
-		result = PPM_FILES_SLOT[NXT_SLOT][rel_id];
-		strcpy(result->size_str,"NXT");
-	}	
-	return result;
+	if(n<0) return NULL;	
+	int chk_id = n >> SLOT_MAGNITUDE;
+	
+	int slot_id = LOAD_SLOT[chk_id];
+	if(slot_id<0)
+		return NULL;
+	int index = n & (FILES_PER_SLOT-1);
+	return PPM_FILES_SLOT[slot_id][index];
 }
 
 char* provider_get_flipnote_full_path(file_data* fd)
@@ -178,43 +167,11 @@ char* provider_get_flipnote_full_path(file_data* fd)
 	return result;
 }
 
-u8 loading_slot_active = 0;
-u8 loading_slot_id = 0;
-int global_slot_id = 0;
-int loading_dir_index = 0;
-void* loading_dir_ptr = NULL;
-
-int start_loading_slot(int slot_id)
-{
-	if(loading_slot_active) 
-	{
-		c_displayError("Slot already loading",true);
-		return 0;
-	}
-	for(int i=0;i<FILES_PER_SLOT;i++) 
-	{
-		free(PPM_FILES_SLOT[slot_id][i]);
-		PPM_FILES_SLOT[slot_id][i] = NULL;
-	}
-	
-	loading_slot_id = slot_id;
-	global_slot_id = get_global_slot_id(loading_slot_id);
-	if(global_slot_id<0) return 0;
-	if(global_slot_id>=MAX_SLOTS) return 0;
-	long loading_dir_offset = SEEK_DIR_OFFSETS[global_slot_id];
-	if(loading_dir_offset<0) return 0;
-	
-	loading_dir_ptr = __open_dir(PPM_PATH, loading_dir_offset);	
-	loading_dir_index = 0;
-	loading_slot_active = 1;
-	return 1;
-}
-
 #include "console.h"
 
 void provider_background(u8* trigger)
 {	
-	*trigger = 0;
+	if(trigger) *trigger = 0;
 	/*if(file_size_checker_active)
 	{		
 		int slot = file_size_checker_index >> SLOT_MAGNITUDE;
@@ -236,29 +193,49 @@ void provider_background(u8* trigger)
 				fd->size=get_file_size(path);
 				long_to_size_string(fd->size_str, fd->size);
 				free(path);
-				*trigger = 1;
+				if(trigger) *trigger = 1;
 				return;
 			}
 		}		
 	}*/
-	if(loading_slot_active)
-	{		
-		long dir_offset=-1;
-		file_data* fd = __read_dir(loading_dir_ptr, &dir_offset);
-		if(fd==NULL)
-		{			
-			SEEK_DIR_OFFSETS[global_slot_id+1]=-1;
-			loading_slot_active = 0;
+	if(background_provider_data.loading_chunk_active)
+	{				
+		if(SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index]==-1)
+		{
+			c_displayError("Seek dir offset not set", 1);
+		}
+		long dir_offset=-1;		
+		file_data* fd = __read_dir(background_provider_data.loading_dir_ptr, &dir_offset);
+		if(fd==NULL) // read dir ends 
+		{						
+			SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index + 1] = -1;
+			LOAD_SLOT[background_provider_data.loading_chunk_index] = background_provider_data.loading_target_slot;
+			background_provider_data.loading_chunk_active = 0;
 			return;
 		}
-		PPM_FILES_SLOT[loading_slot_id][loading_dir_index++]=fd;
+		fd->size=1;
+		long_to_size_string(fd->size_str, fd->size);
+		PPM_FILES_SLOT[background_provider_data.loading_target_slot][background_provider_data.loading_dir_index++]=fd;
 		c_goto(0,0);
-		iprintf("%i    ",loading_dir_index);
-		if(loading_dir_index == FILES_PER_SLOT)
+		iprintf("%i %i %i    ",
+			background_provider_data.loading_chunk_index,  
+			background_provider_data.loading_target_slot,
+			background_provider_data.loading_dir_index);
+		if(background_provider_data.loading_dir_index == FILES_PER_SLOT)
 		{
-			if(SEEK_DIR_OFFSETS[global_slot_id+1]==-1)
-				SEEK_DIR_OFFSETS[global_slot_id+1]=dir_offset;
-			loading_slot_active = 0;
+			/*if(background_provider_data.loading_chunk_index==1)
+			{				
+				c_displayError("1",0);
+				c_goto(3,3);
+				iprintf("%li",dir_offset);
+				while(1) swiWaitForVBlank();
+			}*/
+			if(SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index + 1] == -1)
+				SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index + 1]=dir_offset;			
+			LOAD_SLOT[background_provider_data.loading_chunk_index] = background_provider_data.loading_target_slot;
+			chunk[background_provider_data.loading_target_slot] = background_provider_data.loading_chunk_index;
+			redundant[background_provider_data.loading_target_slot] = 0;
+			background_provider_data.loading_chunk_active = 0;			
 			return;
 		}				
 	}

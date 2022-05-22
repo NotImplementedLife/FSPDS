@@ -58,20 +58,22 @@ void playerClear()
     memset(mainGFX,0x10,256*192);
 }
 
+u8 thumbnail_bytes[0xA0+1536];
+
 void displayThumbnail()
-{			
+{				
 	char* fn = get_selected_file_name();	
 	if(fn==NULL)
 	{		
 		return;
 	}
 	
+	// reading becomes slower as we get further from the beginning of the directory [DeSmuME]
     FILE* fp=fopen(fn,"rb");
-    fseek(fp,0xA0,SEEK_SET);
-    u8 bytes[1536];
-    fread(bytes,1536,1,fp);
+    fseek(fp,0xA0,SEEK_SET);    
+    fread(thumbnail_bytes,0xA0+1536,1,fp);
 	fclose(fp);
-	free(fn);	
+	free(fn);		
 
     int offset=0,x,y;
     for(u8 ty=0;ty<48;ty+=8)
@@ -82,8 +84,8 @@ void displayThumbnail()
                 for(int p=0;p<8;p+=2)
                 {
                     x=tx+p, y=ty+l;
-                    setPixelThumbnail(x,y,bytes[offset]&0xF);
-                    setPixelThumbnail(x+1,y,(bytes[offset]>>4)&0xF);
+                    setPixelThumbnail(x, y, thumbnail_bytes[0xA0+offset]&0xF);
+                    setPixelThumbnail(x+1, y, (thumbnail_bytes[0xA0+offset]>>4)&0xF);
                     offset++;
                 }
         }

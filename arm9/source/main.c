@@ -24,9 +24,9 @@ void run_dbg()
 	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);
 	
     soundEnable();
-
-	fsInit();
+	
     initConsole();
+	fsInit();
 	
 	provider_init("/flipnotes");	
 
