@@ -38,21 +38,55 @@ int unload_slot(int slot_id)
 	}
 	int chk_id = chunk[slot_id];
 	chunk[slot_id]=-1;
-	redundant[slot_id]=-1;
-	SEEK_DIR_OFFSETS[chk_id]=-1;	
+	redundant[slot_id]=-1;	
 	return chk_id;
 }
 
+int get_highest_redundancy_slot()
+{
+	int red = -1;
+	int j = -1;	
+	for(int i=0;i<5;i++)
+		if(chunk[i]>=0)
+			if(redundant[i] > red)
+			{
+				red = redundant[i];
+				j=i;
+			}
+	return j;
+}
+
+int get_free_slot()
+{	
+	int i=5;
+	for(;i--;)	
+		if(chunk[i]==-1)
+			break;
+	return i;
+}
+
+int chunk_loaded(int chk_id)
+{
+	for(int i=0;i<5;i++)
+		if(chunk[i]==chk_id)
+			return 1;
+	return 0;
+}
+
+
 int load_to_slot(int chunk_id)
 {
-	int slot_id=5;
-	for(;slot_id--;)
+	// pick a new slot for the chunk	
+	int slot_id = get_free_slot();
+	if(slot_id==-1)
 	{
-		if(chunk[slot_id]==-1)
-			break;
-	}
-	if(slot_id==-1) 
-		c_displayError("All slots are full", 1);
+		slot_id = get_highest_redundancy_slot();	
+		if(slot_id==-1) 
+		{			
+			c_displayError("All slots are full", 1);
+		}
+		unload_slot(slot_id);
+	}	
 	
 	if(chunk_id<0) return -1;
 	if(chunk_id>=MAX_SLOTS) return -1;		
@@ -138,20 +172,63 @@ void provider_init(const char* flipnotes_path)
 	
 	load_to_slot(3); wait_loading_slot();
 	
-	load_to_slot(4); wait_loading_slot();	
+	load_to_slot(4); wait_loading_slot();
 	
 	file_size_checker_active = 1;
 	file_size_checker_index = FILES_PER_SLOT;	
 }
 
+void update_redundancy(int chk_id)
+{
+	for(int i=0;i<5;i++)
+	{		
+		if(chunk[i]>=0)			
+		{
+			redundant[i] = chunk[i] - chk_id;
+			if(redundant[i]<0)
+				redundant[i] = -redundant[i];			
+		}		
+	}
+	
+	consoleSelect(&consoleFG);
+	c_goto(0,10);
+	for(int i=0;i<5;i++) iprintf("%i ",redundant[i]);
+	iprintf("    ");
+	
+}
+
+void load_chunk(int chk_id)
+{
+	if(background_provider_data.loading_chunk_active)
+		return;
+	if(chk_id < 0)
+		return;
+	if(SEEK_DIR_OFFSETS[chk_id]<0)
+		return;
+	if(chunk_loaded(chk_id))
+		return;		
+	load_to_slot(chk_id); // async!
+	consoleSelect(&consoleFG);
+	c_goto(23,0);
+	for(int i=0;i<5;i++) iprintf("%i ",chunk[i]);
+	iprintf("       ");
+	c_goto(23,20);
+	for(int i=0;i<10;i++)
+		iprintf("%i",SEEK_DIR_OFFSETS[i]>=0?1:0);
+	
+}
+
 file_data* provider_get_nth_flipnote(int n)
 {
 	if(n<0) return NULL;	
-	int chk_id = n >> SLOT_MAGNITUDE;
-	
+	int chk_id = n >> SLOT_MAGNITUDE;	
 	int slot_id = LOAD_SLOT[chk_id];
 	if(slot_id<0)
-		return NULL;
+		return NULL;	
+	update_redundancy(chk_id);
+	load_chunk(chk_id-1);
+	load_chunk(chk_id+1);	
+	
 	int index = n & (FILES_PER_SLOT-1);
 	return PPM_FILES_SLOT[slot_id][index];
 }
@@ -207,15 +284,26 @@ void provider_background(u8* trigger)
 		long dir_offset=-1;		
 		file_data* fd = __read_dir(background_provider_data.loading_dir_ptr, &dir_offset);
 		if(fd==NULL) // read dir ends 
-		{						
-			SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index + 1] = -1;
+		{									
 			LOAD_SLOT[background_provider_data.loading_chunk_index] = background_provider_data.loading_target_slot;
+			for(int i=background_provider_data.loading_chunk_index + 1;i<=MAX_SLOTS;i++)
+				SEEK_DIR_OFFSETS[i] = -2; // mark all following slots as invalid
+		
+			LOAD_SLOT[background_provider_data.loading_chunk_index] = background_provider_data.loading_target_slot;
+			chunk[background_provider_data.loading_target_slot] = background_provider_data.loading_chunk_index;
+			redundant[background_provider_data.loading_target_slot] = 0;			
 			background_provider_data.loading_chunk_active = 0;
+			
+			consoleSelect(&consoleFG);
+			c_goto(23,0);
+			for(int i=0;i<5;i++) iprintf("%i ",chunk[i]);
+			iprintf("       ");
 			return;
 		}
-		fd->size=1;
+		fd->size=background_provider_data.loading_chunk_index*10+background_provider_data.loading_target_slot;
 		long_to_size_string(fd->size_str, fd->size);
 		PPM_FILES_SLOT[background_provider_data.loading_target_slot][background_provider_data.loading_dir_index++]=fd;
+		consoleSelect(&consoleFG);
 		c_goto(0,0);
 		iprintf("%i %i %i    ",
 			background_provider_data.loading_chunk_index,  
@@ -234,8 +322,13 @@ void provider_background(u8* trigger)
 				SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index + 1]=dir_offset;			
 			LOAD_SLOT[background_provider_data.loading_chunk_index] = background_provider_data.loading_target_slot;
 			chunk[background_provider_data.loading_target_slot] = background_provider_data.loading_chunk_index;
-			redundant[background_provider_data.loading_target_slot] = 0;
+			redundant[background_provider_data.loading_target_slot] = 0;			
 			background_provider_data.loading_chunk_active = 0;			
+			
+			consoleSelect(&consoleFG);
+			c_goto(23,0);
+			for(int i=0;i<5;i++) iprintf("%i ",chunk[i]);
+			iprintf("       ");
 			return;
 		}				
 	}
