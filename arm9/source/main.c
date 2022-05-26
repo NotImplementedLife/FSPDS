@@ -59,7 +59,7 @@ void run_dbg()
 		provider_background(&trigger);
 		if(trigger && CurrentTab==&FilesTab)
 		{
-			uilist_write_page(&ppm_list);    
+			uilist_write_page(&ppm_list);
 		}
 		/*if(PlayerState==PLAYING)
         {

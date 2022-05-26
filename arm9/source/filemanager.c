@@ -127,7 +127,7 @@ file_data* __read_dir(void* dir, long* offset)
 				if((u32)fd < 0x00200000) 
 				{							
 					c_displayError("MALLOC FAILED", true);						
-				}					
+				}									
 				strcpy(fd->name, entry->d_name);
 				fd->size = -1; // dummy size					
 				fd->size_str[0]='\0';												               
