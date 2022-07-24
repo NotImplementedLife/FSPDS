@@ -87,7 +87,7 @@ void run_dbg()
 
 int main(int argc, char ** argv)
 {
-	run_dbg();
+	//run_dbg();
 	
     powerOn(POWER_ALL_2D);
 	
@@ -100,23 +100,26 @@ int main(int argc, char ** argv)
 	//vramSetBankF(VRAM_F_MAIN_SPRITE_0x06410000);
 	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);
 	
-    soundEnable();
-
-	fsInit();
+   soundEnable();
+	
     initConsole();
+	fsInit();
+	
+	provider_init("/flipnotes");	
 
     initTabs();
     initPlayer();
 
     c_loadingBox();
+	swiWaitForVBlank();
+		
 
 	// error source if no flipnotes have been loaded:       
     ppm_loadMetadata();
-		
 	
     playerClear();
     playerSwapBuffers();
-    playerClear();
+    playerClear();	
 	
 	CurrentTab->loadingProc();
     CurrentTab->drawingProc();    
@@ -161,6 +164,16 @@ int main(int argc, char ** argv)
         }
         __LBL__SKIP_KEY_CHK__:
 
+
+		if(CurrentTab==&FilesTab)
+		{			
+			u8 trigger = 0;
+			provider_background(&trigger);
+			if(trigger && CurrentTab==&FilesTab)
+			{
+				uilist_write_page(&ppm_list);
+			}
+		}
         if(PlayerState==PLAYING)
         {
             counter++;
