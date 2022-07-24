@@ -55,13 +55,16 @@ void run_dbg()
 		uint32 input=keysDown();
 		CurrentTab->keyDownProc(input);
 		
-		u8 trigger = 0;
-		provider_background(&trigger);
-		if(trigger && CurrentTab==&FilesTab)
-		{
-			uilist_write_page(&ppm_list);
+		if(CurrentTab==&FilesTab)
+		{			
+			u8 trigger = 0;
+			provider_background(&trigger);
+			if(trigger && CurrentTab==&FilesTab)
+			{
+				uilist_write_page(&ppm_list);
+			}
 		}
-		/*if(PlayerState==PLAYING)
+		if(PlayerState==PLAYING)
         {
             counter++;
             if(counter==1)
@@ -77,7 +80,7 @@ void run_dbg()
             {
                 counter=0;
             }
-        }*/
+        }
 					
 	}
 }

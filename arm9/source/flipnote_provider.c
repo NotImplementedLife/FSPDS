@@ -61,11 +61,11 @@ int get_highest_redundancy_slot()
 
 int get_free_slot()
 {	
-	int i=5;
-	for(;i--;)	
+	int i=0;
+	for(;i<5;i++)	
 		if(chunk[i]==-1)
 			break;
-	return i;
+	return i<5 ? i : -1;
 }
 
 int chunk_loaded(int chk_id)
@@ -273,7 +273,7 @@ void provider_background(u8* trigger)
 			iprintf("       ");*/
 			return;
 		}		
-		fd->size_str[0]='\0';
+		*(int*)fd->size_str = 0x002D2D2D;		
 		PPM_FILES_SLOT[background_provider_data.loading_target_slot][background_provider_data.loading_dir_index++]=fd;
 		/*consoleSelect(&consoleFG);
 		c_goto(0,0);
@@ -308,9 +308,9 @@ void provider_background(u8* trigger)
 	if(background_provider_data.file_size_checker_active)
 	{				
 		file_data* fd = *(((file_data**)PPM_FILES_SLOT) + background_provider_data.file_size_checker_index);
-		//consoleSelect(&consoleFG);
-		//c_goto(0,0);
-		//iprintf("% 6i",background_provider_data.file_size_checker_index);		
+		/*consoleSelect(&consoleFG);
+		c_goto(0,0);
+		iprintf("% 6i",background_provider_data.file_size_checker_index);		*/
 		background_provider_data.file_size_checker_index++;
 		if(background_provider_data.file_size_checker_index == 5*FILES_PER_SLOT)
 		{
@@ -320,7 +320,7 @@ void provider_background(u8* trigger)
 		
 		if(fd!=NULL)
 		{
-			if(fd->size_str[0]=='\0') // size not loaded yet
+			if(fd->size_str[0]=='\0' || *(int*)fd->size_str == 0x002D2D2D) // size not loaded yet
 			{
 				char* path = provider_get_flipnote_full_path(fd);
 				fd->size=get_file_size(path);
