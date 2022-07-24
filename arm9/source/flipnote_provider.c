@@ -139,9 +139,6 @@ void provider_file_discovered(file_data* fd, void* arg)
 	rd->slot[rd->len++] = fd;		
 }
 
-u8 file_size_checker_active = 0;
-int file_size_checker_index = 0;
-
 void provider_init(const char* flipnotes_path)
 {	
 	PPM_PATH = flipnotes_path;
@@ -176,7 +173,7 @@ void provider_init(const char* flipnotes_path)
 	load_to_slot(4); wait_loading_slot();
 	
 	background_provider_data.file_size_checker_active = 1;
-	file_size_checker_index = 0;	
+	background_provider_data.file_size_checker_index = 0;	
 }
 
 void update_redundancy(int chk_id)
@@ -240,8 +237,8 @@ char* provider_get_flipnote_full_path(file_data* fd)
 	int dir_path_len = strlen(PPM_PATH);
 	char* result = malloc(dir_path_len + 33);
 	strcpy(result, PPM_PATH);
-	strcat(result, "/");		
-	strcat(result, fd->name);	
+	result[dir_path_len]='/';	
+	strcpy(result+dir_path_len+1, fd->name);
 	return result;
 }
 
@@ -249,33 +246,7 @@ char* provider_get_flipnote_full_path(file_data* fd)
 
 void provider_background(u8* trigger)
 {	
-	if(trigger) *trigger = 0;
-	if(background_provider_data.file_size_checker_active)
-	{				
-		file_data* fd = *(((file_data**)PPM_FILES_SLOT) + background_provider_data.file_size_checker_index);
-		consoleSelect(&consoleFG);
-		c_goto(0,0);
-		iprintf("% 6i",background_provider_data.file_size_checker_index);		
-		background_provider_data.file_size_checker_index++;
-		if(background_provider_data.file_size_checker_index == 5*FILES_PER_SLOT)
-		{
-			background_provider_data.file_size_checker_index = 0;
-			background_provider_data.file_size_checker_active = 1;			
-		}
-		
-		if(fd!=NULL)
-		{
-			if(fd->size_str[0]=='\0') // size not loaded yet
-			{
-				char* path = provider_get_flipnote_full_path(fd);
-				fd->size=1;//get_file_size(path);
-				long_to_size_string(fd->size_str, background_provider_data.file_size_checker_index>>SLOT_MAGNITUDE);//fd->size);
-				free(path);
-				if(trigger) *trigger = 1;
-				return;
-			}
-		}		
-	}
+	if(trigger) *trigger = 0;	
 	if(background_provider_data.loading_chunk_active)
 	{				
 		if(SEEK_DIR_OFFSETS[background_provider_data.loading_chunk_index]==-1)
@@ -332,6 +303,33 @@ void provider_background(u8* trigger)
 			iprintf("       ");*/
 			return;
 		}				
+		return;
+	}
+	if(background_provider_data.file_size_checker_active)
+	{				
+		file_data* fd = *(((file_data**)PPM_FILES_SLOT) + background_provider_data.file_size_checker_index);
+		//consoleSelect(&consoleFG);
+		//c_goto(0,0);
+		//iprintf("% 6i",background_provider_data.file_size_checker_index);		
+		background_provider_data.file_size_checker_index++;
+		if(background_provider_data.file_size_checker_index == 5*FILES_PER_SLOT)
+		{
+			background_provider_data.file_size_checker_index = 0;
+			background_provider_data.file_size_checker_active = 1;			
+		}
+		
+		if(fd!=NULL)
+		{
+			if(fd->size_str[0]=='\0') // size not loaded yet
+			{
+				char* path = provider_get_flipnote_full_path(fd);
+				fd->size=get_file_size(path);
+				long_to_size_string(fd->size_str, fd->size);
+				free(path);
+				if(trigger) *trigger = 1;
+				return;
+			}
+		}		
 	}
 }
 

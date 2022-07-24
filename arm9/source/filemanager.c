@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #ifdef NITRO
 #include <filesystem.h>
@@ -86,6 +87,9 @@ void fsInit()
 
 long get_file_size(const char* path)
 {	
+	struct stat st;
+	stat(path, &st);	
+	return st.st_size;
 	FILE* fp=fopen(path, "rb");
 	if(fp==NULL)
 	{
