@@ -9,6 +9,7 @@
 #include "vars.h"
 #include "ppm_list.h"
 #include "flipnote_provider.h"
+#include "bottom_screen_power.h"
 
 void nextPage()
 {
@@ -158,9 +159,16 @@ void InfoTabKeyDown(u32 input)
     }
 }
 
+int power_off_timer = 0;
+
 void timerCallBack()
 {
-    sound_frame_counter+=4;
+    sound_frame_counter += 4;
+	power_off_timer += 4;
+	if(power_off_timer>=5*soundFreq)
+	{
+		bottom_screen_power_off();
+	}
 }
 
 int loadFlipnote()
@@ -252,14 +260,12 @@ void PlayTabPlayButtonPressed()
     PlayerThumbnailNeedsRedraw = true;
 }
 
-int bottom_screen_on = 1;
-
 void PlayTabKeyDown(uint32 input)
 {
-	if(!bottom_screen_on)
+	if(!is_bottom_screen_on)
 	{
-		fifoSendValue32(FIFO_USER_01,0x0002);
-		bottom_screen_on = 1;
+		bottom_screen_power_on();
+		power_off_timer=0;
 		return;
 	}
 	
@@ -271,10 +277,10 @@ void PlayTabKeyDown(uint32 input)
 
 void PlayTabRdTouch()
 {
-	if(!bottom_screen_on)
+	if(!is_bottom_screen_on)
 	{
-		fifoSendValue32(FIFO_USER_01,0x0002);
-		bottom_screen_on = 1;
+		bottom_screen_power_on();
+		power_off_timer=0;
 		return;
 	}
     if(104<=touch.px && touch.px<152 && 72<=touch.py && touch.py<120)
@@ -283,8 +289,7 @@ void PlayTabRdTouch()
 	}
 	if((touch.px>>4)==14 && (touch.py>>4)==1)
 	{			
-		fifoSendValue32(FIFO_USER_01,0x0001);
-		bottom_screen_on = 0;
+		bottom_screen_power_off();
 	}
 }
 
@@ -292,7 +297,10 @@ void PlayTabLeaving()
 {
     PlayerState=PAUSED;	
 	oamClear(&oamSub,0,128);
-	oamUpdate(&oamSub);
+	oamUpdate(&oamSub);	
+	
+	bottom_screen_power_on();				
+	power_off_timer=0;	
     if(PlayerThumbnailNeedsRedraw)
     {
         // pause the song

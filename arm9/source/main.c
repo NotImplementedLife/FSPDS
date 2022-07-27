@@ -10,6 +10,8 @@
 #include "ui_list.h"
 #include "ppm_list.h"
 
+#include "bottom_screen_power.h"
+
 int main(int argc, char ** argv)
 {	
 	
@@ -61,7 +63,7 @@ int main(int argc, char ** argv)
         }
         if(input & KEY_L)
         {
-			if(CurrentTab->left !=NULL)
+			if(CurrentTab->left != NULL)
 			{
 				CurrentTab->leavingProc();
 				CurrentTab=CurrentTab->left;
@@ -70,8 +72,8 @@ int main(int argc, char ** argv)
 			}
         }
         else if (input & KEY_R)
-        {
-			if(CurrentTab->right !=NULL)
+        {			
+			if(CurrentTab->right != NULL)
 			{
 				CurrentTab->leavingProc();
 				CurrentTab=CurrentTab->right;
