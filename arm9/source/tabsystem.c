@@ -252,8 +252,17 @@ void PlayTabPlayButtonPressed()
     PlayerThumbnailNeedsRedraw = true;
 }
 
+int bottom_screen_on = 1;
+
 void PlayTabKeyDown(uint32 input)
 {
+	if(!bottom_screen_on)
+	{
+		fifoSendValue32(FIFO_USER_01,0x0002);
+		bottom_screen_on = 1;
+		return;
+	}
+	
     if(input & KEY_A)
     {
         PlayTabPlayButtonPressed();
@@ -262,14 +271,20 @@ void PlayTabKeyDown(uint32 input)
 
 void PlayTabRdTouch()
 {
+	if(!bottom_screen_on)
+	{
+		fifoSendValue32(FIFO_USER_01,0x0002);
+		bottom_screen_on = 1;
+		return;
+	}
     if(104<=touch.px && touch.px<152 && 72<=touch.py && touch.py<120)
 	{
         PlayTabPlayButtonPressed();
 	}
 	if((touch.px>>4)==14 && (touch.py>>4)==1)
-	{	
-		BG_PALETTE_SUB[0xFF]=0x0000;
-		powerOff(POWER_2D_B);
+	{			
+		fifoSendValue32(FIFO_USER_01,0x0001);
+		bottom_screen_on = 0;
 	}
 }
 

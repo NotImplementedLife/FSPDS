@@ -29,6 +29,7 @@
 ---------------------------------------------------------------------------------*/
 /// Removed wifi
 #include <nds.h>
+#include "bottom_screen_power.h"
 
 void VblankHandler(void) { }
 
@@ -57,7 +58,7 @@ int main()
 	ledBlink(0);
 
 	irqInit();
-	//initClockIRQ();
+	initClockIRQ();
 	fifoInit();
 	touchInit();
 
@@ -78,7 +79,26 @@ int main()
         {
 			exitflag = true;
 		}
-		swiWaitForVBlank();
+		
+		if(fifoCheckValue32(FIFO_USER_01))
+		{			
+			int command = fifoGetValue32(FIFO_USER_01);			
+			switch(command)
+			{
+			case 0x0001:
+				{
+					bottom_screen_power_off();
+					break;
+				}
+			case 0x0002:
+				{
+					bottom_screen_power_on();
+					break;
+				}
+			}
+		}
+		
+		swiIntrWait(1,IRQ_FIFO_NOT_EMPTY | IRQ_VBLANK);
 	}
 	return 0;
 }

@@ -75,12 +75,12 @@ void fsInit()
 {
 	#ifdef NITRO
 	if(!nitroFSInit(NULL)) {
-		c_displayError("Fatal :\n\nNTFS init failed.",true);
+		c_displayError("Fatal :\n\nNTFS init failed.", true);
 	}	
 	#else
 	if(!fatInitDefault())
     {
-        c_displayError("Fatal :\n\nFAT init failed.",true);
+        c_displayError("Fatal :\n\nFAT init failed.", true);
     }
 	#endif
 }

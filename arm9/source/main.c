@@ -10,92 +10,14 @@
 #include "ui_list.h"
 #include "ppm_list.h"
 
-void run_dbg()
-{
-	powerOn(POWER_ALL_2D);
-	
-	// Reserve VRAM 0x06040000 - 0x0607FFFF for flipnote work data 
-	// 0x40000 = 256KB
-	//vramSetBankC(VRAM_C_MAIN_BG_0x06040000);
-	//vramSetBankD(VRAM_D_MAIN_BG_0x06060000);
-
-	
-	//vramSetBankF(VRAM_F_MAIN_SPRITE_0x06410000);
-	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);
-	
-    soundEnable();
-	
-    initConsole();
-	fsInit();
-	
-	provider_init("/flipnotes");	
-
-    initTabs();
-    initPlayer();
-
-    c_loadingBox();
-	swiWaitForVBlank();
-		
-
-	// error source if no flipnotes have been loaded:       
-    ppm_loadMetadata();
-	
-    playerClear();
-    playerSwapBuffers();
-    playerClear();	
-		
-	CurrentTab = &FilesTab;
-	CurrentTab->loadingProc();
-    CurrentTab->drawingProc();    
-	
-	while(1)
-    {				
-		swiWaitForVBlank();
-		scanKeys();
-		uint32 input=keysDown();
-		CurrentTab->keyDownProc(input);
-		
-		if(CurrentTab==&FilesTab)
-		{			
-			u8 trigger = 0;
-			provider_background(&trigger);
-			if(trigger && CurrentTab==&FilesTab)
-			{
-				uilist_write_page(&ppm_list);
-			}
-		}
-		if(PlayerState==PLAYING)
-        {
-            counter++;
-            if(counter==1)
-            {
-                playerNextFrameVBlank0(&dt);
-            }
-            else if(counter==2)
-            {
-                playerNextFrameVBlank1(&dt);
-                /// counter=0; // <-- force 30fps [DEBUG]
-            }
-            if(counter==frameTime[ppm_FramePlaybackSpeed])
-            {
-                counter=0;
-            }
-        }
-					
-	}
-}
-
 int main(int argc, char ** argv)
-{
-	//run_dbg();
+{	
 	
-    powerOn(POWER_ALL_2D);
+    //powerOn(POWER_ALL_2D);
 	
 	// Reserve VRAM 0x06040000 - 0x0607FFFF for flipnote work data 
 	// 0x40000 = 256KB
-	//vramSetBankC(VRAM_C_MAIN_BG_0x06040000);
-	//vramSetBankD(VRAM_D_MAIN_BG_0x06060000);
-	
+	//vramSetBankC(VRAM_C_MAIN_BG_0x06040000);	
 	//vramSetBankE(VRAM_E_MAIN_SPRITE);
 	//vramSetBankF(VRAM_F_MAIN_SPRITE_0x06410000);
 	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);	
