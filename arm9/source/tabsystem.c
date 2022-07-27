@@ -261,10 +261,12 @@ void PlayTabRdTouch()
 
 void PlayTabLeaving()
 {
-    PlayerState=PAUSED;
+    PlayerState=PAUSED;	
     if(PlayerThumbnailNeedsRedraw)
     {
-        soundSetFreq(BGMId,0); //pause the song
+        // pause the song
+		timerPause(0);
+		soundPause(BGMId);
         playerClear();
         playerSwapBuffers();
         playerClear();
