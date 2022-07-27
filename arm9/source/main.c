@@ -18,8 +18,8 @@ void run_dbg()
 	// 0x40000 = 256KB
 	//vramSetBankC(VRAM_C_MAIN_BG_0x06040000);
 	//vramSetBankD(VRAM_D_MAIN_BG_0x06060000);
+
 	
-	//vramSetBankE(VRAM_E_MAIN_SPRITE);
 	//vramSetBankF(VRAM_F_MAIN_SPRITE_0x06410000);
 	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);
 	
@@ -98,12 +98,16 @@ int main(int argc, char ** argv)
 	
 	//vramSetBankE(VRAM_E_MAIN_SPRITE);
 	//vramSetBankF(VRAM_F_MAIN_SPRITE_0x06410000);
-	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);
+	//vramSetBankG(VRAM_G_MAIN_SPRITE_0x06414000);	
 	
-   soundEnable();
+	soundEnable();
 	
     initConsole();
 	fsInit();
+	
+	// init sprites
+	vramSetBankE(VRAM_D_SUB_SPRITE); // 0x06600000 
+	oamInit(&oamSub, SpriteMapping_1D_128, 0);
 	
 	provider_init("/flipnotes");	
 

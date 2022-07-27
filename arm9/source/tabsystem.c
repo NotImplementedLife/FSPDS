@@ -181,8 +181,15 @@ int loadFlipnote()
 	return 0;
 }
 
+#include "bulb.h"
+
 void PlayTabLoading()
 {
+	dmaCopy(bulbTiles, (int*)0x06600000, bulbTilesLen);
+	dmaCopy(bulbPal, SPRITE_PALETTE_SUB, bulbPalLen);
+	oamSet(&oamSub, 0, 224, 16, 0, 0,
+			SpriteSize_16x16, SpriteColorFormat_256Color, (int*)0x06600000, -1, 0, 0, 0, 0, 0);
+	//oamUpdate(&oamSub);
     if(PlayerForceAnimationReload)
     {
         c_loadingBox();
@@ -211,6 +218,7 @@ void PlayTabDrawing()
     iprintf("Player");
     c_drawBorder(8,12,15,19);
     iprintf(PlayerState ? PlayButton : PauseButton);
+	oamUpdate(&oamSub);
 }
 
 void PlayTabPlayButtonPressed()
@@ -255,13 +263,21 @@ void PlayTabKeyDown(uint32 input)
 void PlayTabRdTouch()
 {
     if(104<=touch.px && touch.px<152 && 72<=touch.py && touch.py<120)
+	{
         PlayTabPlayButtonPressed();
-
+	}
+	if((touch.px>>4)==14 && (touch.py>>4)==1)
+	{	
+		BG_PALETTE_SUB[0xFF]=0x0000;
+		powerOff(POWER_2D_B);
+	}
 }
 
 void PlayTabLeaving()
 {
     PlayerState=PAUSED;	
+	oamClear(&oamSub,0,128);
+	oamUpdate(&oamSub);
     if(PlayerThumbnailNeedsRedraw)
     {
         // pause the song

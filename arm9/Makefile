@@ -18,6 +18,7 @@ TARGET :=	FSPDS
 BUILD		:=	build
 SOURCES		:=	source
 INCLUDES	:=	include ../include
+GFX         :=  gfx
 DATA		:=
 
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
@@ -146,7 +147,7 @@ version.o: .FORCE
 
 #---------------------------------------------------------------------------------
 %.s %.h : %.png
-	grit $< -ff../gfx/icon.grit -o$*
+	grit $< -fts -o$*
 #---------------------------------------------------------------------------------
 
 
