@@ -11,6 +11,7 @@
 #include "flipnote_provider.h"
 #include "bottom_screen_power.h"
 #include "dialog.h"
+#include "convert.h"
 
 void nextPage()
 {
@@ -120,7 +121,7 @@ void FilesTabKeyDown(u32 input)
 		CurrentTab->leavingProc();
 		CurrentTab=&PathSelectorTab;
 		CurrentTab->loadingProc();
-		CurrentTab->drawingProc();	
+		CurrentTab->drawingProc();
 	}
 	else if(input & KEY_SELECT)
 	{
@@ -136,7 +137,14 @@ void FilesTabKeyDown(u32 input)
 			}
 			case ACTION_EXPORT:
 			{
-				show_dialog(6,10,20,3,"Error","\nWork in progress...");
+				int format=show_dialog(23,16,7,6, "", "* AMV\n* AVI\n* DPG4\n* GIF\n* MKV\n* MP4");
+				if(format>=0)
+				{
+					char* fn = get_selected_file_name();
+					convert(fn, (ConversionFormat)format);
+					free(fn);
+					show_dialog(6,10,20,3,"Error","\nWork in progress...");
+				}
 				break;
 			}
 		}
@@ -217,7 +225,7 @@ void PlayTabLoading()
 	dmaCopy(bulbPal, SPRITE_PALETTE_SUB, bulbPalLen);
 	oamSet(&oamSub, 0, 224, 16, 0, 0,
 			SpriteSize_16x16, SpriteColorFormat_256Color, (int*)0x06600000, -1, 0, 0, 0, 0, 0);
-	//oamUpdate(&oamSub);
+
     if(PlayerForceAnimationReload)
     {
         c_loadingBox();
