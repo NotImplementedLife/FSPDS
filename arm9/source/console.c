@@ -252,6 +252,7 @@ void initConsole()
     BG_PALETTE[255]=BG_PALETTE_SUB[255]=0x01DF; // used by \x1b[39m
 }
 
+#include "dialog.h"
 // screen to display error messages
 bool c_displayError(const char* message,bool isfatal)
 {
@@ -267,7 +268,7 @@ bool c_displayError(const char* message,bool isfatal)
     consoleSetWindow(&consoleFG,2,2,28,20);
     c_goto(0,0);
     iprintf(message);
-
+	
     if(isfatal)
     {
 		while(1) swiWaitForVBlank();        

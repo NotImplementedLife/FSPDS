@@ -10,6 +10,7 @@
 #include "ppm_list.h"
 #include "flipnote_provider.h"
 #include "bottom_screen_power.h"
+#include "dialog.h"
 
 void nextPage()
 {
@@ -120,6 +121,25 @@ void FilesTabKeyDown(u32 input)
 		CurrentTab=&PathSelectorTab;
 		CurrentTab->loadingProc();
 		CurrentTab->drawingProc();	
+	}
+	else if(input & KEY_SELECT)
+	{
+		const int ACTION_CHK_INTEGRITY = 0;
+		const int ACTION_EXPORT = 1;
+		int action = show_dialog(15,18,15,4, "Options", "\n*Chk.Integrity\n*Export As...\n");
+		switch(action)
+		{
+			case ACTION_CHK_INTEGRITY:
+			{
+				show_dialog(6,10,20,3,"Error","\nWork in progress...");
+				break;
+			}
+			case ACTION_EXPORT:
+			{
+				show_dialog(6,10,20,3,"Error","\nWork in progress...");
+				break;
+			}
+		}
 	}
 }
 

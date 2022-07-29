@@ -16,8 +16,8 @@ TARGET :=	FSPDS
 # all directories are relative to this makefile
 #---------------------------------------------------------------------------------
 BUILD		:=	build
-SOURCES		:=	source
-INCLUDES	:=	include ../include
+SOURCES		:=	source source/converters 
+INCLUDES	:=	include include/converters ../include
 GFX         :=  gfx
 DATA		:=
 
