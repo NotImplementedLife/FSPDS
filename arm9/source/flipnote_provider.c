@@ -105,7 +105,7 @@ int load_to_slot(int chunk_id)
 	}
 	
 	background_provider_data.loading_dir_ptr = __open_dir(PPM_PATH, background_provider_data.loading_dir_offset);		
-	background_provider_data.loading_dir_index = 0;	
+	background_provider_data.loading_dir_index = 0;
 	background_provider_data.loading_chunk_index = chunk_id;
 	background_provider_data.loading_target_slot = slot_id;
 	background_provider_data.loading_chunk_active = 1;

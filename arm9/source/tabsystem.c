@@ -215,6 +215,10 @@ void PlayTabLoading()
 
 const char* PlayButton="\033[10;14H\026\027  \033[11;14H\002\002\026\027\033[12;14H\002\002\x18\x19\033[13;14H\x18\x19  ";
 const char* PauseButton="\033[10;14H\x05\x06\x05\x06\033[11;14H\x05\x06\x05\x06\033[12;14H\x05\x06\x05\x06\033[13;14H\x05\x06\x05\x06";
+const char* BeginButton="\033[11;9H\x1B\x1C\033[12;9H\x1D\x1E";
+const char* EndButton="\033[11;21H\x16\x17\033[12;21H\x18\x19";
+const char* BackButton="\033[11;5H\x80\x84\033[12;5H\x81\x85";
+const char* ForwardButton="\033[11;25H\x86\x82\033[12;25H\x87\x83";
 
 void PlayTabDrawing()
 {
@@ -226,7 +230,20 @@ void PlayTabDrawing()
     iprintf("Player");
     c_drawBorder(8,12,15,19);
     iprintf(PlayerState ? PlayButton : PauseButton);
-	oamUpdate(&oamSub);
+	
+	c_drawBorder(10,3,13,7);
+	printf(BackButton);
+
+	c_drawBorder(9,8,14,11);
+	printf(BeginButton);
+	
+	c_drawBorder(9,20,14,23);
+	printf(EndButton);
+	
+	c_drawBorder(10,24,13,28);
+	printf(ForwardButton);
+	
+	oamUpdate(&oamSub);	
 }
 
 void PlayTabPlayButtonPressed()

@@ -140,6 +140,112 @@ void initConsole()
     dmaFillWords(0x00FFFF00, (void*)0x620034C, 8);
     dmaFillWords(0x000FF000, (void*)0x6200354, 4);
     dmaFillWords(0x00000000, (void*)0x6200358, 8);
+	
+	// Char #31 - Reverse Triangle Up 1
+	
+	address=(void*)0x6200360;
+    word=0x00000000;
+    dmaFillWords(word,address,16);
+    word=0xFF000000;
+    address+=16;
+    for(u8 i=4;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word=(word>>8)|0xFF000000;
+        address+=0x4;
+    }
+	
+	
+	// Char #32 - Reverse Triangle Up 2
+	address=(void*)0x6200380;
+    word=0xFF000000;
+    for(u8 i=3;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word=(word>>8)|0xFF000000;
+        address+=0x4;
+    }
+    dmaFillWords(word, address,20);
+	
+	// Char #33 - Reverse Triangle Bottom 1
+	
+	 address=(void*)0x62003A0;
+    word=0xFFFFFFFF;
+    for(int i=4;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word<<=8;
+        address+=0x4;
+    }
+    dmaFillWords(word,address,16);   
+
+    // Char #34 - Reverse Triangle Bottom 2
+    address=(void*)0x62003C0;
+    word=0xFFFFFFFF;
+
+    dmaFillWords(word, address,20);
+    address+=0x14;
+    word<<=8;
+    for(int i=3;i--;)
+    {
+        dmaFillWords(word,address,4);
+        word<<=8;
+        address+=0x4;
+    }
+	
+	// Char #128 - Mini Triangle Left Up
+		
+	dmaFillWords(0x00000000, (void*)0x6201000, 16);
+	dmaFillWords(0xFF000000, (void*)0x6201010, 4);
+    dmaFillWords(0xFFFF0000, (void*)0x6201014, 4);
+    dmaFillWords(0xFFFFFF00, (void*)0x6201018, 4);
+    dmaFillWords(0xFFFFFFFF, (void*)0x620101C, 4);
+	
+	// Char #129 - Mini Triangle Left Bottom
+			
+	dmaFillWords(0xFFFFFFFF, (void*)0x6201020, 4);
+    dmaFillWords(0xFFFFFF00, (void*)0x6201024, 4);
+    dmaFillWords(0xFFFF0000, (void*)0x6201028, 4);
+    dmaFillWords(0xFF000000, (void*)0x620102C, 4);
+	dmaFillWords(0x00000000, (void*)0x6201030, 16);
+	
+	// Char #130 - Mini Triangle Right Up
+		
+	dmaFillWords(0x00000000, (void*)0x6201040, 16);
+	dmaFillWords(0x000000FF, (void*)0x6201050, 4);
+    dmaFillWords(0x0000FFFF, (void*)0x6201054, 4);
+    dmaFillWords(0x00FFFFFF, (void*)0x6201058, 4);
+    dmaFillWords(0xFFFFFFFF, (void*)0x620105C, 4);
+	
+	// Char #131 - Mini Triangle Right Bottom
+			
+	dmaFillWords(0xFFFFFFFF, (void*)0x6201060, 4);
+    dmaFillWords(0x00FFFFFF, (void*)0x6201064, 4);
+    dmaFillWords(0x0000FFFF, (void*)0x6201068, 4);
+    dmaFillWords(0x000000FF, (void*)0x620106C, 4);
+	dmaFillWords(0x00000000, (void*)0x6201070, 16);
+	
+	// Char #132 - Slim bar left top half		
+	dmaFillWords(0x00000000, (void*)0x6201080, 16);
+	dmaFillWords(0x00000FF0, (void*)0x6201090, 16);	
+	
+	// Char #133 - Slim bar left bottom half		
+	dmaFillWords(0x00000FF0, (void*)0x62010A0, 16);
+	dmaFillWords(0x00000000, (void*)0x62010B0, 16);
+	
+	// Char #134 - Slim bar right top half		
+	dmaFillWords(0x00000000, (void*)0x62010C0, 16);
+	dmaFillWords(0x0FF00000, (void*)0x62010D0, 16);	
+	
+	// Char #135 - Slim bar right bottom half		
+	dmaFillWords(0x0FF00000, (void*)0x62010E0, 16);
+	dmaFillWords(0x00000000, (void*)0x62010F0, 16);
+	
+	
+	
+   
+	
+	
 
 	BG_PALETTE[  0]=BG_PALETTE_SUB[  0]=0x7FFF; // used when clear screen
     BG_PALETTE[ 15]=BG_PALETTE_SUB[ 15]=0x7FFF; // used by \x1b[30m
