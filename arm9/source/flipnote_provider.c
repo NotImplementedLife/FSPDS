@@ -97,10 +97,11 @@ int load_to_slot(int chunk_id)
 	background_provider_data.loading_dir_offset = SEEK_DIR_OFFSETS[chunk_id];
 	if(background_provider_data.loading_dir_offset<0)
 	{
-		char* c="Cannot load directory";
-		c[0]='0'+chunk_id;
-		c_displayError(c,1);
-		return -1;		
+		if(chunk_id==0)
+		{		
+			c_displayError("Cannot load directory",1);
+		}
+		return -1;
 	}
 	
 	background_provider_data.loading_dir_ptr = __open_dir(PPM_PATH, background_provider_data.loading_dir_offset);		
