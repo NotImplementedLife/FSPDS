@@ -117,6 +117,7 @@ int main(int argc, char ** argv)
             if(counter==frameTime[ppm_FramePlaybackSpeed])
             {
                 counter=0;
+				CurrentTab->drawingProc();
             }
         }		
 	}
