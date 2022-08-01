@@ -31,7 +31,7 @@ int main(int argc, char ** argv)
 	
 	// init sprites
 	vramSetBankE(VRAM_D_SUB_SPRITE); // 0x06600000 
-	oamInit(&oamSub, SpriteMapping_1D_128, 0);
+	//oamInit(&oamSub, SpriteMapping_1D_128, 0);
 	
 	provider_init("/flipnotes");	
 
@@ -112,12 +112,12 @@ int main(int argc, char ** argv)
             else if(counter==2)
             {
                 playerNextFrameVBlank1(&dt);
+				// setPlaybarValue(16*sound_frame_counter*256/durationCount);
                 /// counter=0; // <-- force 30fps [DEBUG]
             }
             if(counter==frameTime[ppm_FramePlaybackSpeed])
             {
-                counter=0;
-				CurrentTab->drawingProc();
+                counter=0;				
             }
         }		
 	}

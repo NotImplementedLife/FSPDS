@@ -122,7 +122,7 @@ void playerNextFrameVBlank0(decodeType* dt)
         dt->tY=ppm_AnimationData[dt->i++];
     }
     dt->k=dt->i+0x60;
-
+	
     if(dt->diffing)
     {
         memcpy(layerA,layer1,LAYER_SIZE);
@@ -163,7 +163,8 @@ void playerNextFrameVBlank0(decodeType* dt)
                     u32 bytes=ppm_AnimationData[dt->k++]<<24;
                     bytes|=ppm_AnimationData[dt->k++]<<16;
                     bytes|=ppm_AnimationData[dt->k++]<<8;
-                    bytes|=ppm_AnimationData[dt->k++];
+                    bytes|=ppm_AnimationData[dt->k++];					
+					
                     for(;bytes;)
                     {
                         if(bytes & 0x80000000)

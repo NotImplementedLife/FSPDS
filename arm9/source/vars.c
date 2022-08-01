@@ -52,6 +52,7 @@ u8 ppm_RecordedPlaybackSpeed;
 
 u16 soundFreq;
 int BGMId,SE1Id,SE2Id,SE3Id;
+int durationCount;
 
 _PlayerState PlayerState = PAUSED;
 

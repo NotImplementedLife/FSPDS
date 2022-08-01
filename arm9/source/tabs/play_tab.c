@@ -12,7 +12,6 @@
 #include "bulb.h"
 #include "bar-fragments.h"
 
-
 int power_off_timer = 0;
 
 void timerCallBack()
@@ -22,7 +21,7 @@ void timerCallBack()
 	if(power_off_timer>=5*soundFreq)
 	{
 		bottom_screen_power_off();
-	}
+	}	
 }
 
 int loadFlipnote()
@@ -67,14 +66,14 @@ void PlayTabLoading()
 	
 	SPRITE_PALETTE_SUB[offset]=bar_fragmentsPal[1];
 	
-	for(int i=1;i<=14;i++)
+	/*for(int i=1;i<=14;i++)
 	{
 		int tileno=0x26;
 		if(i==1) tileno=0x4;
 		else if(i==14) tileno=0x48;
 		oamSet(&oamSub, i, 16*i, 144, 0, 0,
 			SpriteSize_16x8, SpriteColorFormat_256Color, (int*)(0x06600000+64*tileno), -1, 0, 0, 0, 0, 0);
-	}
+	}*/
 	
 	
     if(PlayerForceAnimationReload)
@@ -105,6 +104,7 @@ void setPlaybarValue(int val /* = 0..256 */)
 	setFragValue(full_frags+1, v_crt_frag);
 	for(int i=full_frags+2;i<=14;i++)
 		setFragValue(i, 0);
+	oamUpdate(&oamSub);
 }
 
 const char* PlayButton="\033[10;14H\026\027  \033[11;14H\002\002\026\027\033[12;14H\002\002\x18\x19\033[13;14H\x18\x19  ";
@@ -113,8 +113,6 @@ const char* BeginButton="\033[11;9H\x1B\x1C\033[12;9H\x1D\x1E";
 const char* EndButton="\033[11;21H\x16\x17\033[12;21H\x18\x19";
 const char* BackButton="\033[11;5H\x80\x84\033[12;5H\x81\x85";
 const char* ForwardButton="\033[11;25H\x86\x82\033[12;25H\x87\x83";
-
-u8 x=0;
 
 void PlayTabDrawing()
 {
@@ -137,9 +135,7 @@ void PlayTabDrawing()
 	printf(EndButton);
 	
 	c_drawBorder(10,24,13,28);
-	printf(ForwardButton);
-	
-	setPlaybarValue(x++);
+	printf(ForwardButton);	
 	
 	oamUpdate(&oamSub);	
 }

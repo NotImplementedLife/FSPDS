@@ -63,6 +63,8 @@ extern u8 ppm_RecordedPlaybackSpeed;
 extern u16 soundFreq;
 extern int BGMId,SE1Id,SE2Id,SE3Id;
 
+extern int durationCount;
+
 typedef enum 
 {
     PLAYING,

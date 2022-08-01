@@ -91,6 +91,10 @@ void ppm_loadSoundData()
     soundFreq=8192*frameTime[ppm_RecordedPlaybackSpeed]/frameTime[ppm_FramePlaybackSpeed];
 	// what happens when recordedPlaybackSpeed==30Hz && framePlaybackSpeed==0.5Hz ?
 	// soundFreq = 8195 
+	// [What did I even want to say by that? ^^^]
+	
+	durationCount = soundFreq * ppmHead_FrameCount;
+	
     fseek(PPM_Current,14,SEEK_CUR);
 
     fread(ppm_BGMData + (1<<20), ppm_BGMSize,1,PPM_Current);
