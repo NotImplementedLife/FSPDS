@@ -57,7 +57,7 @@ problems playing original flipnotes. Spin-off flipnotes which contain huge audio
 
 ### Hardware vs emulator compatibility
 
-- On the hardware, loading files from FAT system is substantialy faster.
+- On the hardware, loading files from FAT system is substantialy faster;
 - For some reason, the screen saver does not work on DeSmuME emulating in R4 mode. This doesn't affect the actual user experience.
 
 ## Credits
