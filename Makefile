@@ -15,9 +15,9 @@ export NDS_FILE     := $(TARGET)
 
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-NITROFS_INC := $(ROOT_DIR)/arm9/nitrofs
+#NITROFS_INC := $(ROOT_DIR)/arm9/nitrofs
 
-include $(NITROFS_INC)
+#include $(NITROFS_INC)
 
 ifneq ($(strip $(NITRO)),)
 NITRO_FILES := arm9/$(NITRO)

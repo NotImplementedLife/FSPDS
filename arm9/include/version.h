@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nds.h>
+
 extern const char BUILD_TYPE; //! 'D' = Debug, 'R' = Release
 extern const u8 MAJOR;
 extern const u8 MINOR;

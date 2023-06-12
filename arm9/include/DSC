@@ -1,0 +1,36 @@
+#pragma once
+
+#include "DSCEngine/debug/assert.hpp"
+#include "DSCEngine/debug/error.hpp"
+#include "DSCEngine/debug/log.hpp"
+
+#include "DSCEngine/drawing/brush.hpp"
+#include "DSCEngine/drawing/colors.hpp"
+
+#include "DSCEngine/events/event.hpp"
+
+#include "DSCEngine/resources/readonly_data.hpp"
+#include "DSCEngine/resources/asset_data.hpp"
+
+#include "DSCEngine/sprites/sprite.hpp"
+#include "DSCEngine/sprites/obj_allocator.hpp"
+#include "DSCEngine/sprites/obj_frame.hpp"
+#include "DSCEngine/sprites/obj_visual.hpp"
+
+#include "DSCEngine/scenes/scene.hpp"
+#include "DSCEngine/scenes/generic_scene_256.hpp"
+
+#include "DSCEngine/system/hardware.hpp"
+
+#include "DSCEngine/types/templates.hpp"
+#include "DSCEngine/types/bits_array.hpp"
+#include "DSCEngine/types/hash_map.hpp"
+#include "DSCEngine/types/stack.hpp"
+#include "DSCEngine/types/vector.hpp"
+
+#include "DSCEngine/text/vwf_engine.hpp"
+
+#include "DSCEngine/video/measure.hpp"
+#include "DSCEngine/video/palette_manager.hpp"
+#include "DSCEngine/video/palette_loader.hpp"
+#include "DSCEngine/video/vram_loader.hpp"
