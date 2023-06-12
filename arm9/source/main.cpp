@@ -22,5 +22,3 @@ class MainScene : public GenericScene256
 };
 
 Scene* gen_main_scene() { return new MainScene(); }
-
-dsc_launch(MainScene)

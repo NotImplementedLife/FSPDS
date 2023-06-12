@@ -96,6 +96,12 @@ void DSC::Sprite::oam_deploy_sub()
 	OamPool::sub()->deploy();	
 }
 
+void DSC::Sprite::oam_reset()
+{
+	OamPool::main()->reset();	
+	OamPool::sub()->reset();	
+}
+
 Engine DSC::Sprite::get_engine() const
 {
 	return _<OamPool>(oam_pool) == OamPool::main() ? Engine::Main : Engine::Sub;

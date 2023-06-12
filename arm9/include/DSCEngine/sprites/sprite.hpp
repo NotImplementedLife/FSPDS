@@ -115,5 +115,6 @@ namespace DSC
 		void set_default_allocator(ObjAllocator* obj_allocator);		
 		static void oam_deploy_main();
 		static void oam_deploy_sub();
+		static void oam_reset();
 	};
 }

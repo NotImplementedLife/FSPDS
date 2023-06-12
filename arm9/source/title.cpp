@@ -45,19 +45,11 @@ class TitleScene : public GenericScene256
 		require_tiledmap(SUB_BG2, 256, 256, &ROA_background4);
 		require_tiledmap_4bpp(SUB_BG0, 256, 256, 32*24);		
 		
-
-		esodev_logo =  create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
-		title[0] = create_sprite(new Sprite(SIZE_64x64, Engine::Main));
-		title[1] = create_sprite(new Sprite(SIZE_64x64, Engine::Main));
-				
-		
-		//for(int i=0;i<4;i++) boxes[i] = create_sprite(new Sprite(SIZE_64x32, Engine::Sub));
-		
 		
 		begin_sprites_init();
-		
-		esodev_logo->add_frame(new ObjFrame(&ROA_esodev_logo8, 0,0));
-		esodev_logo->set_position(15,149);
+
+		title[0] = create_sprite(new Sprite(SIZE_64x64, Engine::Main));
+		title[1] = create_sprite(new Sprite(SIZE_64x64, Engine::Main));	
 		
 		title[0]->add_frame(new ObjFrame(&ROA_title_spr8, 0,0));
 		title[1]->add_frame(new ObjFrame(&ROA_title_spr8, 0,1));			
@@ -71,6 +63,11 @@ class TitleScene : public GenericScene256
 			fat_fail->add_frame(new ObjFrame(&ROA_fat_fail8, 0,0));
 			fat_fail->set_position(14,112);
 		}			
+		
+		esodev_logo =  create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
+		esodev_logo->add_frame(new ObjFrame(&ROA_esodev_logo8, 0,0));
+		esodev_logo->set_position(15,149);
+		
 		
 		end_sprites_init();	
 				
@@ -112,9 +109,13 @@ class TitleScene : public GenericScene256
 		GenericScene256::frame();
 	}	
 	
+	typedef Scene*(*fgen)();
+	
+	inline static constexpr fgen scenegens[4] = { &gen_main_scene, &gen_main_scene, &gen_main_scene, &gen_main_scene  };
+	
 	void on_key_down(void* sender, void* args)
 	{
-		int keys = (int)args;				
+		int keys = (int)args;
 
 		if(keys & KEY_TOUCH)
 		{
@@ -125,8 +126,8 @@ class TitleScene : public GenericScene256
 			int y=touch.py-8;
 			if(y<0 || y%32>28) return;
 			int option = y/32;
-			
-			close()->next(gen_main_scene());
+			if(option<0 || option>=4) return;						
+			close()->next(scenegens[option]());
 			
 		}		
 	}
@@ -365,6 +366,9 @@ class TitleScene : public GenericScene256
 		delete title[1];
 		delete fat_fail;
 		delete esodev_logo;
+		
+		Sprite::oam_deploy_main();		
+		Sprite::oam_deploy_sub();		
 	}
 };
 
@@ -373,4 +377,4 @@ Scene* gen_title_scene()
 	return new TitleScene();
 }
 
-//dsc_launch(TitleScene)
+dsc_launch(TitleScene)
