@@ -1,4 +1,3 @@
-#include "DSC"
 #include <nds.h>
 #include <fat.h>
 
@@ -12,6 +11,8 @@
 #include "opt_box.h"
 #include "fat_fail.h"
 
+#include "scenes.hpp"
+
 
 static char BK_RESERVED[2*1024*1024 + 128*1024];
 
@@ -24,8 +25,7 @@ class TitleScene : public GenericScene256
 	float rotateX = 0.0;
 	float rotateY = 0.0;	
 		
-	Sprite* title[2];		
-	Sprite* boxes[4];	
+	Sprite* title[2];			
 	Sprite* fat_fail;
 	
 	void* ______ = BK_RESERVED;
@@ -35,15 +35,15 @@ class TitleScene : public GenericScene256
 	
 	void init() override
 	{						
-		GenericScene256::init();
-		
-		init3d();
+		GenericScene256::init();		
 		
 		key_down.add_event(&TitleScene::on_key_down, this);
-		key_held.add_event(&TitleScene::on_key_held, this);				
+		key_held.add_event(&TitleScene::on_key_held, this);								
+		
+		init3d();
 				
 		require_tiledmap(SUB_BG2, 256, 256, &ROA_background4);
-		require_tiledmap_4bpp(SUB_BG0, 256, 256, 32*24);
+		require_tiledmap_4bpp(SUB_BG0, 256, 256, 32*24);		
 		
 
 		esodev_logo =  create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
@@ -70,16 +70,10 @@ class TitleScene : public GenericScene256
 			fat_fail = create_sprite(new Sprite(SIZE_64x32, Engine::Sub));
 			fat_fail->add_frame(new ObjFrame(&ROA_fat_fail8, 0,0));
 			fat_fail->set_position(14,112);
-		}						
-		/*for(int i=0;i<4;i++)
-		{
-			boxes[i]->add_frame(new ObjFrame(&ROA_opt_box8, 0,0));
-			boxes[i]->set_position(96, 16+40*i);
-		}*/			
+		}			
 		
 		end_sprites_init();	
-		
-		
+				
 	}
 	
 	bool sinit=false;
@@ -113,78 +107,26 @@ class TitleScene : public GenericScene256
 			
 		}		
 		
-		glLight(0, RGB15(31,31,31) , 0,				  floattov10(-1.0),		 0);
-		glLight(1, RGB15(31,13,21),   0,				  floattov10(1) - 1,			 0);
-		glLight(2, RGB15(31,13,21) ,   floattov10(-1.0), 0,					 0);
-		glLight(3, RGB15(31,13,21) ,   floattov10(1.0) - 1,  0,					 0);
-
-		glPushMatrix();
-
-		//move it away from the camera
-		glTranslatef32(0, 0, floattof32(-1));
-				
-		glRotateX(rotateX);
-		glRotateY(rotateY);
-		
-		glMatrixMode(GL_TEXTURE);
-		glLoadIdentity();
-		
-		glMatrixMode(GL_MODELVIEW);
-
-		glMaterialf(GL_AMBIENT, RGB15(8,8,8));
-		glMaterialf(GL_DIFFUSE, RGB15(16,16,16));
-		glMaterialf(GL_SPECULAR, BIT(15) | RGB15(8,8,8));
-		glMaterialf(GL_EMISSION, RGB15(5,5,5));
-
-		//ds uses a table for shinyness..this generates a half-ass one
-		glMaterialShinyness();
-
-		//not a real gl function and will likely change
-		glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT0 | POLY_FORMAT_LIGHT1 | 
-													POLY_FORMAT_LIGHT2 | POLY_FORMAT_LIGHT3 ) ;
-		
-		
-		for(int i=0, u=32, v=32;i<6;i++)
-		{
-			u=v=32;
-			if(i==2)
-				glBindTexture(0, textureID[1]);
-			else if(i==4)			
-				glBindTexture(0, textureID[0]);
-			else if(i==0 || i==5)
-			{
-				glBindTexture(0, textureID[3]);
-				v=16;
-			}
-			else 
-			{
-				glBindTexture(0, textureID[2]);
-				v=16;
-			}
-			
-			glBegin(GL_QUAD);
-				drawQuad(i,u,v);
-			glEnd();
-		}
-		
-		glPopMatrix(1);
-			
-		glFlush(0);		
-		
-		rotateY += 3;
-
-		//the display capture enable bit must be set again each frame if you want to continue capturing.
-		REG_DISPCAPCNT |= DCAP_ENABLE;		
+		frame3d();
 		
 		GenericScene256::frame();
-	}
+	}	
 	
 	void on_key_down(void* sender, void* args)
 	{
 		int keys = (int)args;				
 
-		if(keys & KEY_A)
+		if(keys & KEY_TOUCH)
 		{
+			touchPosition touch;
+			touchRead(&touch);
+			if(touch.px<137) return;
+			
+			int y=touch.py-8;
+			if(y<0 || y%32>28) return;
+			int option = y/32;
+			
+			close()->next(gen_main_scene());
 			
 		}		
 	}
@@ -202,8 +144,7 @@ class TitleScene : public GenericScene256
 			if(rotateX>-30)
 				rotateX -= 2; 
 		}
-	}
-	
+	}	
 	
 	void init3d()
 	{
@@ -211,7 +152,10 @@ class TitleScene : public GenericScene256
 		videoSetMode(MODE_0_3D);
 
 		// initialize gl
-		glInit();
+		glInit();		
+		
+		glResetMatrixStack();
+		glResetTextures();
 		
 		//enable textures
 		glEnable(GL_TEXTURE_2D);
@@ -259,9 +203,7 @@ class TitleScene : public GenericScene256
 		glBindTexture(2, textureID[2]);
 		glTexImage2D(0, 0, GL_RGB, TEXTURE_SIZE_32 , TEXTURE_SIZE_16, 0, TEXGEN_TEXCOORD, (u8*)logo_side_bin);
 		glBindTexture(3, textureID[3]);
-		glTexImage2D(0, 0, GL_RGB, TEXTURE_SIZE_32 , TEXTURE_SIZE_16, 0, TEXGEN_TEXCOORD, (u8*)logo_tb_bin);
-				
-		
+		glTexImage2D(0, 0, GL_RGB, TEXTURE_SIZE_32 , TEXTURE_SIZE_16, 0, TEXGEN_TEXCOORD, (u8*)logo_tb_bin);		
 		
 		//any floating point gl call is being converted to fixed prior to being implemented
 		glMatrixMode(GL_PROJECTION);
@@ -347,10 +289,88 @@ class TitleScene : public GenericScene256
 		REG_DISPCNT = dispcnt;
 	}
 	
+	void frame3d()
+	{
+		glLight(0, RGB15(31,31,31) , 0,				  floattov10(-1.0),		 0);
+		glLight(1, RGB15(31,13,21),   0,				  floattov10(1) - 1,			 0);
+		glLight(2, RGB15(31,13,21) ,   floattov10(-1.0), 0,					 0);
+		glLight(3, RGB15(31,13,21) ,   floattov10(1.0) - 1,  0,					 0);
+
+		glPushMatrix();
+
+		//move it away from the camera
+		glTranslatef32(0, 0, floattof32(-1));
+				
+		glRotateX(rotateX);
+		glRotateY(rotateY);
+		
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		
+		glMatrixMode(GL_MODELVIEW);
+
+		glMaterialf(GL_AMBIENT, RGB15(8,8,8));
+		glMaterialf(GL_DIFFUSE, RGB15(16,16,16));
+		glMaterialf(GL_SPECULAR, BIT(15) | RGB15(8,8,8));
+		glMaterialf(GL_EMISSION, RGB15(5,5,5));
+
+		//ds uses a table for shinyness..this generates a half-ass one
+		glMaterialShinyness();
+
+		//not a real gl function and will likely change
+		glPolyFmt(POLY_ALPHA(31) | POLY_CULL_BACK | POLY_FORMAT_LIGHT0 | POLY_FORMAT_LIGHT1 | 
+													POLY_FORMAT_LIGHT2 | POLY_FORMAT_LIGHT3 ) ;
+		
+		
+		for(int i=0, u=32, v=32;i<6;i++)
+		{
+			u=v=32;
+			if(i==2)
+				glBindTexture(0, textureID[1]);
+			else if(i==4)			
+				glBindTexture(0, textureID[0]);
+			else if(i==0 || i==5)
+			{
+				glBindTexture(0, textureID[3]);
+				v=16;
+			}
+			else 
+			{
+				glBindTexture(0, textureID[2]);
+				v=16;
+			}
+			
+			glBegin(GL_QUAD);
+				drawQuad(i,u,v);
+			glEnd();
+		}
+		
+		glPopMatrix(1);
+			
+		glFlush(0);		
+		
+		rotateY += 3;
+
+		//the display capture enable bit must be set again each frame if you want to continue capturing.
+		REG_DISPCAPCNT |= DCAP_ENABLE;		
+	}
+	
 	~TitleScene()
 	{
-		delete vwf;
+		key_down.remove_event(&TitleScene::on_key_down, this);
+		key_held.remove_event(&TitleScene::on_key_held, this);
+		delete vwf;	
+
+		delete title[0];
+		delete title[1];
+		delete fat_fail;
+		delete esodev_logo;
 	}
 };
 
-dsc_launch(TitleScene)
+Scene* gen_title_scene()
+{
+	return new TitleScene();
+}
+
+//dsc_launch(TitleScene)

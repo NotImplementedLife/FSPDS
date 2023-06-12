@@ -67,6 +67,7 @@ DSC::GenericScene256::GenericScene256()
 
 void DSC::GenericScene256::init()
 {
+	REG_DISPCNT = REG_DISPCNT_SUB = 0;
 	set_banks();
 	
 	privates->main_obj_vram_allocator = Allocator((int)Hardware::MainEngine::ObjVram, 64*1024);		

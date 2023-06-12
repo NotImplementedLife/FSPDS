@@ -107,7 +107,7 @@ namespace DSC
 		void set_anchor(int anchor_x, int anchor_y);
 		
 		
-		~Sprite();		
+		virtual ~Sprite();		
 		
 		
 		// the following are not intended for common use outside the library:

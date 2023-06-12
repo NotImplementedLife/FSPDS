@@ -99,7 +99,7 @@ namespace DSC
 		Event key_held;
 		
 		/*! \brief Key up event */
-		Event key_up;	
+		Event key_up;			
 		
 		virtual ~Scene() = default;
 	};

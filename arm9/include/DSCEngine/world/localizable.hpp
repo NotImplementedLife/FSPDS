@@ -25,5 +25,7 @@ namespace DSC
 		* \return object y coordinate
 		 */
 		virtual sf24 y() const = 0;
+		
+		virtual ~Localizable() = default;
 	};
 }
