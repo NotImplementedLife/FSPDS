@@ -12,3 +12,5 @@ extern const char* selected_flipnote_path;
 extern PPMReader* ppm_reader;
 
 Scene* get_player_scene();
+Scene* get_simple_scene();
+Scene* get_credits_scene();

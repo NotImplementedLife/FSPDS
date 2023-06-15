@@ -69,7 +69,6 @@ public:
 		soundEnable();
 		
 		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);
-		require_tiledmap_4bpp(MAIN_BG3, 256, 256, 32*24);
 		
 		require_bitmap(SUB_BG2, &ROA_player_bg8);
 				
@@ -205,27 +204,28 @@ public:
 		cy-=touch.py;
 		return cx*cx+cy*cy<=r*r;
 	}
-	
-	bool next=false;
+		
 	void on_key_down(void*, void* _k)
 	{
-		int keys = (int)_k;		
-		next=true;
+		int keys = (int)_k;				
 		
 		if(keys & KEY_A)
 		{
 			paused ? resume() : pause();
-		}				
-		if(keys & KEY_TOUCH)
+		}		
+		else if(keys & KEY_TOUCH)
 		{
 			touchRead(&touch);
 			if(touch_in_rect(89,147,16,16))
-				toggle_autoplay();			
+				toggle_autoplay();
 			if(touch_in_range(128,156,16))
 			{
 				paused ? resume() : pause();
 			}
-			
+		}
+		else if(keys & KEY_Y)
+		{
+			toggle_autoplay();
 		}
 	}
 	
@@ -250,14 +250,13 @@ public:
 			case 2: return Colors::Red;
 			case 3: return Colors::Blue;
 			default: return 0x7fff-paperColor;
-		}		
-	}	
+		}
+	}
 	
 	int frame_countdown = 0;
 	
 	void frame() override
-	{				
-		if(!next) return;
+	{						
 		working=true;
 
 		if(frame_countdown==0 && !paused)
@@ -304,7 +303,6 @@ public:
 		GenericScene256::frame();
 		
 		working=false;
-		Debug::log("V=%i",vbl);		
 	}
 		
 	__attribute__((noinline))

@@ -238,7 +238,7 @@ void DSC::GenericScene256::solve_map_requirements_main()
 	else 
 	{
 		REG_DISPCNT &= ~0x10007;
-		REG_DISPCNT |= MODE_3_2D;		
+		REG_DISPCNT |= MODE_0_2D;
 	}
 	
 	
@@ -425,6 +425,7 @@ void DSC::GenericScene256::load_assets()
 	for(int i=0;i<8;i++)
 	{		
 		BackgroundRequirement& req = privates->bg_requirements[i];
+		int pal4=0;
 		if(req.enabled && req.src_asset!=nullptr)
 		{			
 			Debug::log("Loading %i", i);
@@ -433,6 +434,7 @@ void DSC::GenericScene256::load_assets()
 			
 			pal_loader->set_default_allocation_mode(PaletteLoader::ALLOC_MODE_STANDARD_PALETTE);
 			PaletteAllocationResult palloc = pal_loader->try_load(req.src_asset, PaletteLoader::ALLOC_MODE_DEFAULT);
+			pal4 = palloc.indices[0];
 			
 			nds_assert(palloc.succeeded, "Palette allocation failed");
 			
@@ -446,7 +448,7 @@ void DSC::GenericScene256::load_assets()
 			for(int y=0;y<req.height/8;y++)
 			{
 				for(int x=0;x<req.width/8;x++)
-					bgGetMapPtr(i)[32*y+x]=32*y+x;
+					bgGetMapPtr(i)[32*y+x]=(32*y+x) | pal4<<12;
 			}
 		}
 	}
