@@ -1,5 +1,6 @@
 #include "DSCEngine/debug/log.hpp"
 #include <cstdarg>
+#include <stdlib.h>
 
 // gcc translates inline asm "mov r7,r7" to "add r7, r7, #0"
 // so we have to hardcode the intended instruction
@@ -56,7 +57,7 @@ namespace
 	__attribute__((target("thumb"))) 
 	void _logv(int role, char* dest, const char* message, va_list args)
 	{							
-		char* result = new char[1024];
+		char* result = (char*)malloc(1024);
 		char* built = result;
 				
 		for(const char* msg=message; *msg;)
@@ -203,7 +204,7 @@ namespace
 			copy_str(dest, result);
 		}
 		
-		delete[] result;
+		free(result);
 	}		
 }
 

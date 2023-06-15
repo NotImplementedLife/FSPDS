@@ -13,8 +13,11 @@
 
 #include "scenes.hpp"
 
+extern "C" char fake_heap_start[];
+extern "C" char fake_heap_end[];
 
-static char BK_RESERVED[2*1024*1024 + 128*1024];
+
+static char BK_RESERVED[1024*1024 + 256*1024];
 
 using namespace DSC;
 
@@ -35,6 +38,11 @@ class TitleScene : public GenericScene256
 	
 	void init() override
 	{						
+		int* ptt = (int*)fake_heap_start;
+		Debug::warn("Heap start = %X", *ptt);
+		ptt = (int*)fake_heap_end;
+		Debug::log("Heap end = %X", *ptt);
+	
 		GenericScene256::init();		
 		
 		key_down.add_event(&TitleScene::on_key_down, this);
@@ -45,11 +53,11 @@ class TitleScene : public GenericScene256
 		require_tiledmap(SUB_BG2, 256, 256, &ROA_background4);
 		require_tiledmap_4bpp(SUB_BG0, 256, 256, 32*24);		
 		
-		
-		begin_sprites_init();
-
 		title[0] = create_sprite(new Sprite(SIZE_64x64, Engine::Main));
 		title[1] = create_sprite(new Sprite(SIZE_64x64, Engine::Main));	
+		
+		
+		begin_sprites_init();		
 		
 		title[0]->add_frame(new ObjFrame(&ROA_title_spr8, 0,0));
 		title[1]->add_frame(new ObjFrame(&ROA_title_spr8, 0,1));			
@@ -68,9 +76,7 @@ class TitleScene : public GenericScene256
 		esodev_logo->add_frame(new ObjFrame(&ROA_esodev_logo8, 0,0));
 		esodev_logo->set_position(15,149);
 		
-		
-		end_sprites_init();	
-				
+		end_sprites_init();
 	}
 	
 	bool sinit=false;
@@ -111,7 +117,7 @@ class TitleScene : public GenericScene256
 	
 	typedef Scene*(*fgen)();
 	
-	inline static constexpr fgen scenegens[4] = { &gen_main_scene, &gen_main_scene, &gen_main_scene, &gen_main_scene  };
+	inline static constexpr fgen scenegens[4] = { &get_player_scene, &gen_main_scene, &gen_main_scene, &gen_main_scene  };
 	
 	void on_key_down(void* sender, void* args)
 	{

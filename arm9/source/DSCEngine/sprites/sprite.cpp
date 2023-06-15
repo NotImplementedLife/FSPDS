@@ -97,8 +97,8 @@ void DSC::Sprite::oam_deploy_sub()
 }
 
 void DSC::Sprite::oam_reset()
-{
-	OamPool::main()->reset();	
+{	
+	OamPool::main()->reset();		
 	OamPool::sub()->reset();	
 }
 

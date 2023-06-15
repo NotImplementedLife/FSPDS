@@ -7,8 +7,10 @@ using namespace DSC;
 
 void DSC::OamPool::reset()
 {	
-	freeSlots.clear();
-	BitsArray<128*4*32>::take_over(__obj_attr_buffer)->clear();	
+	freeSlots.clear();	
+	volatile int z=0;
+	for(int i=0;i<OBJ_BUFFER_SIZE / 2;i++) __obj_attr_buffer[i]=z;
+	//BitsArray<128*4*32>::take_over(__obj_attr_buffer)->clear();
 }
 
 ObjAttribute* DSC::OamPool::add_obj(ObjAttribute attr)

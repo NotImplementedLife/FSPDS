@@ -67,7 +67,7 @@ DSC::GenericScene256::GenericScene256()
 
 void DSC::GenericScene256::init()
 {	
-	REG_DISPCNT = REG_DISPCNT_SUB = 0;	
+	REG_DISPCNT = REG_DISPCNT_SUB = 0;		
 	Sprite::oam_reset();
 	
 	set_banks();
@@ -250,8 +250,10 @@ void DSC::GenericScene256::solve_map_requirements_main()
 		{
 			int config = validate_bg_size(req.width, req.height, req.color_depth, req.is_bitmap);
 			BgType bg_type = (BgType)((config>>16)&0xFFFF);
-			BgSize bg_size = (BgSize)(config & 0xFFFF);
-			bgInit(i, bg_type, bg_size, tile_base[i], map_base[i]);	
+			BgSize bg_size = (BgSize)(config & 0xFFFF);			
+			
+			Debug::log("MAIN %i: type=%i, size=%i", i, bg_type, bg_size);
+			bgInit(i, bg_type, bg_size, map_base[i],tile_base[i]);
 			
 			if(!req.is_bitmap && req.color_depth==8)
 				bg_use_ext.push_back(i);
@@ -624,6 +626,9 @@ DSC::GenericScene256::~GenericScene256()
 	
 	delete privates;
 	
+	
+	Hardware::MainEngine::objDisable(); 
+	Hardware::SubEngine::objDisable();
 }
 
 #include <nds.h>

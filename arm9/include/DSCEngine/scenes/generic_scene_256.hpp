@@ -24,17 +24,17 @@ namespace DSC
 		struct __privates__;
 		__privates__* privates;
 		
-		void set_banks();
-		void solve_map_requirements();		
+		void set_banks();		
 		
 		void solve_map_requirements_main();
 		void solve_map_requirements_sub();
 		
-		void solve_video_mode();
-		
-		void load_assets();
+		void solve_video_mode();		
 		
 		static int validate_bg_size(int w, int h, int color_depth, bool is_bitmap);
+	protected:
+		void solve_map_requirements();		
+		void load_assets();
 	public:
 		GenericScene256();
 		virtual void init() override;		
