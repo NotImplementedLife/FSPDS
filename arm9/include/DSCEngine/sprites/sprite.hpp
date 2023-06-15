@@ -69,6 +69,8 @@ namespace DSC
 			\return frame id to be used when setting the frame for display, also when including the frame into animated framesets
 		 */
 		int add_frame(ObjFrame* frame);
+		
+		void set_frame(int index, ObjFrame* frame);
 				
 		void flip_horizontal(); /*!< Flips the sprite horizontally */
 		void flip_vertical(); /*!< Flips the sprite vertically */

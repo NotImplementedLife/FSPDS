@@ -25,51 +25,34 @@ constexpr int clamp(int n, int l, int h) { return n <= l ? l : n >= h ? h : n; }
 
 // thxx RinLovesYou (https://github.com/miso-xyz/PPMLib/blob/c7548bf4cdb0e368af552c71a45eb9f96f2e3385/PPMLib/Extensions/AdpcmDecoder.cs#L46-L119)
 void SoundDecoder::ADPCM2PCM16(const char* src, short* dst, int srclen)
-{		
-	DSC::Debug::log("s=%X", src);
-	DSC::Debug::log("d=%X", dst);
-
-	int srcPtr = 0;
-	int dstPtr = 0;
+{				
 	int sample = 0;
 	int step_index = 0;
 	int predictor = 0;
 	bool lowNibble = true;
-
-	while (srcPtr < srclen)
+	
+	for(srclen*=2;srclen--;)
 	{		
 		// switch between high and low nibble each loop iteration
 		// increments srcPtr after every high nibble
-		if (lowNibble)		
-			sample = src[srcPtr] & 0xF;		
-		else		
-			sample = src[srcPtr++] >> 4;		
+		if (lowNibble)
+			sample = (*src) & 0xF;
+		else
+			sample = (*(src++)) >> 4;
 		lowNibble = !lowNibble;
 		int step = ADPCM_STEP_TABLE[step_index];
 		int diff = step >> 3;
 
-		if ((sample & 1) != 0)
-		{
-			diff += step >> 2;
-		}
-		if ((sample & 2) != 0)
-		{
-			diff += step >> 1;
-		}
-		if ((sample & 4) != 0)
-		{
-			diff += step;
-		}
-		if ((sample & 8) != 0)
-		{
-			diff = -diff;
-		}
+		if ((sample & 1) != 0) diff += step >> 2;
+		if ((sample & 2) != 0) diff += step >> 1;
+		if ((sample & 4) != 0) diff += step;
+		if ((sample & 8) != 0) diff = -diff;
+		
 		predictor += diff;
 		predictor = clamp(predictor, -32768, 32767);
-
+		
 		step_index += IndexTable[sample];
 		step_index = clamp(step_index, 0, 88);
-		dst[dstPtr++] = (short)predictor;
+		*(dst++) = (short)predictor;
 	}
-	DSC::Debug::log("done?");
 }

@@ -56,6 +56,9 @@ namespace DSC
 		void require_bitmap_16bpp(int id, int px_width, int px_height);
 		void require_bitmap_16bpp(int id, const DSC::AssetData* bitmap);
 		
+		ObjAllocator* get_obj_allocator_main() const;
+		ObjAllocator* get_obj_allocator_sub() const;
+		
 				
 		Sprite* create_sprite(Sprite* sprite);
 		

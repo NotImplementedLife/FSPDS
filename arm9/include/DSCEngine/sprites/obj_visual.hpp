@@ -47,6 +47,7 @@ namespace DSC
 			 */
 			int add_frame(ObjFrame* frame);
 			
+			void set_frame(int index, ObjFrame* frame);
 			
 			/*! \brief gets the current graphics from VRAM
 				\return pointer to loaded frame graphics

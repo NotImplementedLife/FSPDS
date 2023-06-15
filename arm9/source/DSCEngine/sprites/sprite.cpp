@@ -83,6 +83,11 @@ int Sprite::add_frame(ObjFrame* frame)
 	return visual->add_frame(frame);
 }
 
+void Sprite::set_frame(int index, ObjFrame* frame)
+{
+	visual->set_frame(index, frame);
+}
+
 sf24 DSC::Sprite::x() const { return pos.x; }
 sf24 DSC::Sprite::y() const { return pos.y; }
 

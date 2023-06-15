@@ -99,6 +99,9 @@ void DSC::GenericScene256::init()
 	Debug::log("GenericScene256 inited");
 }
 
+ObjAllocator* DSC::GenericScene256::get_obj_allocator_main() const { return privates->main_obj_allocator; }
+ObjAllocator* DSC::GenericScene256::get_obj_allocator_sub() const { return privates->sub_obj_allocator; }
+
 Sprite* DSC::GenericScene256::create_sprite(Sprite* sprite)
 {
 	sprite->set_default_allocator(sprite->get_engine()==Engine::Main 

@@ -13,6 +13,11 @@ int DSC::ObjVisual::add_frame(ObjFrame* frame)
 	return frames.size()-1;
 }
 
+void DSC::ObjVisual::set_frame(int index, ObjFrame* frame)
+{
+	frames[index]=frame;
+}
+
 
 void* DSC::ObjVisual::get_crt_gfx() const
 {

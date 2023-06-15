@@ -11,7 +11,7 @@ void lsh_nibbles(int* buff, int cnt, int shift_pos, int* dest)
 	int off = shift_pos/8;
 	shift_pos=(shift_pos&7)*4;
 	buff+=off;
-	cnt-=off;	
+	cnt-=off;
 	
 	unsigned int v=*(buff++);
 	*dest = v>>shift_pos;
