@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <fat.h>
 
+static constexpr int frames[] = { 2, 120, 60, 30, 15, 10, 5, 3, 2 };
+
 int PPMReader::read_metadata(const char* filename)
 {
 	if(filename==nullptr) return ERR_NULL_ARGUMENT;
@@ -28,6 +30,14 @@ int PPMReader::read_metadata(const char* filename)
 
 int PPMReader::read_file(const char* filename)
 {
+	for(int i=1;i<=8;i++)
+		for(int j=1;j<=8;j++)
+		{
+			int f=8192*frames[i]/frames[j];
+			if(f<=65536)
+				DSC::Debug::log("%i %i %i", i,j, f);
+		}
+	
 	if(filename==nullptr) return ERR_NULL_ARGUMENT;
 	FILE* fp=fopen(filename,"rb");
 	if(fp==nullptr) return ERR_FOPEN;
@@ -97,7 +107,24 @@ char* PPMReader::getFrame(int index) const
 	return point_at(0x06A8 + getFrameOffsetTableSize() + getOffsetTable()[index]);
 }
 
-static constexpr int frames[] = { 2, 120, 60, 30, 15, 10, 5, 3, 2 };
 
-int PPMReader::getFramePlaybackSpeed() const { return frames[8-(int)read8( ((0x6A0+getAnimationDataSize()+getFrameCount()+3)/4)*4 + 16) ]; } 
-int PPMReader::getBgmFramePlaybackSpeed() const { return frames[8-(int)read8(((0x6A0+getAnimationDataSize()+getFrameCount()+3)/4)*4 + 17)]; }
+// Sound data
+
+int PPMReader::getSoundHeaderOffset() const { return ((0x6A0+getAnimationDataSize()+getFrameCount()+3)/4)*4;  }
+
+int PPMReader::getFramePlaybackSpeed() const { return frames[8-(int)read8(getSoundHeaderOffset() + 16)]; } 
+int PPMReader::getBgmFramePlaybackSpeed() const { return frames[8-(int)read8(getSoundHeaderOffset() + 17)]; }
+
+int PPMReader::getBgmTrackSize() const { return read32(getSoundHeaderOffset());  }
+int PPMReader::getSfxTrackSize(int i) const { return read32(getSoundHeaderOffset()+4*i); }
+
+char* PPMReader::getBgmTrack() const { return point_at(getSoundHeaderOffset()+32); }
+char* PPMReader::getSfxTrack(int i) const
+{
+	int offset=getSoundHeaderOffset()+32+getBgmTrackSize();
+	for(int k=0;--i;k++)
+		offset+=getSfxTrackSize(k);		
+	return point_at(offset);	
+}
+
+int PPMReader::getSoundFreq() const { return 8192*getBgmFramePlaybackSpeed()/getFramePlaybackSpeed(); }

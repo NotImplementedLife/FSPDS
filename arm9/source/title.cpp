@@ -17,7 +17,7 @@ extern "C" char fake_heap_start[];
 extern "C" char fake_heap_end[];
 
 
-static char BK_RESERVED[1024*1024 + 256*1024];
+static char BK_RESERVED[1024*512];
 
 using namespace DSC;
 
@@ -37,7 +37,7 @@ class TitleScene : public GenericScene256
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 	
 	void init() override
-	{						
+	{								
 		int* ptt = (int*)fake_heap_start;
 		Debug::warn("Heap start = %X", *ptt);
 		ptt = (int*)fake_heap_end;

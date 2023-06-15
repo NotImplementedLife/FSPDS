@@ -7,6 +7,8 @@ private:
 	short read16(int offset) const;
 	char read8(int offset) const;
 	char* point_at(int offset) const;
+	
+	int getSoundHeaderOffset() const;
 public:
 	unsigned char buffer[1<<20];
 	
@@ -32,6 +34,14 @@ public:
 	int getBgmFramePlaybackSpeed() const;
 	
 	char* getFrame(int index) const;
+	
+	int getBgmTrackSize() const;
+	int getSfxTrackSize(int i) const;
+	
+	char* getBgmTrack() const;
+	char* getSfxTrack(int i) const;
+	
+	int getSoundFreq() const;
 	
 	
 	int read_metadata(const char* filename);

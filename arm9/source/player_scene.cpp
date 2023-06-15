@@ -3,6 +3,7 @@
 #include "scenes.hpp"
 
 #include "frame_decoder.hpp"
+#include "sound_decoder.hpp"
 
 #include "0B33C4_0BC1601FB8421_000_bin.h"
 
@@ -50,6 +51,7 @@ public:
 	void init() override
 	{
 		GenericScene256::init();
+		soundEnable();
 		
 		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);
 		require_tiledmap_4bpp(MAIN_BG3, 256, 256, 32*24);
@@ -71,6 +73,9 @@ public:
 		
 		for(int i=0;i<253196/4;i++)
 			*(d++)=*(s++);*/
+		
+		soundFreq = ppm_reader->getSoundFreq();
+		Debug::log("FREQ = %i",ppm_reader->getSoundFreq());
 			
 		for(int i=0;i<10;i++)
 		{
@@ -91,8 +96,30 @@ public:
 		buffer1 = new int[32*192]();
 		buffer2 = new int[32*192]();
 		
+		bgmSize = ppm_reader->getBgmTrackSize();
+		Debug::log("bgmSize = %i", bgmSize);
+		if(bgmSize>=491520/2+100)
+		{
+			Debug::log("Sound TOO BIG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		}		
+				
+		sound_buffer = (short*)malloc(bgmSize*4);
+		Debug::log("Here? %X", sound_buffer);
+		if(sound_buffer==nullptr)
+		{
+			Debug::log("Sound buffer not allocated!!!");
+		}
+		Debug::log("Here2?");
+		SoundDecoder::ADPCM2PCM16(ppm_reader->getBgmTrack(), sound_buffer, bgmSize);
+		bgmSize*=4;
+		
 		key_down.add_event(&PlayerScene::on_key_down, this);
+		Debug::log("Here5?");
 	}
+	
+	int bgmId;
+	int bgmSize;
+	int soundFreq;
 	
 	bool next=false;
 	void on_key_down(void*, void* _k)
@@ -107,6 +134,7 @@ public:
 	
 	int* buffer1;
 	int* buffer2;	
+	short* sound_buffer;
 	
 	int framePbSpeed;
 	int bgmPbSpeed;
@@ -143,6 +171,11 @@ public:
 						layer1[256*ty+8*i+j] = buffer2[256*ty+32*j+i] | (buffer1[256*ty+32*j+i]<<1);
 			}
 			
+			if(frame_index==0)
+			{
+				soundKill(bgmId);
+				bgmId=soundPlaySample(sound_buffer, SoundFormat_16Bit, 4*bgmSize, soundFreq, 100, 64, false, 0);
+			}
 			
 			Debug::log("FID = %i", frame_index);
 			FrameDecoder::decode(buffer1, buffer2, ppm_reader->getFrame(frame_index++));
@@ -178,10 +211,10 @@ public:
 			bg0map[i]=0xE000 | i;			
 		}
 		
-		BG_PALETTE[0x00]=Colors::White;		
-		BG_PALETTE[0xE1]=Colors::Red;		
+		BG_PALETTE[0x00]=Colors::White;
+		BG_PALETTE[0xE1]=Colors::Red;	
 		BG_PALETTE[0xE2]=Colors::Blue;
-		BG_PALETTE[0xE3]=Colors::Blue;			
+		BG_PALETTE[0xE3]=Colors::Blue;
 				
 		Hardware::MainEngine::objEnable(128, true); // set to 128		
 		Hardware::SubEngine::objEnable(128, true); // set to 128	
@@ -193,9 +226,11 @@ public:
 	
 	~PlayerScene()
 	{
+		soundDisable();
 		delete[] buffer1;
-		delete[] buffer2;
-		delete ppm_reader;
+		delete[] buffer2;		
+		delete ppm_reader;		
+		free(sound_buffer);
 	}
 };
 
