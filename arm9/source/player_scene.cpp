@@ -11,6 +11,7 @@
 
 #include "player_bg.h"
 #include "bar_fragments.h"
+#include "player_icons.h"
 
 #include <stdlib.h>
 #include <malloc.h>
@@ -52,6 +53,15 @@ class PlayerScene : public GenericScene256
 private:
 	Sprite* bar_fragments[14];	
 	ObjFrame* bar_frames[17];
+	
+	ObjFrame* play_frame;
+	ObjFrame* resume_frame;
+	ObjFrame* replay_off_frame;
+	ObjFrame* replay_on_frame;	
+	
+	Sprite* play_resume_button;
+	Sprite* replay_button;
+	bool autoplay = false;
 public:
 	void init() override
 	{
@@ -138,10 +148,31 @@ public:
 			bar_fragments[i]->set_default_allocator(nullptr);
 			bar_fragments[i]->add_frame(bar_frames[1]);
 			bar_fragments[i]->set_position(16+16*i, 136);
-		}		
+		}				
+
 		
+		play_frame = new ObjFrame(&ROA_player_icons8, 0, 0);
+		get_obj_allocator_sub()->allocate(play_frame);
+		resume_frame= new ObjFrame(&ROA_player_icons8, 1, 0);
+		get_obj_allocator_sub()->allocate(resume_frame);
+		replay_off_frame = new ObjFrame(&ROA_player_icons8, 2, 0);
+		get_obj_allocator_sub()->allocate(replay_off_frame);
+		replay_on_frame = new ObjFrame(&ROA_player_icons8, 3, 0);
+		get_obj_allocator_sub()->allocate(replay_on_frame);
 		
-		end_sprites_init();		
+		play_resume_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
+		play_resume_button->set_default_allocator(nullptr);
+		play_resume_button->add_frame(play_frame);
+		play_resume_button->set_position(122,150);
+		
+	    replay_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
+		replay_button->set_default_allocator(nullptr);
+		replay_button->add_frame(replay_off_frame);
+		replay_button->set_position(89,147);
+		
+		end_sprites_init();
+		
+		set_autoplay(true);
 	}
 	
 	void set_player_bar(int value)
@@ -159,6 +190,22 @@ public:
 	int bgmSize;
 	int soundFreq;	
 	
+	touchPosition touch;
+	
+	bool touch_in_rect(int x, int y, int w, int h)
+	{
+		if(touch.px<x || touch.px>=x+w) return false;
+		if(touch.py<y || touch.py>=y+h) return false;
+		return true;
+	}
+	
+	bool touch_in_range(int cx, int cy, int r)
+	{
+		cx-=touch.px;
+		cy-=touch.py;
+		return cx*cx+cy*cy<=r*r;
+	}
+	
 	bool next=false;
 	void on_key_down(void*, void* _k)
 	{
@@ -169,6 +216,17 @@ public:
 		{
 			paused ? resume() : pause();
 		}				
+		if(keys & KEY_TOUCH)
+		{
+			touchRead(&touch);
+			if(touch_in_rect(89,147,16,16))
+				toggle_autoplay();			
+			if(touch_in_range(128,156,16))
+			{
+				paused ? resume() : pause();
+			}
+			
+		}
 	}
 	
 	int frames_count;
@@ -202,10 +260,8 @@ public:
 		if(!next) return;
 		working=true;
 
-		if(frame_countdown==0)
-		{
-			if(paused) { working=false; return;}
-			
+		if(frame_countdown==0 && !paused)
+		{					
 			char header = ppm_reader->getFrame(frame_index)[0];		
 			BG_PALETTE[0x00] = (header&1) ? Colors::White : Colors::Black;
 			BG_PALETTE[0xE1] = get_layer_color((header>>3)&3, BG_PALETTE[0x00]);
@@ -221,6 +277,7 @@ public:
 			if(frame_index==0)
 			{
 				sound_frame_counter=0;
+				play_resume_button->set_frame(0, resume_frame);
 				soundKill(bgmId);				
 				play_sound();				
 				timerStart(0, ClockDivider_1, TIMER_FREQ(soundFreq/4), &PlayerScene::timerCallback);		
@@ -231,7 +288,8 @@ public:
 			if(frame_index==frames_count)
 			{
 				soundKill(bgmId);
-				next=false;
+				if(!autoplay)					
+					pause();
 			}
 			frame_index%=frames_count;
 		}
@@ -298,16 +356,18 @@ public:
 	
 	void pause()
 	{
+		play_resume_button->set_frame(0, play_frame);		
 		paused=true;
 		timerPause(0);
-		soundKill(bgmId);				
+		soundKill(bgmId);						
 	}	
 	
 	void resume()
 	{
-		paused=false;		
+		play_resume_button->set_frame(0, resume_frame);
+		paused=false;
         play_sound();
-        timerUnpause(0);
+        timerUnpause(0);		
 	}
 	
 	void play_sound()
@@ -315,6 +375,14 @@ public:
 		soundKill(bgmId);
 		bgmId = soundPlaySample(sound_buffer+sound_frame_counter,SoundFormat_16Bit,4*bgmSize-2*sound_frame_counter, soundFreq, 100, 64, false, 0);
 	}
+	
+	void set_autoplay(bool value)
+	{
+		autoplay = value;
+		replay_button->set_frame(0, autoplay ? replay_on_frame : replay_off_frame);		
+	}
+	
+	void toggle_autoplay() { set_autoplay(!autoplay); }
 };
 
 int PlayerScene::sound_frame_counter = 0;
