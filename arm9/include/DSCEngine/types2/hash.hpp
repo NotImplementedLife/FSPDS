@@ -11,9 +11,4 @@ namespace DSC
 			result+=o[i];
 		return result % S;
 	}
-	
-	template<int S> int modular_hash(const int& item) 
-	{
-		return item%S;
-	}
 }

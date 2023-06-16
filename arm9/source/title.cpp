@@ -18,10 +18,19 @@ static char BK_RESERVED[1024*512];
 
 using namespace DSC;
 
+Scene* return_scene()
+{
+	Debug::log("Selected path = %s", picked_folder_path);
+	delete[] picked_folder_path;
+	picked_folder_path = nullptr;
+	return gen_title_scene();
+}
+
 Scene* get_browse_scene()
 {
 	//if(!is_fat_inited())
 		//return get_player_scene();
+	folder_picker_next_scene_gen = return_scene;	
 	return get_folder_picker_scene();
 }
 
@@ -32,7 +41,7 @@ class TitleScene : public GenericScene256
 	float rotateX = 0.0;
 	float rotateY = 0.0;	
 		
-	Sprite* title[2];			
+	Sprite* title[2];
 	Sprite* fat_fail;
 	
 	void* ______ = BK_RESERVED;
@@ -78,10 +87,10 @@ class TitleScene : public GenericScene256
 		end_sprites_init();
 	}
 	
-	bool sinit=false;
+	bool sinit=false;	
 	
 	void frame() override
-	{
+	{		
 		if(!sinit)
 		{			
 			sinit=true;			

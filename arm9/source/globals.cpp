@@ -14,3 +14,6 @@ void set_fat_inited(bool value)
 }
 
 bool is_fat_inited() { return state_flags & STATE_FAT_INITED_MASK; }
+
+DSC::Scene* (*folder_picker_next_scene_gen)();
+char* picked_folder_path = nullptr;

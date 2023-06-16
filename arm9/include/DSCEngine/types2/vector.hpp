@@ -9,8 +9,6 @@
 
 #include "DSCEngine/debug/log.hpp"
 #include "DSCEngine/debug/assert.hpp"
-#include "DSCEngine/types/templates.hpp"
-#include <stdlib.h>
 
 #define callstack_call ;
 #define callstack_ret return
@@ -24,26 +22,21 @@ namespace DSC
 	template<typename T> class Vector
 	{
 	private:
-		using size_type = typename __if__<(sizeof(T)>=4), unsigned short, int>::type;
-			
 		T *container;
-		size_type _size;
-		size_type capacity;
+		int _size;
+		int capacity;
 		void container_resize(int new_cap);
-		
-		static T* alloc(int cap, bool init=false);
-		static void dealloc(T* );
 	public:				
 		Vector(int size=0);
 		Vector(const Vector<T>& vector);
 		Vector(Vector<T>&& vector);
 		
-		/*template <typename... Args>
+		template <typename... Args>
 		Vector(T _first, Args... args)
 			: container(new T[sizeof...(args) + 1]{_first, args...}), 
 			_size(sizeof...(args) + 1),
 			capacity(sizeof...(args) + 1)
-		{}*/
+		{}
 
 		
 		Vector<T>& operator = (Vector<T>&& vector);
@@ -84,14 +77,6 @@ namespace DSC
 		* \details Error is raised is the vector is empty
 		 */
 		T& back();
-		
-		/*!
-		* \brief Gets the last element in vector and removes it from the vector
-		* 
-		* \param [output] The element on the last position in vector 
-		* \details Error is raised is the vector is empty
-		 */
-		T pop_back();
 		
 		/*!
 		* \brief Finds the position of an item in the vector
@@ -163,22 +148,19 @@ namespace DSC
 template<typename T>
 DSC::Vector<T>::Vector(int size)
 {	
-	Debug::log("Created VECTOR<%i> size = %i at %X", sizeof(T), size, this);
 	_size = size;	
-	int cap = size;
+	int cap = size == 0 ? 1 : size;
 	if(sizeof(T)&1)
 	{
 		cap>>=1; cap++; cap<<=1; // assure capacity is 16-bit aligned
 	}	
 	capacity = cap;	
-	
-	container = cap==0 ? nullptr : alloc(cap, true);
+	container = new T[cap]();
 }
 
 template<typename T>
 DSC::Vector<T>::Vector(Vector<T>&& vector)
 {
-	Debug::log("Moved VECTOR from %X to %X", &vector, this);
 	_size = vector._size; 	
 	capacity = vector.capacity;
 	container = vector.container;
@@ -190,7 +172,6 @@ DSC::Vector<T>::Vector(Vector<T>&& vector)
 template<typename T>
 DSC::Vector<T>& DSC::Vector<T>::operator = (DSC::Vector<T>&& vector)
 {
-	Debug::log("Moved VECTOR from %X to %X", &vector, this);
 	_size = vector.size();
 	capacity = vector.capacity;
 	container = vector.container;
@@ -203,33 +184,41 @@ DSC::Vector<T>& DSC::Vector<T>::operator = (DSC::Vector<T>&& vector)
 template<typename T>
 DSC::Vector<T>::Vector(const Vector<T>& vector)
 {
-	Debug::log("Copied VECTOR from %X to %X", &vector, this);
 	_size = vector._size;
 	capacity = vector.capacity;	
-	container = alloc(capacity);
+	container = new T[capacity];	
 	
 	for(int i=0;i<_size;i++)
-		container[i] = vector.container[i];	
+		container[i] = vector.container[i];
+	
+	// uncomment this to see where the vector copy is called
+	//#warning vector copy constructor
+	
+	//dmaCopy(vector.container, container, _size * sizeof(T));	
 }
 
 template<typename T>
 DSC::Vector<T>& DSC::Vector<T>::operator = (const DSC::Vector<T>& vector)
 {
-	Debug::log("Copied VECTOR from %X to %X", &vector, this);
 	_size = vector._size;
 	capacity = vector.capacity;
-	
-	dealloc(container);
-	container = alloc(capacity);	
+	delete[] container;
+	container = new T[capacity];	
 	
 	for(int i=0;i<_size;i++)
 		container[i] = vector.container[i];
 	
+	//#warning vector copy =
+	
+	//dmaCopy(vector.container, container, _size * sizeof(T));	
 	return *this;
 }
 
 template<typename T>
-void DSC::Vector<T>::clear() { _size=0; }
+void DSC::Vector<T>::clear()
+{
+	_size=0;
+}
 
 template<typename T>
 void DSC::Vector<T>::reset()
@@ -245,31 +234,19 @@ void DSC::Vector<T>:: container_resize(int new_cap)
 	{
 		new_cap>>=1; new_cap++; new_cap<<=1;
 	}
-	
-	if constexpr(is_pointer<T>::value || is_one_of<T, int, unsigned int, short, unsigned short, char, unsigned char>())
-	{		
-		T* new_container = (T*)realloc(container, new_cap*sizeof(T));
-		nds_assert(new_container!=nullptr, "Failed vector realloc");
-		container = new_container;
-		capacity = new_cap;
-	}
-	else
+	T* new_container = new T[new_cap];
+	int min_cap = new_cap < _size ? new_cap : _size;
+	if(min_cap>0)
 	{
-		//Debug::log("Resizing to %i from %i", new_cap, capacity);		
-		T* new_container = alloc(new_cap);
-		int min_cap = new_cap < _size ? new_cap : _size;
-		if(min_cap>0)
+		//dmaCopy(container, new_container, min_cap * sizeof(T));
+		for(int i=0;i<min_cap;i++)
 		{
-			//dmaCopy(container, new_container, min_cap * sizeof(T));
-			for(int i=0;i<min_cap;i++)
-			{			
-				new_container[i] = (T&&)container[i];
-			}
+			new_container[i] = (T&&)container[i];
 		}
-		dealloc(container);
-		container = new_container;
-		capacity = new_cap;
 	}
+	delete[] container;
+	container = new_container;
+	capacity = new_cap;
 }
 
 template<typename T>
@@ -282,18 +259,18 @@ void DSC::Vector<T>::resize(int new_size)
 
 template<typename T>
 void DSC::Vector<T>::push_back(const T& item)
-{	
+{
 	if(_size==capacity)
-	{		
-		container_resize((capacity<<1)+1);
-	}	
-	container[_size++]=item;	
+	{
+		container_resize(capacity<<1);
+	}
+	container[_size++]=item;
 }
 
 template<typename T>
 T& DSC::Vector<T>::operator[] (int index)
 {
-	callstack_call	
+	callstack_call
 	
 	nds_assert(index>=0, "Index out of range");
 	nds_assert(index<_size, "Index out of range");
@@ -376,9 +353,8 @@ int DSC::Vector<T>::size() const
 
 template<typename T>
 DSC::Vector<T>::~Vector()
-{		
-	dealloc(container);	
-	Debug::log("Destroyed VECTOR %i : %x", sizeof(T), this);
+{
+	delete[] container;
 }
 
 template<typename T>
@@ -387,34 +363,4 @@ T& DSC::Vector<T>::back()
 	callstack_call
 	nds_assert(size()>0);
 	callstack_ret container[size()-1];
-}
-
-template<typename T>
-T DSC::Vector<T>::pop_back()
-{
-	callstack_call
-	nds_assert(size()>0);
-	callstack_ret container[--_size];
-}
-
-template<typename T>
-T* DSC::Vector<T>::alloc(int cap, bool init)
-{
-	if constexpr(is_pointer<T>::value || is_one_of<T, int, unsigned int, short, unsigned short, char, unsigned char>())
-	{		
-		T* addr = (T*)malloc(cap*sizeof(T));
-		nds_assert(addr!=nullptr, "Vector allocation failed");		
-		return addr;
-	}
-	else
-		return init ? new T[cap]() : new T[cap];	
-}
-
-template<typename T>
-void DSC::Vector<T>::dealloc(T* addr)
-{
-	if constexpr(is_pointer<T>::value || is_one_of<T, int, unsigned int, short, unsigned short, char, unsigned char>())
-		free(addr);
-	else
-		delete[] addr;
 }

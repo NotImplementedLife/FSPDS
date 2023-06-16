@@ -107,16 +107,7 @@ namespace DSC
 		 */
 		static BitsArray<N>* take_over(void* offset);
 		
-		template<typename T> 
-		T* as_array();
 	};	
-}
-
-template<const int N>
-template<typename T> 
-T* DSC::BitsArray<N>::as_array()
-{
-	return (T*)buffer;
 }
 
 template<const int N>

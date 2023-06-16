@@ -45,7 +45,6 @@ namespace DSC
 		 */
 		unsigned char get_frac() const;
 		
-		sf24 clamp(const sf24& left, const sf24& right) const;
 		
 		sf24 operator + (const sf24& b) const;
 		sf24 operator - (const sf24& b) const;

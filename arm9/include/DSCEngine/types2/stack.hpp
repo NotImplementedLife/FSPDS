@@ -5,7 +5,7 @@
 
 #pragma once
 
-#define callstack_ret return
+#include "DSCEngine/debug/error.hpp"
 
 namespace DSC
 {
@@ -21,10 +21,7 @@ namespace DSC
 	public:				
 		Stack() = default;
 		Stack(Stack<T>&& stack);
-		Stack<T>& operator = (Stack<T>&& stack);			
-
-		Stack(const Stack<T>& stack);
-		Stack<T>& operator = (const Stack<T>& stack);
+		Stack<T>& operator = (Stack<T>&& stack);		
 		
 		/*!
 		* \brief Clears the stack	
@@ -51,10 +48,6 @@ namespace DSC
 		* \return The popped element
 		 */
 		T pop();
-
-		T top() const;
-		
-		T peek(int position) const;
 		
 		~Stack();
 		
@@ -85,76 +78,18 @@ namespace DSC
 	};
 }
 
-#include "DSCEngine/debug/assert.hpp"
-
-template<typename T>
-T DSC::Stack<T>::peek(int position) const
-{	
-	Item* item = top_item;
-	int i=0;
-	while(i<position && item!=nullptr) 
-		item=item->next;	
-	
-	nds_assert(item!=nullptr, "Peek position too high");
-	
-	return item->value;			
-}
-
 template<typename T>
 DSC::Stack<T>::Stack(DSC::Stack<T>&& stack) 
 {
 	top_item = stack.top_item;	
-	stack.top_item = nullptr;	
+	stack.top_item = nullptr;
 }
 
 template<typename T>
 DSC::Stack<T>& DSC::Stack<T>::operator = (DSC::Stack<T>&& stack)
 {
 	top_item = stack.top_item;	
-	stack.top_item = nullptr;	
-	return *this;
-}
-
-template<typename T>
-DSC::Stack<T>::Stack(const DSC::Stack<T>& stack)
-{
-	Item* it = stack.top_item;
-	if (it == nullptr)
-	{
-		top_item = nullptr;
-		return;
-	}
-	Item* cp = new Item{ it->value, nullptr };
-	top_item = cp;
-
-	it = it->next;
-	while (it != nullptr)
-	{
-		cp->next = new Item{ it->value, nullptr };
-		cp = cp->next;
-		it = it->next;
-	}
-}
-
-template<typename T>
-DSC::Stack<T>& DSC::Stack<T>::operator = (const DSC::Stack<T>& stack)
-{
-	Item* it = stack.top_item;
-	if (it == nullptr)
-	{
-		top_item = nullptr;
-		return *this;
-	}
-	Item* cp = new Item{ it->value, nullptr };
-	top_item = cp;
-
-	it = it->next;
-	while (it != nullptr)
-	{
-		cp->next = new Item{ it->value, nullptr };
-		cp = cp->next;
-		it = it->next;
-	}
+	stack.top_item = nullptr;
 	return *this;
 }
 
@@ -181,14 +116,8 @@ T DSC::Stack<T>::pop()
 	T value = item->value;
 	top_item = top_item->next;
 	delete item;
-	callstack_ret value;	
-}
-
-template<typename T>
-T DSC::Stack<T>::top() const
-{
-	nds_assert(top_item!=nullptr, "Empty stack does not have a top");	
-	return top_item->value;
+	callstack_ret value;
+	
 }
 
 template<typename T>

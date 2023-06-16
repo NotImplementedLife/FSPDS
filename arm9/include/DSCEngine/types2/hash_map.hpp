@@ -14,12 +14,11 @@ namespace DSC
 	* \tparam H hash function for keys
 	* \tparam S hash container size (H(k) maps k to 0..S-1)
 	 */
-	template<typename K, typename V, int (*H)(const K&) = default_hash<K, 32>, int S = 32> class HashMap
+	template<typename K, typename V, int (*H)(const K&) = default_hash<K, 128>, int S = 128> class HashMap
 	{
 	public:
-		struct Entry { K key; V value; };
+		struct Entry { K key; V value;};
 	private:
-		//char name[8]="Map";
 		Vector<Vector<Entry>> container = Vector<Vector<Entry>>(S);
 		int _size = 0;
 	public:
@@ -56,13 +55,11 @@ namespace DSC
 		
 		void clear();
 		
-		HashMap() = default;		
-		
+		HashMap() = default;
 		HashMap(const HashMap<K,V,H,S>& other);
 		
 		HashMap(HashMap<K,V,H,S>&& other);
 		
-		~HashMap() = default;		
 		
 		HashMap<K,V,H,S>& operator = (const HashMap<K,V,H,S>& other);
 		HashMap<K,V,H,S>& operator = (HashMap<K,V,H,S>&& other);
@@ -100,7 +97,7 @@ namespace DSC
 		
 		iterator begin() { return iterator(this, 0, 0);}
 		iterator end() { return iterator(this, S, 0);}
-	};			
+	};		
 }
 
 template<typename K, typename V, int (*H)(const K&), int S>
@@ -125,29 +122,17 @@ bool DSC::HashMap<K,V,H,S>::contains_key(const K& key) const
 	
 template<typename K, typename V, int (*H)(const K&), int S>	
 V& DSC::HashMap<K,V,H,S>::operator[] (const K& key)
-{	
+{
 	int h = H(key);
-	//Debug::tty_log("Selected hash key: %i", h);
 	nds_assert(0<=h && h<S);
-		
+	
 	for(int i=0;i<container[h].size();i++)
-	{
-		//Debug::tty_log("Looking for key in map %i", i);
 		if(container[h][i].key==key)
-		{
-			//Debug::tty_log("Found key in map %i",i);
 			return container[h][i].value;		
-		}
-	}
 		
-	//Debug::tty_log("Adding new key");
-	
 	container[h].push_back({key, V()});
-	
-	//Debug::tty_log("Done");
-	
 	_size++;
-	return container[h].back().value;
+	return container[h][container[h].size()-1].value;
 	
 }
 
@@ -181,21 +166,16 @@ void DSC::HashMap<K,V,H,S>::remove_key(const K& key)
 template<typename K, typename V, int (*H)(const K&), int S>
 DSC::HashMap<K,V,H,S>::HashMap(const DSC::HashMap<K,V,H,S>& other)
 {
-	//Debug::tty_log("COPY HashMap");
-	container = other.container;
-	/*for(int i=0;i<S;i++)
-		container[i] = DSC::Vector<Entry>(other.container[i]);*/
+	for(int i=0;i<S;i++)
+		container[i] = DSC::Vector<Entry>(other.container[i]);
 	_size = other._size;
 }
 
 template<typename K, typename V, int (*H)(const K&), int S>
 DSC::HashMap<K,V,H,S>::HashMap(DSC::HashMap<K,V,H,S>&& other)
 {
-	//Debug::tty_log("MOVE HashMap");
-	container.Vector<Vector<Entry>>::~Vector();
-	container = _move_(other.container);
-	//for(int i=0;i<S;i++)	
-		//container[i] = DSC::_move_(other.container[i]);
+	for(int i=0;i<S;i++)	
+		container[i] = DSC::_move_(other.container[i]);
 	_size = other._size;	
 	other._size = 0;
 }
@@ -203,22 +183,17 @@ DSC::HashMap<K,V,H,S>::HashMap(DSC::HashMap<K,V,H,S>&& other)
 template<typename K, typename V, int (*H)(const K&), int S>
 DSC::HashMap<K,V,H,S>& DSC::HashMap<K,V,H,S>::operator = (const DSC::HashMap<K,V,H,S>& other)
 {
-	//Debug::tty_log("COPY HashMap");
-	container = other.container;
-	/*for(int i=0;i<S;i++)
-		container[i] = DSC::Vector<Entry>(other.container[i]);*/
+	for(int i=0;i<S;i++)
+		container[i] = DSC::Vector<Entry>(other.container[i]);
 	_size = other._size;
 	return *this;
 }
 
 template<typename K, typename V, int (*H)(const K&), int S>
 DSC::HashMap<K,V,H,S>& DSC::HashMap<K,V,H,S>::operator = (DSC::HashMap<K,V,H,S>&& other)
-{	
-	//Debug::tty_log("MOVE HashMap");
-	container.Vector<Vector<Entry>>::~Vector();
-	container = _move_(other.container);
-	//for(int i=0;i<S;i++)	
-		//container[i] = DSC::_move_(other.container[i]);
+{
+	for(int i=0;i<S;i++)	
+		container[i] = DSC::_move_(other.container[i]);
 	_size = other._size;	
 	other._size = 0;
 	return *this;
