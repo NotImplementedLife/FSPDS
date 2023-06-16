@@ -319,7 +319,7 @@ public:
 		
 		for(int i=0;i<24*32;i++)
 		{			
-			bg0map[i]=0xE000 | i;			
+			bg0map[i]=0xE000 | i;
 		}
 		
 		BG_PALETTE[0x00]=Colors::White;

@@ -25,7 +25,6 @@ class CreditsScene : public SimpleScene
 		}
 	}
 	
-	
 	__attribute__((noinline))
 	void run() override
 	{

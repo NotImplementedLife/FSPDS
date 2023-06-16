@@ -1,5 +1,5 @@
 #include <nds.h>
-#include <fat.h>
+#include "globals.hpp"
 
 #include "logo_front_bin.h"
 #include "logo_back_bin.h"
@@ -13,13 +13,17 @@
 
 #include "scenes.hpp"
 
-extern "C" char fake_heap_start[];
-extern "C" char fake_heap_end[];
-
 
 static char BK_RESERVED[1024*512];
 
 using namespace DSC;
+
+Scene* get_browse_scene()
+{
+	//if(!is_fat_inited())
+		//return get_player_scene();
+	return get_folder_picker_scene();
+}
 
 class TitleScene : public GenericScene256
 {	
@@ -37,12 +41,7 @@ class TitleScene : public GenericScene256
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 	
 	void init() override
-	{								
-		int* ptt = (int*)fake_heap_start;
-		Debug::warn("Heap start = %X", *ptt);
-		ptt = (int*)fake_heap_end;
-		Debug::log("Heap end = %X", *ptt);
-	
+	{	
 		GenericScene256::init();		
 		
 		key_down.add_event(&TitleScene::on_key_down, this);
@@ -65,7 +64,7 @@ class TitleScene : public GenericScene256
 		title[0]->set_position(128-64, 116);
 		title[1]->set_position(128, 116);
 		
-		if(!fatInitDefault())
+		if(!is_fat_inited())
 		{
 			fat_fail = create_sprite(new Sprite(SIZE_64x32, Engine::Sub));
 			fat_fail->add_frame(new ObjFrame(&ROA_fat_fail8, 0,0));
@@ -117,7 +116,7 @@ class TitleScene : public GenericScene256
 	
 	typedef Scene*(*fgen)();
 	
-	inline static constexpr fgen scenegens[4] = { &get_player_scene, &get_simple_scene, &get_simple_scene, &get_credits_scene  };
+	inline static constexpr fgen scenegens[4] = { &get_browse_scene, &get_simple_scene, &get_simple_scene, &get_credits_scene  };
 	
 	void on_key_down(void* sender, void* args)
 	{
@@ -382,5 +381,3 @@ Scene* gen_title_scene()
 {
 	return new TitleScene();
 }
-
-dsc_launch(TitleScene)

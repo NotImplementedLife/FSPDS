@@ -14,6 +14,8 @@ DSC::VwfEngine::VwfEngine(const FontData& font, ExtendedFontChart ext_chart)
 	
 }
 
+int DSC::VwfEngine::get_cursor_x() const { return crt_col*8+px_offset; }
+
 void DSC::VwfEngine::set_cursor(int row, int col_px)
 {
 	crt_row = row;
