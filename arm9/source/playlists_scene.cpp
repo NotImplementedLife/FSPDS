@@ -6,6 +6,8 @@
 #include "filesystem.hpp"
 #include "globals.hpp"
 
+#include "back_arrow.h"
+
 
 Scene* folder_picker_return_to_playlists();
 
@@ -16,6 +18,7 @@ private:
 	ObjFrame* folder_highlighted_frame;
 	Sprite* folder_icons[4];
 	Sprite* add_folder_icon=nullptr;
+	Sprite* back_arrow = nullptr;
 	
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 	LocationsProvider* locations_provider;
@@ -65,15 +68,33 @@ public:
 				locations_provider = nullptr;
 				close()->next(get_folder_picker_scene());
 			}
+			else if(touch_in_rect(0,0,32,32))
+			{
+				close()->next(gen_title_scene());
+			}
 		}		
+		else if(keys & KEY_B)
+		{
+			close()->next(gen_title_scene());
+		}
+		else if(keys & KEY_A)
+		{
+			if(loc_selected_index<locations_provider->get_count())
+			{
+				selected_location_index = loc_selected_index;
+				selected_location = locations_provider->detach_location(selected_location_index);
+				delete locations_provider;
+				locations_provider = nullptr;
+				close()->next(get_location_viewer_scene());
+			}
+		}
 	}
 
 
 	void init() override
 	{
 		SimpleScene::init();
-		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);
-		//require_tiledmap_4bpp(SUB_BG0, 256, 256, 32*24);
+		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);		
 		require_tiledmap_4bpp(SUB_BG2, 256, 256, 32*24);
 		
 		begin_sprites_init();
@@ -93,7 +114,11 @@ public:
 		add_folder_icon->add_frame(new ObjFrame(&ROA_folder_icon8,0,3));
 		add_folder_icon->set_position(220, 0);
 		
-		end_sprites_init();				
+		back_arrow = create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
+		back_arrow->add_frame(new ObjFrame(&ROA_back_arrow8,0,0));
+		back_arrow->set_position(0, 0);
+		
+		end_sprites_init();
 		
 		key_down.add_event(&PlaylistsScene::on_key_down, this);
 		
@@ -151,6 +176,7 @@ public:
 				vwf->put_text("Indexing files", Pal4bit, SolidColorBrush(0x2));				
 						
 				add_folder_icon->hide();
+				back_arrow->hide();
 				GenericScene256::frame();		
 				swiWaitForVBlank();
 				swiWaitForVBlank();
@@ -205,17 +231,16 @@ public:
 					vwf->put_text(str_print(buff, "Found %i flipnotes", ++cnt), Pal4bit, SolidColorBrush(0x2));
 					swiWaitForVBlank();
 				}	
-				
+				delete dest_name;
 				delete[] buff;
 				delete[] picked_folder_path;
 				picked_folder_path = nullptr;				
 				
 				
-				for(int i=10;i<100;i++) swiWaitForVBlank();				
+				for(int i=10;i<30;i++) swiWaitForVBlank();				
 				vwf->set_cursor(7, 110);
 				vwf->put_text("Saving", Pal4bit, SolidColorBrush(0x2));
-				swiWaitForVBlank();
-				swiWaitForVBlank();
+				for(int i=10;i<10;i++) swiWaitForVBlank();							
 				locations_provider->add_location(location);
 				
 				vwf->clear_row(7, Pal4bit);
@@ -224,7 +249,9 @@ public:
 				for(int i=0;i<60;i++)
 					swiWaitForVBlank();
 			}
+			
 			add_folder_icon->show();
+			back_arrow->show();
 			display_page();
 		}
 		
@@ -267,18 +294,19 @@ public:
 	
 	void frame() override
 	{		
-		GenericScene256::frame();
+		GenericScene256::frame();		
 	}
 	
 	~PlaylistsScene()
-	{		
+	{				
 		delete vwf;		
 		for(int i=0;i<4;i++)
 		{
 			folder_icons[i]->set_frame(0, nullptr);
 			delete folder_icons[i];
 		}
-				
+			
+		delete back_arrow;
 		delete add_folder_icon;
 		
 		delete folder_highlighted_frame;

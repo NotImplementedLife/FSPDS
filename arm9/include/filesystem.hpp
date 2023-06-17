@@ -35,6 +35,7 @@ class LocationsProvider
 private:
 	DSC::Vector<Location*> locations;	
 	
+	void load();
 	void save();
 public:
 	int get_count() const;
@@ -43,6 +44,8 @@ public:
 	Location* get_at(int i) const;
 	
 	void add_location(Location* location);
+	
+	Location* detach_location(int index);
 	
 	LocationsProvider();
 	~LocationsProvider();

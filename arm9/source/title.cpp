@@ -115,10 +115,8 @@ class TitleScene : public GenericScene256
 			vwf->put_text("Help", Pal4bit, SolidColorBrush(0x1));
 			
 			vwf->set_cursor(7, 150);
-			vwf->put_text("Credits", Pal4bit, SolidColorBrush(0x1));
-			
-			
-		}		
+			vwf->put_text("Credits", Pal4bit, SolidColorBrush(0x1));			
+		}			
 		
 		frame3d();
 		
@@ -143,9 +141,12 @@ class TitleScene : public GenericScene256
 			if(y<0 || y%32>28) return;
 			int option = y/32;
 			if(option<0 || option>=4) return;						
-			close()->next(scenegens[option]());
-			
+			close()->next(scenegens[option]());			
 		}		
+		if(keys & KEY_B)
+		{
+			close()->next(get_browse_scene());
+		}
 	}
 	
 	void on_key_held(void* sender, void* args)

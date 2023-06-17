@@ -2,6 +2,7 @@
 
 #include "ppm_reader.hpp"
 #include "DSC"
+#include "filesystem.hpp"
 
 extern PPMReader* ppm_reader;
 
@@ -11,6 +12,8 @@ bool is_fat_inited();
 extern DSC::Scene* (*folder_picker_next_scene_gen)();
 extern char* picked_folder_path;
 
+extern int selected_location_index;
+extern Location* selected_location;
 
 class Config
 {

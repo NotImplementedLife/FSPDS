@@ -61,7 +61,7 @@ LocationsProvider::LocationsProvider()
 	}
 	else
 	{
-		//FILE* fptr = fopen();
+		load();
 	}
 }
 
@@ -81,10 +81,52 @@ void LocationsProvider::save()
 		fwrite(&s, sizeof(int), 1, fptr);
 		for(int j=0;j<s;j++)
 			fwrite(locations[i]->filenames[j].chars, sizeof(char), 24, fptr);
-	}
-	
+	}	
 	fclose(fptr);
+}
+
+void LocationsProvider::load()
+{
+	DSC::Debug::log("Loading.....");
+	FILE* fptr = fopen(locations_path, "rb");
+	int count=0;
+	fread(&count, sizeof(int), 1, fptr);		
 	
+	for(int i=0;i<count;i++)
+	{
+		int s=0;
+		fread(&s, sizeof(int), 1, fptr);
+		Location* location = new Location();
+		
+		DSC::Debug::log("S = %i", s);
+		
+		location->path = new char[s+1];
+		fread(location->path, sizeof(char), s, fptr);			
+		location->path[s]='\0';
+		s=0;
+		fread(&s, sizeof(int), 1, fptr);	
+		
+		DSC::Debug::log("S = %i", s);
+		
+		Char24* char24 = new Char24();				
+		for(int j=0;j<s;j++)
+		{
+			fread(char24->chars, sizeof(char), 24, fptr);
+			location->filenames.push_back(*char24);
+		}
+
+		DSC::Debug::log("C24 = %X", (int)char24->chars);
+		
+		for(int j=0;j<s;j++)
+		{
+			DSC::Debug::log("%X", (int)location->filenames[j].chars);
+		}
+		
+		delete char24;		
+		
+		locations.push_back(location);
+	}	
+	fclose(fptr);
 }
 
 void LocationsProvider::add_location(Location* location)
@@ -107,10 +149,24 @@ Location* LocationsProvider::get_by_path(const char* path) const
 	return nullptr;
 }
 
+Location* LocationsProvider::detach_location(int index)
+{
+	Location* loc = locations[index];
+	locations[index] = nullptr;
+	return loc;	
+}
+
 LocationsProvider::~LocationsProvider()
 {	
-	for(int i=0;i<locations.size();i++)	
-		delete locations[i];	
+	for(int i=0;i<locations.size();i++)		
+	{
+		if(locations[i]!=nullptr)
+		{
+			delete[] locations[i]->path;
+			locations[i]->path = nullptr;
+			delete locations[i];
+		}
+	}
 }
 
 int LocationsProvider::get_count() const { return locations.size(); }
