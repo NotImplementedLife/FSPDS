@@ -15,3 +15,4 @@ Scene* get_player_scene();
 Scene* get_simple_scene();
 Scene* get_credits_scene();
 Scene* get_folder_picker_scene();
+Scene* get_playlists_scene();

@@ -52,13 +52,17 @@ bool DSC::ObjAllocator::allocate(ObjFrame* frame)
 		frame->gfx_ptr = address;			
 		
 		// load frame graphics
-		
+		Debug::log("--PALETTE--");
 		PaletteAllocationResult palloc = palette_loader->try_load(frame->asset, PaletteLoader::ALLOC_MODE_DEFAULT);		
+		Debug::log("--DONE--");
 		
 		nds_assert(palloc.succeeded, "Palette allocation failed");
+		Debug::log("--HERE???--");
 		
 		nds_assert(frame->asset->get_metatile_width() != 0);
 		int metatiles_per_row = frame->asset->width / frame->asset->get_metatile_width();
+		
+		Debug::log("--Copying--");
 		
 		VramLoader::load(frame->asset,  
 			Measure()
@@ -70,8 +74,10 @@ bool DSC::ObjAllocator::allocate(ObjFrame* frame)
 				.metatile(asset->get_metatile_width(), asset->get_metatile_height())
 				.tiles(1),
 			frame->gfx_ptr, palloc.indices);
+			Debug::log("--Done?--");
 	}
 	
+	Debug::log("--For real?--");
 	return true;
 }
 

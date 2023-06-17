@@ -238,3 +238,13 @@ void DSC::Debug::log_to_buffer(char* buffer, const char* message, va_list args)
 {	
 	_logv(LOG_BUF, buffer, message, args);	
 }
+
+char* DSC::str_print(char* buffer, const char* message, ...)
+{
+	va_list args;	
+	va_start(args, message);
+	Debug::log_to_buffer(buffer, message, args);
+	va_end(args);
+	return buffer;
+}
+	

@@ -19,16 +19,16 @@ void DSC::VramLoader::load(const AssetData* asset, void* dest, short* pal_indice
 		}		
 		int len = asset->get_gfx_length();		
 		unsigned char* buffer = new unsigned char[len];		
-		
-		asset->extract(buffer, 0, len);
+				
+		asset->extract(buffer, 0, len);		
 		
 		for(int i=0;i<len;i++)
 		{
 			if(buffer[i])
 				buffer[i] = pal_indices[buffer[i]];
 		}				
-		
-		dmaCopy(buffer, dest, len);	// <-- beware for bugs idk			
+				
+		dmaCopy(buffer, dest, len);	// <-- beware for bugs idk					
 			
 		delete[] buffer;
 		
@@ -69,6 +69,7 @@ void DSC::VramLoader::load(const AssetData* asset, int offset, int size, void* d
 	nds_assert(asset!=nullptr);
 	nds_assert(offset+size<=asset->get_gfx_length());
 	
+	Debug::log("o,s = %i, %i", offset, size);	
 	if(!asset->is_bitmap() || (asset->is_bitmap() && (map_width == 0 || map_width == 8*asset->width)))
 	{		
 		if(pal_indices==nullptr || asset->get_color_depth()!=8)
@@ -77,18 +78,24 @@ void DSC::VramLoader::load(const AssetData* asset, int offset, int size, void* d
 			return;
 		}				
 		nds_assert(offset+size<=asset->get_gfx_length());
+		Debug::log("Size=%i", size);
 		unsigned char* buffer = new unsigned char[size];
 		
+		Debug::log("Extracting");		
 		asset->extract(buffer, offset, size);
+		Debug::log("OK");
 		
 		for(int i=0;i<size;i++)
 		{
+			//Debug::log("buffer %i", i);
 			if(buffer[i])
 				buffer[i] = pal_indices[buffer[i]];
 		}				
 		
+		Debug::log("Copt");
 		dmaCopy(buffer, dest, size);	// <-- beware for bugs idk			
-			
+		Debug::log("Copt");
+						
 		delete[] buffer;
 				
 	}

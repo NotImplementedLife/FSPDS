@@ -31,20 +31,28 @@ class FolderPickerScene : public SimpleScene
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 	void init() override
 	{
+		Debug::log("Initing");
 		SimpleScene::init();
+		Debug::log("Requiring");
 		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);
 		require_tiledmap_4bpp(SUB_BG2, 256, 256, 32*24);
 		
 		begin_sprites_init();		
 		
+		Debug::log("Framing");
 		folder_normal_frame = new ObjFrame(&ROA_folder_icon8,0,0);
 		folder_highlighted_frame = new ObjFrame(&ROA_folder_icon8,0,1);
 		folder_back_frame = new ObjFrame(&ROA_folder_icon8,0,2);
 		
+		Debug::log("Allocating");
+		Debug::log("    normal frame");
 		get_obj_allocator_sub()->allocate(folder_normal_frame);
+		Debug::log("    highlighted frame");
 		get_obj_allocator_sub()->allocate(folder_highlighted_frame);
+		Debug::log("    back frame");
 		get_obj_allocator_sub()->allocate(folder_back_frame);
 		
+		Debug::log("creating sprites");
 		for(int i=0;i<5;i++)
 		{
 			folder_icons[i] = create_sprite(new Sprite(SIZE_32x32, Engine::Sub));

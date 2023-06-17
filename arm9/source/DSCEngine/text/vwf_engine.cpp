@@ -179,6 +179,38 @@ void DSC::VwfEngine::clear(BgPaletteType pal_type)
 	crt_row = crt_col = px_offset = 0;
 }
 
+void DSC::VwfEngine::clear_row(int row, BgPaletteType pal_type) const
+{
+	unsigned short* dest;
+	volatile unsigned short zero = 0x0000;
+	
+	if(char_height==8)
+	{
+		if((render_rows_count&1) && crt_row==render_rows_count-1)
+		{
+			dest = (unsigned short*)(((int)render_area) + (render_columns_count * crt_row) * 32 * (1+(int)pal_type));
+			for(int i=0;i<render_columns_count*16*(1+pal_type);i++)
+				*(dest++)=zero;
+		}
+		else
+		{
+			dest = (unsigned short*)(((int)render_area) + (render_columns_count * (crt_row/2)*2 + (crt_row&1)) * 32 * (1+(int)pal_type));
+			for(int i=0;i<render_columns_count;i++)
+			{
+				for(int i=0;i<16*(1+pal_type);i++) *(dest++)=zero;
+				dest+=16;
+			}
+		}		
+	}
+	else
+	{
+		dest = (unsigned short*)(((int)render_area) + (render_columns_count * crt_row) *64 * (1+(int)pal_type));
+		for(int i=0;i<render_columns_count*32*(1+pal_type);i++)
+				*(dest++)=zero;
+	}
+}
+	
+
 void DSC::VwfEngine::prepare_map(const VwfEngine& vwf, int map_id, int map_stride, int map_x, int map_y, int palette_bank)
 {
 	palette_bank<<=12;		

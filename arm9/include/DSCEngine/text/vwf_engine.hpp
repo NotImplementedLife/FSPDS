@@ -39,6 +39,7 @@ namespace DSC
 		void set_cursor(int row, int col_px);
 		int get_cursor_x() const;
 		
+		void clear_row(int row, BgPaletteType pal_type) const;
 		
 		inline const FontData& get_font() const { return font; }
 		

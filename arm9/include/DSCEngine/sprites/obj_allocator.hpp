@@ -3,6 +3,7 @@
 #include "DSCEngine/resources/asset_data.hpp"
 #include "DSCEngine/sprites/obj_frame.hpp"
 #include "DSCEngine/types/hash_map.hpp"
+#include "DSCEngine/types/ordered_map.hpp"
 #include "DSCEngine/types/hash_set.hpp"
 #include "DSCEngine/types/point.hpp"
 #include "DSCEngine/video/allocator.hpp"
@@ -14,7 +15,7 @@ namespace DSC
 	
 	class ObjAllocator
 	{
-	private:
+	private:		
 		HashMap<const AssetData*, HashMap<Point<short>, int>> loaded_frames;
 		
 		Allocator* allocator;

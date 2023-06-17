@@ -5,8 +5,14 @@
 
 #pragma once
 
+namespace DSC
+{
+	char* str_print(char* buffer, const char* message, ...);
+}
+
 namespace DSC::Debug
-{		
+{			
+
 	/*!
 	 * \brief Sends a \b log message to the emulator
 	 * \param [in] message log message, allows printf-like wildcards

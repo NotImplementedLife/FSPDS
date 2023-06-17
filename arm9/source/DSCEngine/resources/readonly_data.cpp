@@ -32,6 +32,8 @@ void DSC::ReadOnlyData::extract(void* destination) const
 	}
 }
 
+#include "DSCEngine/debug/log.hpp"
+
 void DSC::ReadOnlyData::extract(void* destination, int offset, int length) const
 {
 	nds_assert(offset % 2 == 0);
@@ -48,10 +50,13 @@ void DSC::ReadOnlyData::extract(void* destination, int offset, int length) const
 			src = (short*)(((int)this)+header_size);
 		}		
 		src += offset/sizeof(short);
-		
+				
 		short* dst = reinterpret_cast<short*>(destination);
+		
+		DSC::Debug::log("X");
 		for(int i=0;i<length/2;i++)
 			dst[i] = src[i]; // maybe __asm this line if gcc optimizes it to memset/memcpy (<=> byte-to-byte copy)
+		DSC::Debug::log("Y");
 	}
 	else
 	{

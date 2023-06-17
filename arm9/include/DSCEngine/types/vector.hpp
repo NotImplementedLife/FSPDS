@@ -163,7 +163,7 @@ namespace DSC
 template<typename T>
 DSC::Vector<T>::Vector(int size)
 {	
-	Debug::log("Created VECTOR<%i> size = %i at %X", sizeof(T), size, this);
+	//Debug::log("Created VECTOR<%i> size = %i at %X", sizeof(T), size, this);
 	_size = size;	
 	int cap = size;
 	if(sizeof(T)&1)
@@ -178,7 +178,7 @@ DSC::Vector<T>::Vector(int size)
 template<typename T>
 DSC::Vector<T>::Vector(Vector<T>&& vector)
 {
-	Debug::log("Moved VECTOR from %X to %X", &vector, this);
+	//Debug::log("Moved VECTOR from %X to %X", &vector, this);
 	_size = vector._size; 	
 	capacity = vector.capacity;
 	container = vector.container;
@@ -190,7 +190,7 @@ DSC::Vector<T>::Vector(Vector<T>&& vector)
 template<typename T>
 DSC::Vector<T>& DSC::Vector<T>::operator = (DSC::Vector<T>&& vector)
 {
-	Debug::log("Moved VECTOR from %X to %X", &vector, this);
+	//Debug::log("Moved VECTOR from %X to %X", &vector, this);
 	_size = vector.size();
 	capacity = vector.capacity;
 	container = vector.container;
@@ -203,7 +203,7 @@ DSC::Vector<T>& DSC::Vector<T>::operator = (DSC::Vector<T>&& vector)
 template<typename T>
 DSC::Vector<T>::Vector(const Vector<T>& vector)
 {
-	Debug::log("Copied VECTOR from %X to %X", &vector, this);
+	//Debug::log("Copied VECTOR from %X to %X", &vector, this);
 	_size = vector._size;
 	capacity = vector.capacity;	
 	container = alloc(capacity);
@@ -215,7 +215,7 @@ DSC::Vector<T>::Vector(const Vector<T>& vector)
 template<typename T>
 DSC::Vector<T>& DSC::Vector<T>::operator = (const DSC::Vector<T>& vector)
 {
-	Debug::log("Copied VECTOR from %X to %X", &vector, this);
+	//Debug::log("Copied VECTOR from %X to %X", &vector, this);
 	_size = vector._size;
 	capacity = vector.capacity;
 	
@@ -378,7 +378,7 @@ template<typename T>
 DSC::Vector<T>::~Vector()
 {		
 	dealloc(container);	
-	Debug::log("Destroyed VECTOR %i : %x", sizeof(T), this);
+	//Debug::log("Destroyed VECTOR %i : %x", sizeof(T), this);
 }
 
 template<typename T>

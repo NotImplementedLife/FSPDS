@@ -30,8 +30,10 @@ Scene* get_browse_scene()
 {
 	//if(!is_fat_inited())
 		//return get_player_scene();
-	folder_picker_next_scene_gen = return_scene;	
-	return get_folder_picker_scene();
+	return get_playlists_scene();
+	
+	//folder_picker_next_scene_gen = return_scene;		
+	//return get_folder_picker_scene();
 }
 
 class TitleScene : public GenericScene256
@@ -93,7 +95,7 @@ class TitleScene : public GenericScene256
 	{		
 		if(!sinit)
 		{			
-			sinit=true;			
+			sinit=true;
 			BG_PALETTE_SUB[0x91]=Colors::Red;							
 			
 			Debug::log("MAPPPPP = %X", bgGetGfxPtr(4));
