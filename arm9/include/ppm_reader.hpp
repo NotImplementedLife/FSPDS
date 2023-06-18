@@ -10,6 +10,8 @@ private:
 	
 	int getSoundHeaderOffset() const;
 public:
+	static int peek_only_metadata(const char* filename, void* dest);
+
 	unsigned char buffer[1<<20];
 	
 	int getAnimationDataSize() const;
@@ -50,5 +52,6 @@ public:
 	inline static constexpr int ERR_NULL_ARGUMENT = -1;
 	inline static constexpr int ERR_FOPEN = -2;
 	inline static constexpr int ERR_SIZE_EXCEEDED = -3;
+	inline static constexpr int ERR_READ_COUNT = -4;
 	
 };

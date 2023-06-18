@@ -35,7 +35,7 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=ds_arm7.specs -g $(ARCH) -Wl,-Map,$(notdir $*).map
 
 
-LIBS	:= -lnds7
+LIBS	:= -lfat -lnds7
 
 LIBDIRS	:=	$(LIBNDS)
 

@@ -30,6 +30,7 @@
 /// Removed wifi
 #include <nds.h>
 #include "bottom_screen_power.h"
+#include "log.h"
 
 void VblankHandler(void) { }
 
@@ -47,6 +48,10 @@ void powerButtonCB()
 
 int main()
 {
+	/*debug_log("ARM7 EZ");
+	debug_log("ARM7 EZ");
+	debug_log("Hello world from ARM7 %i",47);*/
+	
 	// clear sound registers
 	dmaFillWords(0, (void*)0x04000400, 0x100);
 

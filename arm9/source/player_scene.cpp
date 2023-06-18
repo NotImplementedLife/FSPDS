@@ -339,8 +339,8 @@ public:
 	{
 		soundDisable();
 		delete[] buffer1;
-		delete[] buffer2;		
-		delete ppm_reader;		
+		delete[] buffer2;
+		delete ppm_reader;
 		free(sound_buffer);
 	}
 		

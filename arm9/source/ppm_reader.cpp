@@ -6,6 +6,20 @@
 
 static constexpr int frames[] = { 2, 120, 60, 30, 15, 10, 5, 3, 2 };
 
+int PPMReader::peek_only_metadata(const char* filename, void* dest)
+{
+	if(filename==nullptr) return ERR_NULL_ARGUMENT;
+	FILE* fp=fopen(filename,"rb");
+	if(fp==nullptr) return ERR_FOPEN;	
+	fseek(fp, 0L, SEEK_SET);
+	
+	if(fread(dest, sizeof(char), 0x6A0, fp) != 0x6A0)
+		return ERR_READ_COUNT;
+	
+	fclose(fp);
+	return 0;
+}
+
 int PPMReader::read_metadata(const char* filename)
 {
 	if(filename==nullptr) return ERR_NULL_ARGUMENT;
