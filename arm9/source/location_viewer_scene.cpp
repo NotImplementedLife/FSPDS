@@ -39,6 +39,15 @@ private:
 	}
 	
 	char ppm_metadata[9][0x6A0];
+	int ppm_states[9];
+	
+	touchPosition touch;
+	bool touch_in_rect(int x, int y, int w, int h)
+	{
+		if(touch.px<x || touch.px>=x+w) return false;
+		if(touch.py<y || touch.py>=y+h) return false;
+		return true;
+	}
 	
 public:
 	void init() override
@@ -76,6 +85,8 @@ public:
 		total_pages_count = (selected_location->filenames.size()+8)/9;
 		
 		key_down.add_event(&LocationViewerScene::on_key_down, this);
+		
+		if(total_pages_count==0) thumbnail_selector->hide();
 	}	
 	
 	void on_key_down(void*, void* _keys)
@@ -84,50 +95,69 @@ public:
 		if(keys & KEY_UP)
 		{
 			if(thumbnail_sel_row>0)
+			{
 				thumbnail_sel_row--;			
+				display_info();
+			}
 		}
 		else if(keys & KEY_DOWN)
 		{
 			if(thumbnail_sel_row<2 && 9*crt_page+3*thumbnail_sel_row+thumbnail_sel_col+3<selected_location->filenames.size())
+			{
 				thumbnail_sel_row++;			
+				display_info();
+			}
 		}
 		else if(keys & KEY_LEFT)
 		{
 			if(thumbnail_sel_col>0)
-				thumbnail_sel_col--;
-			else
 			{
-				if(crt_page>0)
-				{
-					crt_page--;
-					thumbnail_sel_col=2;
-					thumbnail_selector->hide();
-					frame();
-					display_page();
-					thumbnail_selector->show();
-				}
-			}			
+				thumbnail_sel_col--;
+				display_info();
+			}
+			else if(crt_page>0)
+			{
+				crt_page--;
+				thumbnail_sel_col=2;
+				thumbnail_selector->hide();
+				frame();
+				display_page();				
+				if(total_pages_count>0) thumbnail_selector->show();
+				display_info();
+			}		
 		}
 		else if(keys & KEY_RIGHT)
 		{
 			if(thumbnail_sel_col<2 && 9*crt_page+3*thumbnail_sel_row+thumbnail_sel_col+1<selected_location->filenames.size())
-				thumbnail_sel_col++;
-			else
 			{
-				if(crt_page+1<total_pages_count)
-				{
-					crt_page++;					
-					thumbnail_sel_col=0;
-					while(thumbnail_sel_row>0 && 9*crt_page+3*thumbnail_sel_row+thumbnail_sel_col>=selected_location->filenames.size())
-						thumbnail_sel_row--;
-					thumbnail_selector->hide();
-					frame();
-					display_page();
-					thumbnail_selector->show();
-				}
-			}			
+				thumbnail_sel_col++;
+				display_info();
+			}
+			else if(crt_page+1<total_pages_count)
+			{
+				crt_page++;					
+				thumbnail_sel_col=0;
+				while(thumbnail_sel_row>0 && 9*crt_page+3*thumbnail_sel_row+thumbnail_sel_col>=selected_location->filenames.size())
+					thumbnail_sel_row--;
+				thumbnail_selector->hide();
+				frame();
+				display_page();
+				if(total_pages_count>0) thumbnail_selector->show();
+				display_info();
+			}
 		}
-		
+		else if(keys & KEY_TOUCH)
+		{
+			touchRead(&touch);
+			if(touch_in_rect(0,0,32,32))
+			{
+				close()->next(get_playlists_scene());
+			}
+		}
+		else if(keys & KEY_B)
+		{
+			close()->next(get_playlists_scene());
+		}		
 	}
 	
 	inline static constexpr int THUMBNAIL_NONE = 0;
@@ -173,6 +203,7 @@ public:
 				load_path(index++);
 				Debug::log(flipnote_path);
 				int status = PPMReader::peek_only_metadata(flipnote_path, &ppm_metadata[i][0]);
+				ppm_states[i]=status;
 				Debug::log("Status = %i", status);
 				if(status<0)
 					display_thumbnail(i, THUMBNAIL_CORRUPT);
@@ -187,10 +218,104 @@ public:
 		}				
 		vwf->clear_row(1, Pal4bit);
 		vwf->set_cursor(1, 90);
-		vwf->put_text(str_print(page_label, "Page %i of %i", crt_page+1, total_pages_count+1), Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text(str_print(vwf_buffer, "Page %i of %i", crt_page+1, total_pages_count+1), Pal4bit, SolidColorBrush(0x1));
 	}
 	
-	char page_label[32];
+	inline static constexpr const char* months[12] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+	inline static constexpr int months_days[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+	
+	// does not work for year 2100	
+	void get_datetime(unsigned int timestamp, int &day, int &month, int &year) 
+	{		
+		year = 2000;
+		unsigned int leap_year = 86400 * 366;
+		unsigned int norm_year = 86400 * 365;		
+		unsigned int _4years = leap_year + 3*norm_year;
+	
+		while(timestamp>=_4years)
+		{
+			timestamp -= _4years;
+			year+=4;
+		}
+		
+		if(timestamp>=leap_year)
+		{
+			timestamp -= leap_year;	
+			year++;
+			while(timestamp>=norm_year)
+			{
+				timestamp-=norm_year;
+				year++;
+			}
+		}
+		
+		month=0;
+		while(month<11 && timestamp>=((unsigned)months_days[month] + ((year%4==0 && month==1)?1:0))*86400)
+		{
+			timestamp-=(months_days[month] + ((year%4==0 && month==1)?1:0))*86400;
+			month++;
+		}		
+		month++;
+		
+		day = 1+timestamp/86400;
+	}
+	
+	void display_info()
+	{
+		for(int i=2;i<10;i++) 
+		{
+			Debug::log("Clearing row %i", i);
+			vwf->clear_row(i, Pal4bit);
+		}
+		
+		if(total_pages_count==0)
+		{			
+			vwf->set_cursor(5, 84);
+			vwf->put_text("No flipnotes here", Pal4bit, SolidColorBrush(0x1));
+			return;
+		}		
+		int index = 3*thumbnail_sel_row+thumbnail_sel_col;
+		if(ppm_states[index]<0)
+		{
+			vwf->set_cursor(4, 16);
+			vwf->put_text("Can't load this flipnote", Pal4bit, SolidColorBrush(0x1));
+			vwf->set_cursor(5, 16);
+			vwf->put_text("The file may be corrupted or does", Pal4bit, SolidColorBrush(0x1));
+			vwf->set_cursor(6, 16);
+			vwf->put_text("not exist.", Pal4bit, SolidColorBrush(0x1));
+			vwf->set_cursor(7, 16);
+			vwf->put_text("Reindexing the location might solve", Pal4bit, SolidColorBrush(0x1));
+			vwf->set_cursor(8, 16);
+			vwf->put_text("this issue.", Pal4bit, SolidColorBrush(0x1));
+			return;
+		}		
+				
+		load_path(9*crt_page+index);
+		vwf->set_cursor(3, 8);		
+		vwf->clear_row(3, Pal4bit);
+		vwf->put_text(str_print(vwf_buffer, "File: %s", file_part_path), Pal4bit, SolidColorBrush(0x1));				
+		
+		unsigned int timestamp = 0;
+		timestamp|=ppm_metadata[index][0x9A];
+		timestamp|=ppm_metadata[index][0x9B]<<8;
+		timestamp|=ppm_metadata[index][0x9C]<<16;
+		timestamp|=ppm_metadata[index][0x9D]<<24;		
+		
+		int d=1;
+		int m=1;
+		int y=2000;
+		get_datetime(timestamp, d,m,y);
+		
+		vwf->set_cursor(4, 8);
+		vwf->clear_row(4, Pal4bit);
+		vwf->put_text(str_print(vwf_buffer, "Date: %i-%s-%i", d,months[m-1],y), Pal4bit, SolidColorBrush(0x1));
+		
+		vwf->set_cursor(5, 8);
+		vwf->clear_row(5, Pal4bit);
+		vwf->put_text(str_print(vwf_buffer, "Locked: %s", ppm_metadata[index][10] ? "Yes" : "No"), Pal4bit, SolidColorBrush(0x1));
+	}
+	
+	char vwf_buffer[64];
 	int thumbnail_sel_row = 0;
 	int thumbnail_sel_col = 0;
 	
@@ -204,8 +329,8 @@ public:
 	{
 		torgb15(0xFFFFFF), torgb15(0x525252), torgb15(0xFFFFFF), torgb15(0x9C9C9C), 
 		torgb15(0xFF4844), torgb15(0xC8514F), torgb15(0xFFADAC), torgb15(0x00FF00), 
-		torgb15(0x4840FF), torgb15(0x514FB8), torgb15(0xADABFF), torgb15(0x00FF00), 
-		torgb15(0xB657B7), torgb15(0x00FF00), torgb15(0x00FF00), torgb15(0x00FF00)	
+		torgb15(0x4840FF), torgb15(0x514FB8), torgb15(0xADABFF), torgb15(0x00FF00),
+		torgb15(0xB657B7), torgb15(0x00FF00), torgb15(0x00FF00), torgb15(0x00FF00)
 	};
 	
 	__attribute__((noinline))
@@ -271,6 +396,7 @@ public:
 		}	
 
 		display_page();		
+		display_info();
 
 		Hardware::MainEngine::objEnable(128, true); // set to 128		
 		Hardware::SubEngine::objEnable(128, true); // set to 128	
@@ -284,6 +410,9 @@ public:
 		key_down.remove_event(&LocationViewerScene::on_key_down, this);
 		delete vwf;
 		delete ppm_reader;
+		
+		delete back_arrow;
+		delete thumbnail_selector;
 	}
 	
 };

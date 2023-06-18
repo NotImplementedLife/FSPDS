@@ -186,15 +186,15 @@ void DSC::VwfEngine::clear_row(int row, BgPaletteType pal_type) const
 	
 	if(char_height==8)
 	{
-		if((render_rows_count&1) && crt_row==render_rows_count-1)
+		if((render_rows_count&1) && row==render_rows_count-1)
 		{
-			dest = (unsigned short*)(((int)render_area) + (render_columns_count * crt_row) * 32 * (1+(int)pal_type));
+			dest = (unsigned short*)(((int)render_area) + (render_columns_count * row) * 32 * (1+(int)pal_type));
 			for(int i=0;i<render_columns_count*16*(1+pal_type);i++)
 				*(dest++)=zero;
 		}
 		else
 		{
-			dest = (unsigned short*)(((int)render_area) + (render_columns_count * (crt_row/2)*2 + (crt_row&1)) * 32 * (1+(int)pal_type));
+			dest = (unsigned short*)(((int)render_area) + (render_columns_count * (row/2)*2 + (row&1)) * 32 * (1+(int)pal_type));
 			for(int i=0;i<render_columns_count;i++)
 			{
 				for(int i=0;i<16*(1+pal_type);i++) *(dest++)=zero;
@@ -204,7 +204,8 @@ void DSC::VwfEngine::clear_row(int row, BgPaletteType pal_type) const
 	}
 	else
 	{
-		dest = (unsigned short*)(((int)render_area) + (render_columns_count * crt_row) *64 * (1+(int)pal_type));
+		dest = (unsigned short*)(((int)render_area) + (render_columns_count * row) *64 * (1+(int)pal_type));		
+		DSC::Debug::log("Clear dest = %X, Len = %X", dest, render_columns_count*32*(1+pal_type));
 		for(int i=0;i<render_columns_count*32*(1+pal_type);i++)
 				*(dest++)=zero;
 	}

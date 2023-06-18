@@ -14,7 +14,10 @@ int PPMReader::peek_only_metadata(const char* filename, void* dest)
 	fseek(fp, 0L, SEEK_SET);
 	
 	if(fread(dest, sizeof(char), 0x6A0, fp) != 0x6A0)
+	{
+		fclose(fp);
 		return ERR_READ_COUNT;
+	}
 	
 	fclose(fp);
 	return 0;
