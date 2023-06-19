@@ -99,7 +99,7 @@ int PPMReader::getAnimationDataSize() const { return read32(0x4); }
 
 // Header
 int PPMReader::getSoundDataSize() const { return read32(0x8); }
-int PPMReader::getFrameCount() const { return read16(0xC); }
+int PPMReader::getFrameCount() const { return read16(0xC)+1; }
 int PPMReader::getFormatVersion() const { return read16(0xE); }
 bool PPMReader::isLocked() const { return read16(0x10 + 0x00)!=0; }
 

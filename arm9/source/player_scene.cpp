@@ -483,6 +483,7 @@ public:
 	void play_sound()
 	{				
 		soundKill(bgmId);
+		Debug::log("ssss = %i",4*bgmSize-2*sound_frame_counter);
 		bgmId = soundPlaySample(sound_buffer+sound_frame_counter,SoundFormat_16Bit,4*bgmSize-2*sound_frame_counter, soundFreq, 100, 64, false, 0);
 	}
 	
