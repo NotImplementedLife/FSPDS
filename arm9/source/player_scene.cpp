@@ -12,6 +12,7 @@
 #include "player_bg.h"
 #include "bar_fragments.h"
 #include "player_icons.h"
+#include "loading_text.h"
 
 #include <stdlib.h>
 #include <malloc.h>
@@ -51,8 +52,9 @@ void vblank_handler()
 class PlayerScene : public GenericScene256
 {
 private:
+	Sprite* loading_text;
 	Sprite* bar_fragments[14];	
-	ObjFrame* bar_frames[17];
+	ObjFrame* bar_frames[17];	
 	
 	ObjFrame* play_frame;
 	ObjFrame* resume_frame;
@@ -64,76 +66,19 @@ private:
 	 
 	PPMReader* ppm_reader = new PPMReader();
 	bool autoplay = false;
+	
+	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 public:
 	void init() override
 	{
 		GenericScene256::init();
 		soundEnable();
 		
+		require_tiledmap_4bpp(MAIN_BG1, 256, 256, 32*24);
 		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);
-		
-		require_bitmap(SUB_BG2, &ROA_player_bg8);		
-		
-		/*int* d = (int*)ppm_reader;
-		int* s = (int*)_0B33C4_0BC1601FB8421_000_bin;
-		
-		Debug::log("START = %X", d);
-		
-		for(int i=0;i<253196/4;i++)			
-			*(d++)=*(s++);*/
-		
-		
-		if(selected_flipnote_path!=nullptr)
-		{
-			int res = ppm_reader->read_file(selected_flipnote_path);							
-			Debug::log("Player read finished %i", res);
-			Debug::log("Animation data size = %i", ppm_reader->getAnimationDataSize());
-			Debug::log("Sound data size = %i", ppm_reader->getSoundDataSize());
-			Debug::log("Frames count = %i", ppm_reader->getFrameCount());		
-			delete[] selected_flipnote_path;
-		}
-		
-		
-		soundFreq = ppm_reader->getSoundFreq();
-		Debug::log("FREQ = %i",ppm_reader->getSoundFreq());
-			
-		for(int i=0;i<10;i++)
-		{
-			Debug::log("Frame %i", i);						
-			char* f=ppm_reader->getFrame(i);
-			Debug::log("Offset %X",(int)f-(int)ppm_reader);
-			Debug::log("%X %X %X %X %X %X %X %X %X %X", f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9]);
-		}						
-		frames_count = ppm_reader->getFrameCount();		
-		framePbSpeed = ppm_reader->getFramePlaybackSpeed();		
-		
-		Debug::log("FPS = %X", ((0x6A0+ppm_reader->getAnimationDataSize()+ppm_reader->getFrameCount()+3)/4)*4);
-		Debug::log("FPS = %i", framePbSpeed);
-		
-		Debug::log("allocating buffers");
-		buffer1 = new int[32*192]();
-		buffer2 = new int[32*192]();
-		
-		bgmSize = ppm_reader->getBgmTrackSize();
-		Debug::log("bgmSize = %i", bgmSize);
-		if(bgmSize>=491520/2+100)
-		{
-			Debug::log("Sound TOO BIG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		}		
 				
-		sound_buffer = (short*)malloc(bgmSize*4);
-		Debug::log("Here? %X", sound_buffer);
-		if(sound_buffer==nullptr)
-		{
-			Debug::log("Sound buffer not allocated!!!");
-		}
-		Debug::log("Here2?");
-		SoundDecoder::ADPCM2PCM16(ppm_reader->getBgmTrack(), sound_buffer, bgmSize);
-		bgmSize*=4;
-		
-		key_down.add_event(&PlayerScene::on_key_down, this);
-		Debug::log("Here5?");
-		
+		require_bitmap(SUB_BG2, &ROA_player_bg8);
+
 		begin_sprites_init();				
 		
 		for(int i=0;i<17;i++)
@@ -168,7 +113,11 @@ public:
 	    replay_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
 		replay_button->set_default_allocator(nullptr);
 		replay_button->add_frame(replay_off_frame);
-		replay_button->set_position(89,147);
+		replay_button->set_position(89,147);		
+			
+		loading_text = create_sprite(new Sprite(SIZE_64x32, Engine::Main));
+		loading_text->add_frame(new ObjFrame(&ROA_loading_text8, 0, 0));
+		loading_text->set_position(96, 80);		
 		
 		end_sprites_init();
 		
@@ -209,6 +158,22 @@ public:
 	void on_key_down(void*, void* _k)
 	{
 		int keys = (int)_k;				
+		if(load_error)
+		{
+			if(keys & KEY_B)
+			{
+				back_to_location_viewer();
+			}				
+			else if(keys & KEY_TOUCH)
+			{
+				touchRead(&touch);								
+				if(touch_in_rect(0,0,32,32))
+				{					
+					back_to_location_viewer();
+				}
+			}
+			return;
+		}
 		
 		if(keys & KEY_A)
 		{
@@ -247,11 +212,11 @@ public:
 	int frames_count;
 	int frame_index=0;
 	
-	int* layer1;	
+	int* layer1;
 	
 	int* buffer1;
 	int* buffer2;	
-	short* sound_buffer;
+	short* sound_buffer = nullptr;
 	
 	int framePbSpeed;
 	int bgmPbSpeed;	
@@ -272,6 +237,11 @@ public:
 	
 	void frame() override
 	{						
+		if(load_error)
+		{			
+			GenericScene256::frame();
+			return;
+		}
 		working=true;
 		
 		/*k++;
@@ -325,13 +295,22 @@ public:
 		GenericScene256::frame();
 		
 		working=false;
-	}
+	}	
 		
 	__attribute__((noinline))
 	void run() override
 	{
 		solve_map_requirements();
 		load_assets();
+		
+		BG_PALETTE[0x91]=BG_PALETTE_SUB[0x91]=Colors::Black;
+		BG_PALETTE[0x92]=BG_PALETTE_SUB[0x92]=Colors::Blue;
+		BG_PALETTE[0x93]=BG_PALETTE_SUB[0x93]=Colors::Red;
+		BG_PALETTE[0x94]=BG_PALETTE_SUB[0x94]=Colors::DarkGray;
+		
+		vwf->set_render_space(bgGetGfxPtr(1),24,32);
+		VwfEngine::prepare_map(*vwf, MAIN_BG1, 32, 0, 0, 0x9);
+		vwf->clear(Pal4bit);					
 		
 		unsigned short* bg0map = bgGetMapPtr(2);		
 		
@@ -344,18 +323,106 @@ public:
 			bg0map[i]=0xE000 | i;
 		}
 		
+		volatile short zero = 0;
+		for(int i=0;i<24*32*16;i++)
+			layer1[i]=zero;
+		
 		BG_PALETTE[0x00]=Colors::White;
 		BG_PALETTE[0xE1]=Colors::Red;	
 		BG_PALETTE[0xE2]=Colors::Blue;
 		BG_PALETTE[0xE3]=Colors::Blue;
-				
+						
 		Hardware::MainEngine::objEnable(128, true); // set to 128		
-		Hardware::SubEngine::objEnable(128, true); // set to 128			
+		Hardware::SubEngine::objEnable(128, true); // set to 128				
+		
+		GenericScene256::frame();
+		load();
+		
+		loading_text->hide();
+		GenericScene256::frame();
+		
+		key_down.add_event(&PlayerScene::on_key_down, this);
+		
 
 		irqEnable(IRQ_VBLANK);
-		irqSet(IRQ_VBLANK, &vblank_handler);
-		Scene::run();	
+		irqSet(IRQ_VBLANK, &vblank_handler);		
+		
+		Scene::run();
 	}
+	
+	bool load_error = false;
+	void load()
+	{
+		if(selected_flipnote_path!=nullptr)
+		{
+			int res = ppm_reader->read_file(selected_flipnote_path);							
+			Debug::log("Player read finished %i", res);
+			Debug::log("Animation data size = %i", ppm_reader->getAnimationDataSize());
+			Debug::log("Sound data size = %i", ppm_reader->getSoundDataSize());
+			Debug::log("Frames count = %i", ppm_reader->getFrameCount());		
+			delete[] selected_flipnote_path;
+		}
+		else
+		{
+			int* d = (int*)ppm_reader;
+			int* s = (int*)_0B33C4_0BC1601FB8421_000_bin;
+			
+			Debug::log("START = %X", d);
+			
+			for(int i=0;i<253196/4;i++)			
+				*(d++)=*(s++);
+		}					
+		
+		soundFreq = ppm_reader->getSoundFreq();
+		/*Debug::log("FREQ = %i",ppm_reader->getSoundFreq());
+			
+		for(int i=0;i<10;i++)
+		{
+			Debug::log("Frame %i", i);						
+			char* f=ppm_reader->getFrame(i);
+			Debug::log("Offset %X",(int)f-(int)ppm_reader);
+			Debug::log("%X %X %X %X %X %X %X %X %X %X", f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9]);
+		}*/						
+		frames_count = ppm_reader->getFrameCount();		
+		framePbSpeed = ppm_reader->getFramePlaybackSpeed();		
+		
+		Debug::log("FPS = %X", ((0x6A0+ppm_reader->getAnimationDataSize()+ppm_reader->getFrameCount()+3)/4)*4);
+		Debug::log("FPS = %i", framePbSpeed);
+		
+		Debug::log("allocating buffers");
+		buffer1 = new int[32*192]();
+		buffer2 = new int[32*192]();
+		
+		bgmSize = ppm_reader->getBgmTrackSize();
+		Debug::log("bgmSize = %i", bgmSize);
+		if(bgmSize>=491520/2+100)
+		{
+			load_error=true;
+			vwf->set_cursor(6, 120);
+			vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));		
+			vwf->set_cursor(7, 78);
+			vwf->put_text("Sound size too large", Pal4bit, SolidColorBrush(0x3));		
+			return;			
+		}		
+				
+		sound_buffer = (short*)malloc(bgmSize*4);
+		Debug::log("Here? %X", sound_buffer);
+		if(sound_buffer==nullptr)
+		{
+			load_error=true;
+			vwf->set_cursor(6, 113);
+			vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));		
+			vwf->set_cursor(7, 52);
+			vwf->put_text("Sount buffer not allocated", Pal4bit, SolidColorBrush(0x3));
+			return;			
+		}
+		Debug::log("Here2?");
+		SoundDecoder::ADPCM2PCM16(ppm_reader->getBgmTrack(), sound_buffer, bgmSize);
+		bgmSize*=4;
+		
+		Debug::log("Here5?");
+	}
+
 	
 	~PlayerScene()
 	{
@@ -368,6 +435,7 @@ public:
 		delete[] buffer1;
 		delete[] buffer2;
 		delete ppm_reader;		
+		delete vwf;
 		
 		for(int i=0;i<14;i++)
 		{
@@ -384,7 +452,8 @@ public:
 		delete play_frame;
 		delete resume_frame;
 		delete replay_off_frame;
-		delete replay_on_frame;			
+		delete replay_on_frame;		
+		delete loading_text;
 	}
 		
 	static int sound_frame_counter;	

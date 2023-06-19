@@ -80,10 +80,12 @@ public:
 		else if(keys & KEY_A)	
 		{
 			if(loc_selected_index<locations_provider->get_count())
-			{
+			{				
 				selected_location_index = loc_selected_index;				
 				delete locations_provider;
 				locations_provider = nullptr;
+				
+				selected_thumbnail_page = selected_thumbnail_index=0;
 				close()->next(get_location_viewer_scene());
 			}
 		}
