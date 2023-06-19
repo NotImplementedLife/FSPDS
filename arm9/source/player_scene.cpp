@@ -34,7 +34,7 @@ void operator delete(void* p)
 	free(p);
 }
 
-const char* selected_flipnote_path = "fat://flipnotes/0BC769_0A978C458A07A_002.ppm";
+const char* selected_flipnote_path = nullptr; // "fat://flipnotes/0BC769_0A978C458A07A_002.ppm";
 
 bool working=false;
 int vbl=0;
@@ -61,6 +61,8 @@ private:
 	
 	Sprite* play_resume_button;
 	Sprite* replay_button;
+	 
+	PPMReader* ppm_reader = new PPMReader();
 	bool autoplay = false;
 public:
 	void init() override
@@ -70,28 +72,27 @@ public:
 		
 		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);
 		
-		require_bitmap(SUB_BG2, &ROA_player_bg8);
-				
+		require_bitmap(SUB_BG2, &ROA_player_bg8);		
 		
-		Debug::log("Player Scene");
-		ppm_reader = new PPMReader();
-		
-		
-		int* d = (int*)ppm_reader;
+		/*int* d = (int*)ppm_reader;
 		int* s = (int*)_0B33C4_0BC1601FB8421_000_bin;
 		
 		Debug::log("START = %X", d);
 		
-		for(int i=0;i<253196/4;i++)
-			*(d++)=*(s++);
-		
-		int res = ppm_reader->read_file(selected_flipnote_path);		
+		for(int i=0;i<253196/4;i++)			
+			*(d++)=*(s++);*/
 		
 		
-		Debug::log("Player read finished %i", res);
-		Debug::log("Animation data size = %i", ppm_reader->getAnimationDataSize());
-		Debug::log("Sound data size = %i", ppm_reader->getSoundDataSize());
-		Debug::log("Frames count = %i", ppm_reader->getFrameCount());		
+		if(selected_flipnote_path!=nullptr)
+		{
+			int res = ppm_reader->read_file(selected_flipnote_path);							
+			Debug::log("Player read finished %i", res);
+			Debug::log("Animation data size = %i", ppm_reader->getAnimationDataSize());
+			Debug::log("Sound data size = %i", ppm_reader->getSoundDataSize());
+			Debug::log("Frames count = %i", ppm_reader->getFrameCount());		
+			delete[] selected_flipnote_path;
+		}
+		
 		
 		soundFreq = ppm_reader->getSoundFreq();
 		Debug::log("FREQ = %i",ppm_reader->getSoundFreq());
@@ -222,11 +223,25 @@ public:
 			{
 				paused ? resume() : pause();
 			}
+			if(touch_in_rect(0,0,32,32))
+			{
+				if(!paused) 
+				{
+					pause();				
+					frame();
+				}				
+				back_to_location_viewer();				
+			}
 		}
 		else if(keys & KEY_Y)
 		{
 			toggle_autoplay();
 		}
+	}
+	
+	void back_to_location_viewer()
+	{		
+		close()->next(get_location_viewer_scene());
 	}
 	
 	int frames_count;
@@ -239,9 +254,7 @@ public:
 	short* sound_buffer;
 	
 	int framePbSpeed;
-	int bgmPbSpeed;
-	
-	int k=0;
+	int bgmPbSpeed;	
 	
 	static short get_layer_color(int id, int paperColor)
 	{
@@ -255,9 +268,18 @@ public:
 	
 	int frame_countdown = 0;
 	
+	int k=0;
+	
 	void frame() override
 	{						
 		working=true;
+		
+		/*k++;
+		if(k==300)
+		{
+			working=false;
+			close()->next(get_player_scene());
+		}*/
 
 		if(frame_countdown==0 && !paused)
 		{					
@@ -338,10 +360,31 @@ public:
 	~PlayerScene()
 	{
 		soundDisable();
+		swiWaitForVBlank();
+		
+		free(sound_buffer);
+		key_down.remove_event(&PlayerScene::on_key_down, this);
+		irqSet(IRQ_VBLANK, nullptr);		
 		delete[] buffer1;
 		delete[] buffer2;
-		delete ppm_reader;
-		free(sound_buffer);
+		delete ppm_reader;		
+		
+		for(int i=0;i<14;i++)
+		{
+			bar_fragments[i]->set_frame(0, nullptr);
+			delete bar_fragments[i];
+		}
+		
+		for(int i=0;i<17;i++)
+			delete bar_frames[i];
+		
+		play_resume_button->set_frame(0, nullptr);
+		replay_button->set_frame(0, nullptr);
+		
+		delete play_frame;
+		delete resume_frame;
+		delete replay_off_frame;
+		delete replay_on_frame;			
 	}
 		
 	static int sound_frame_counter;	

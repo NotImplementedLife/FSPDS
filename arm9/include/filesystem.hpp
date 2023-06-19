@@ -38,6 +38,8 @@ private:
 	void load();
 	void save();
 public:
+	static Location* peek_location(int i);
+
 	int get_count() const;
 	
 	Location* get_by_path(const char* path) const;

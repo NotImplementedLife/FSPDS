@@ -77,12 +77,11 @@ public:
 		{
 			close()->next(gen_title_scene());
 		}
-		else if(keys & KEY_A)
+		else if(keys & KEY_A)	
 		{
 			if(loc_selected_index<locations_provider->get_count())
 			{
-				selected_location_index = loc_selected_index;
-				selected_location = locations_provider->detach_location(selected_location_index);
+				selected_location_index = loc_selected_index;				
 				delete locations_provider;
 				locations_provider = nullptr;
 				close()->next(get_location_viewer_scene());

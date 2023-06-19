@@ -6,6 +6,7 @@
 #include "back_arrow.h"
 #include "error_thumbnail.h"
 #include "thumbnail_selector.h"
+#include "opt_box.h"
 
 constexpr short torgb15(int rgb24)
 {
@@ -22,6 +23,9 @@ private:
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 	Sprite* back_arrow = nullptr;		
 	Sprite* thumbnail_selector = nullptr;
+	
+	ObjFrame* opt_frame = nullptr;
+	Sprite* opt_box = nullptr;
 	
 	int dir_len;
 	char* flipnote_path;
@@ -52,6 +56,7 @@ private:
 public:
 	void init() override
 	{
+		Debug::log("__________________________________________________________________________________________ %X", this);
 		SimpleScene::init();
 		require_tiledmap_4bpp(MAIN_BG1, 256, 256, 32*24);
 		require_tiledmap_4bpp(MAIN_BG2, 256, 256, 32*24);		
@@ -68,7 +73,19 @@ public:
 		thumbnail_selector->add_frame(new ObjFrame(&ROA_thumbnail_selector8,0,0));
 		thumbnail_selector->set_position(16, 16);
 		
+		opt_frame = new ObjFrame(&ROA_opt_box8,0,0);
+		get_obj_allocator_sub()->allocate(opt_frame);
+		
+		opt_box = create_sprite(new Sprite(SIZE_64x32, Engine::Sub));
+		opt_box->set_default_allocator(nullptr);
+		opt_box->add_frame(opt_frame);
+		opt_box->set_position(96, 150);
+		opt_box->set_priority(3);
+		
 		end_sprites_init();
+		
+		Debug::log("SELECTED LOCATION = %i", selected_location_index);
+		selected_location = LocationsProvider::peek_location(selected_location_index);
 		
 		dir_len = strlen(selected_location->path);
 		flipnote_path = new char[dir_len+29];
@@ -87,6 +104,13 @@ public:
 		key_down.add_event(&LocationViewerScene::on_key_down, this);
 		
 		if(total_pages_count==0) thumbnail_selector->hide();
+		opt_box->hide();
+		
+		crt_page = selected_thumbnail_page;
+		
+		thumbnail_sel_row = selected_thumbnail_index/3;
+		thumbnail_sel_col = selected_thumbnail_index%3;
+				
 	}	
 	
 	void on_key_down(void*, void* _keys)
@@ -157,7 +181,32 @@ public:
 		else if(keys & KEY_B)
 		{
 			close()->next(get_playlists_scene());
-		}		
+		}
+		else if(keys & KEY_A)
+		{
+			int index = 3*thumbnail_sel_row+thumbnail_sel_col;
+			if(ppm_states[index]<0)
+				return;							
+			load_path(9*crt_page+index);
+			
+			Debug::log(flipnote_path);
+			
+			selected_flipnote_path = flipnote_path;
+			flipnote_path = nullptr;
+			
+			selected_thumbnail_page = crt_page;
+			selected_thumbnail_index = index;			
+						
+			go_to_player();			
+		}
+	}
+	
+	void go_to_player()
+	{
+		delete[] selected_location->path;
+		selected_location->path = nullptr;
+		delete selected_location;
+		close()->next(get_player_scene());			
 	}
 	
 	inline static constexpr int THUMBNAIL_NONE = 0;
@@ -218,7 +267,7 @@ public:
 		}				
 		vwf->clear_row(1, Pal4bit);
 		vwf->set_cursor(1, 90);
-		vwf->put_text(str_print(vwf_buffer, "Page %i of %i", crt_page+1, total_pages_count+1), Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text(str_print(vwf_buffer, "Page %i of %i", crt_page+1, total_pages_count), Pal4bit, SolidColorBrush(0x1));
 	}
 	
 	inline static constexpr const char* months[12] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
@@ -262,7 +311,8 @@ public:
 	
 	void display_info()
 	{
-		for(int i=2;i<10;i++) 
+		opt_box->hide();
+		for(int i=2;i<=10;i++) 
 		{
 			Debug::log("Clearing row %i", i);
 			vwf->clear_row(i, Pal4bit);
@@ -306,21 +356,29 @@ public:
 		int y=2000;
 		get_datetime(timestamp, d,m,y);
 		
-		vwf->set_cursor(4, 8);
-		vwf->clear_row(4, Pal4bit);
+		vwf->set_cursor(4, 8);		
 		vwf->put_text(str_print(vwf_buffer, "Date: %i-%s-%i", d,months[m-1],y), Pal4bit, SolidColorBrush(0x1));
 		
-		vwf->set_cursor(5, 8);
-		vwf->clear_row(5, Pal4bit);
+		vwf->set_cursor(5, 8);		
 		vwf->put_text(str_print(vwf_buffer, "Locked: %s", ppm_metadata[index][10] ? "Yes" : "No"), Pal4bit, SolidColorBrush(0x1));
+
+		opt_box->show();
+		vwf->set_cursor(10, 116);		
+		vwf->put_text("Play", Pal4bit, SolidColorBrush(0x1));		
 	}
 	
 	char vwf_buffer[64];
 	int thumbnail_sel_row = 0;
 	int thumbnail_sel_col = 0;
+
+	int z=0;
 	
 	void frame() override
 	{
+		/*z++;
+		if(z<10 && selected_thumbnail_index!=0)
+			close()->next(new LocationViewerScene());*/
+		
 		thumbnail_selector->set_position(16+thumbnail_sel_col*80, 16+thumbnail_sel_row*56);
 		SimpleScene::frame();
 	}	
@@ -409,10 +467,14 @@ public:
 	{
 		key_down.remove_event(&LocationViewerScene::on_key_down, this);
 		delete vwf;
-		delete ppm_reader;
 		
 		delete back_arrow;
 		delete thumbnail_selector;
+		
+		opt_box->set_frame(0, nullptr);
+		delete opt_box;
+		
+		delete opt_frame;
 	}
 	
 };

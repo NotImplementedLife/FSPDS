@@ -1,7 +1,7 @@
 #include "globals.hpp"
 #include "scenes.hpp"
 
-PPMReader* ppm_reader = nullptr;
+//PPMReader* ppm_reader = nullptr;
 
 unsigned int state_flags = 0;
 
@@ -21,3 +21,6 @@ char* picked_folder_path = nullptr;
 
 int selected_location_index = -1;
 Location* selected_location = nullptr;
+
+int selected_thumbnail_page = 0;
+int selected_thumbnail_index = 0;

@@ -85,6 +85,59 @@ void LocationsProvider::save()
 	fclose(fptr);
 }
 
+Location* LocationsProvider::peek_location(int id)
+{
+	DSC::Debug::log("Loading.....");
+	FILE* fptr = fopen(locations_path, "rb");
+	int count=0;
+	fread(&count, sizeof(int), 1, fptr);
+	int s=0;
+	
+	for(int i=0;i<id;i++)
+	{
+		s=0;
+		fread(&s, sizeof(int), 1, fptr);	
+		fseek(fptr, s, SEEK_CUR);				
+		s=0;
+		fread(&s, sizeof(int), 1, fptr);	
+		fseek(fptr, 24*s, SEEK_CUR);
+	}	
+	
+	s=0;
+	fread(&s, sizeof(int), 1, fptr);
+	Location* location = new Location();
+	
+	DSC::Debug::log("S = %i", s);
+	
+	location->path = new char[s+1];
+	fread(location->path, sizeof(char), s, fptr);			
+	location->path[s]='\0';
+	DSC::Debug::log("Location = %s", location->path);
+	s=0;
+	fread(&s, sizeof(int), 1, fptr);	
+	
+	DSC::Debug::log("S = %i", s);
+	
+	Char24* char24 = new Char24();				
+	for(int j=0;j<s;j++)
+	{
+		fread(char24->chars, sizeof(char), 24, fptr);
+		location->filenames.push_back(*char24);
+	}
+
+	DSC::Debug::log("C24 = %X", (int)char24->chars);
+	
+	for(int j=0;j<s;j++)
+	{
+		DSC::Debug::log("%X", (int)location->filenames[j].chars);
+	}
+	
+	delete char24;		
+	fclose(fptr);
+	
+	return location;
+}
+
 void LocationsProvider::load()
 {
 	DSC::Debug::log("Loading.....");
