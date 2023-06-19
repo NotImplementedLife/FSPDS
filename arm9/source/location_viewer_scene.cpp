@@ -177,32 +177,36 @@ public:
 			{
 				close()->next(get_playlists_scene());
 			}
+			else if(touch_in_rect(96,154,64,24))
+			{
+				go_to_player();
+			}
 		}
 		else if(keys & KEY_B)
 		{
 			close()->next(get_playlists_scene());
 		}
 		else if(keys & KEY_A)
-		{
-			int index = 3*thumbnail_sel_row+thumbnail_sel_col;
-			if(ppm_states[index]<0)
-				return;							
-			load_path(9*crt_page+index);
-			
-			Debug::log(flipnote_path);
-			
-			selected_flipnote_path = flipnote_path;
-			flipnote_path = nullptr;
-			
-			selected_thumbnail_page = crt_page;
-			selected_thumbnail_index = index;			
-						
+		{								
 			go_to_player();			
 		}
-	}
+	}	
 	
 	void go_to_player()
 	{
+		int index = 3*thumbnail_sel_row+thumbnail_sel_col;
+		if(ppm_states[index]<0)
+			return;							
+		load_path(9*crt_page+index);
+		
+		Debug::log(flipnote_path);
+		
+		selected_flipnote_path = flipnote_path;
+		flipnote_path = nullptr;
+		
+		selected_thumbnail_page = crt_page;
+		selected_thumbnail_index = index;			
+
 		delete[] selected_location->path;
 		selected_location->path = nullptr;
 		delete selected_location;

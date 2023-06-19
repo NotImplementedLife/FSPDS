@@ -19,6 +19,10 @@ private:
 	Sprite* folder_icons[4];
 	Sprite* add_folder_icon=nullptr;
 	Sprite* back_arrow = nullptr;
+
+	Sprite* reindex_icon = nullptr;
+	Sprite* remove_icon = nullptr;
+
 	
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
 	LocationsProvider* locations_provider;
@@ -36,7 +40,7 @@ private:
 	static LocationsProvider* bak_locations_provider;
 
 public:
-	PlaylistsScene(bool is_indexing=false) : is_indexing(is_indexing) 
+	PlaylistsScene(bool is_indexing=false) : is_indexing(is_indexing)
 	{		
 		locations_provider = bak_locations_provider;
 		bak_locations_provider = nullptr;
@@ -68,6 +72,14 @@ public:
 				locations_provider = nullptr;
 				close()->next(get_folder_picker_scene());
 			}
+			else if(touch_in_rect(180,0,32,32))
+			{
+				if(show_yes_no_dialog("Do you want to reindex the location?", 24))
+				{
+					Debug::log("Dialog accepted");
+				}
+			}
+
 			else if(touch_in_rect(0,0,32,32))
 			{
 				close()->next(gen_title_scene());
@@ -119,6 +131,15 @@ public:
 		back_arrow->add_frame(new ObjFrame(&ROA_back_arrow8,0,0));
 		back_arrow->set_position(0, 0);
 		
+		reindex_icon = create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
+		reindex_icon->add_frame(new ObjFrame(&ROA_folder_icon8,0,4));
+		reindex_icon->set_position(180, 0);
+
+		remove_icon = create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
+		remove_icon->add_frame(new ObjFrame(&ROA_folder_icon8,0,5));
+		remove_icon->set_position(140, 0);
+		
+
 		end_sprites_init();
 		
 		key_down.add_event(&PlaylistsScene::on_key_down, this);
@@ -177,6 +198,8 @@ public:
 				vwf->put_text("Indexing files", Pal4bit, SolidColorBrush(0x2));				
 						
 				add_folder_icon->hide();
+				reindex_icon->hide();
+				remove_icon->hide();
 				back_arrow->hide();
 				GenericScene256::frame();		
 				swiWaitForVBlank();
@@ -252,24 +275,70 @@ public:
 			}
 			
 			add_folder_icon->show();
+			reindex_icon->show();
+			remove_icon->show();
 			back_arrow->show();
 			display_page();
 		}
 		
-		
 		Scene::run();	
 	}
 	
+	bool show_yes_no_dialog(const char* message, int x)
+	{
+		vwf->clear(Pal4bit);
+		vwf->set_cursor(6, x);
+		vwf->put_text(message, Pal4bit, SolidColorBrush(0x1));
+
+		vwf->set_cursor(8, 86);
+		vwf->put_text("Yes", Pal4bit, SolidColorBrush(0x1));
+		vwf->set_cursor(8, 156);
+		vwf->put_text("No", Pal4bit, SolidColorBrush(0x1));
+
+		int val=1;
+		
+		bool working=true;
+		while(working)
+		{
+			swiWaitForVBlank();			
+			scanKeys();
+			int keys = keysDown();
+			if(keys & (KEY_LEFT | KEY_RIGHT)) val^=1;
+			else if(keys & KEY_A)
+			{
+				working=false;				
+			}
+			else if(keys & KEY_B)
+			{
+				working=false;
+				val=0;
+			}
+			
+			vwf->clear_row(8, Pal4bit);
+			vwf->set_cursor(8, 86);
+			vwf->put_text("Yes", Pal4bit, SolidColorBrush(0x1+val));
+			vwf->set_cursor(8, 156);
+			vwf->put_text("No", Pal4bit, SolidColorBrush(0x2-val));			
+		}
+		
+		display_page();
+		
+		return val;
+	}
 
 	int loc_selected_index=0;
 	void display_page()
 	{
+		reindex_icon->show();
+		remove_icon->show();
 		vwf->clear(Pal4bit);
 		for(int i=0;i<4;i++)
 			folder_icons[i]->hide();
 		
 		if(locations_provider->get_count()==0)
 		{			
+			reindex_icon->hide();
+			remove_icon->hide();
 			vwf->set_cursor(6, 40);	
 			vwf->put_text("No flipnote locations. Add one!", Pal4bit, SolidColorBrush(0x3));
 			return;
@@ -313,6 +382,9 @@ public:
 		delete folder_highlighted_frame;
 		key_down.remove_event(&PlaylistsScene::on_key_down, this);
 		delete locations_provider;		
+
+		delete reindex_icon;
+		delete remove_icon;
 	}
 };
 
