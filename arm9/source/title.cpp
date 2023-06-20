@@ -129,7 +129,7 @@ class TitleScene : public GenericScene256
 	
 	typedef Scene*(*fgen)();
 	
-	inline static constexpr fgen scenegens[4] = { &get_browse_scene, &get_settings_scene, &get_simple_scene, &get_credits_scene  };
+	inline static constexpr fgen scenegens[4] = { &get_browse_scene, &get_settings_scene, &get_help_scene, &get_credits_scene  };
 	
 	void on_key_down(void* sender, void* args)
 	{

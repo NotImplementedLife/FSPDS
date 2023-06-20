@@ -89,7 +89,19 @@ class CreditsScene : public SimpleScene
 		vwf->put_text("Compiled with ", Pal4bit, SolidColorBrush(0x1));
 		vwf->put_text("devkitPro", Pal4bit, SolidColorBrush(0x2));
 		
-		vwf->set_cursor(10, 20);	
+		vwf->set_cursor(7, 8);	
+		vwf->put_text("Shout-out to  ", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("Kenyon Bowers", Pal4bit, SolidColorBrush(0x2));
+		vwf->put_text(", co-author of ", Pal4bit, SolidColorBrush(0x1));		
+		
+		vwf->set_cursor(8, 8);	
+		vwf->put_text("DSC", Pal4bit, SolidColorBrush(0x2));
+		vwf->put_text(" library, now abandonware, but I reused", Pal4bit, SolidColorBrush(0x1));
+		
+		vwf->set_cursor(9, 8);	
+		vwf->put_text("its code to create this app", Pal4bit, SolidColorBrush(0x1));
+		
+		vwf->set_cursor(10, 24);	
 		vwf->put_text("Touch the screen to return to title", Pal4bit, SolidColorBrush(0x1));
 					
 		Hardware::MainEngine::objEnable(128, true); // set to 128		

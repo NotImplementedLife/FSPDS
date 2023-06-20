@@ -15,6 +15,7 @@
 #include "DSCEngine/sprites/sprite.hpp"
 #include "DSCEngine/sprites/obj_allocator.hpp"
 #include "DSCEngine/sprites/obj_frame.hpp"
+#include "DSCEngine/sprites/obj_size.hpp"
 #include "DSCEngine/sprites/obj_visual.hpp"
 
 #include "DSCEngine/scenes/scene.hpp"

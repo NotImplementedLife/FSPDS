@@ -18,3 +18,4 @@ Scene* get_folder_picker_scene();
 Scene* get_playlists_scene();
 Scene* get_location_viewer_scene();
 Scene* get_settings_scene();
+Scene* get_help_scene();

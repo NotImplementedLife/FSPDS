@@ -71,12 +71,7 @@ public:
 		Hardware::SubEngine::objEnable(128, true); // set to 128		
 	
 		Scene::run();	
-	}
-	
-	void frame() override
-	{
-		SimpleScene::frame();
-	}
+	}	
 	
 	void on_key_down(void*, void* _keys)
 	{
