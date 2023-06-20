@@ -202,6 +202,17 @@ Location* LocationsProvider::get_by_path(const char* path) const
 	return nullptr;
 }
 
+void LocationsProvider::remove_location(int i)
+{
+	Location* loc = detach_location(i);
+	delete[] loc->path;
+	loc->path = nullptr;
+	delete loc;
+	
+	locations.remove_at(i);
+	save();
+}
+
 Location* LocationsProvider::detach_location(int index)
 {
 	Location* loc = locations[index];

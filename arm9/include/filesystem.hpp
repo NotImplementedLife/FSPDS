@@ -35,17 +35,18 @@ class LocationsProvider
 private:
 	DSC::Vector<Location*> locations;	
 	
-	void load();
-	void save();
+	void load();	
 public:
 	static Location* peek_location(int i);
 
 	int get_count() const;
 	
 	Location* get_by_path(const char* path) const;
-	Location* get_at(int i) const;
+	Location* get_at(int i) const;	
 	
-	void add_location(Location* location);
+	void add_location(Location* location);	
+	void remove_location(int i);		
+	void save();
 	
 	Location* detach_location(int index);
 	

@@ -77,9 +77,34 @@ public:
 				if(show_yes_no_dialog("Do you want to reindex the location?", 24))
 				{
 					Debug::log("Dialog accepted");
+					vwf->clear(Pal4bit);
+					for(int i=0;i<4;i++)
+						folder_icons[i]->hide();					
+					vwf->set_cursor(6, 90);	
+					vwf->put_text("Please wait", Pal4bit, SolidColorBrush(0x1));
+					GenericScene256::frame();
+					
+					reindex_selected();		
+					display_page();
 				}
 			}
-
+			else if(touch_in_rect(140, 0, 32, 32))
+			{
+				if(show_yes_no_dialog("Do you want to remove the location?", 24))
+				{
+					Debug::log("Dialog accepted");
+					vwf->clear(Pal4bit);
+					for(int i=0;i<4;i++)
+						folder_icons[i]->hide();					
+					vwf->set_cursor(6, 90);	
+					vwf->put_text("Please wait", Pal4bit, SolidColorBrush(0x1));
+					GenericScene256::frame();
+					
+					locations_provider->remove_location(loc_selected_index);
+					if(loc_selected_index>0) loc_selected_index--;
+					display_page();
+				}	
+			}
 			else if(touch_in_rect(0,0,32,32))
 			{
 				close()->next(gen_title_scene());
@@ -285,15 +310,20 @@ public:
 	}
 	
 	bool show_yes_no_dialog(const char* message, int x)
-	{
+	{		
 		vwf->clear(Pal4bit);
+		
+		for(int i=0;i<4;i++)
+			folder_icons[i]->hide();
+		GenericScene256::frame();
+		
 		vwf->set_cursor(6, x);
 		vwf->put_text(message, Pal4bit, SolidColorBrush(0x1));
 
 		vwf->set_cursor(8, 86);
 		vwf->put_text("Yes", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(8, 156);
-		vwf->put_text("No", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("No", Pal4bit, SolidColorBrush(0x1));		
 
 		int val=1;
 		
@@ -365,6 +395,94 @@ public:
 	void frame() override
 	{		
 		GenericScene256::frame();		
+	}
+	
+	void reindex_selected()
+	{
+		vwf->clear(Pal4bit);					
+		vwf->set_cursor(5, 90);					
+		vwf->put_text("Indexing files", Pal4bit, SolidColorBrush(0x2));				
+				
+		add_folder_icon->hide();
+		reindex_icon->hide();
+		remove_icon->hide();
+		back_arrow->hide();
+		GenericScene256::frame();		
+		swiWaitForVBlank();
+		swiWaitForVBlank();
+		
+		char* buff=new char[32];
+		
+		Location* location = locations_provider->get_at(loc_selected_index);
+		
+		DIR* dir = opendir(location->path);
+		struct dirent *entry;
+		int cnt=0;
+		
+		location->filenames.clear();		
+		
+		vwf->clear_row(6, Pal4bit);
+		vwf->set_cursor(6, 80);										
+		vwf->put_text(str_print(buff, "Found %i flipnotes", cnt), Pal4bit, SolidColorBrush(0x2));
+		swiWaitForVBlank();
+		
+		Char24* dest_name = new Char24();
+		while((entry=readdir(dir))!=NULL)
+		{
+			if(strcmp(".", entry->d_name)==0 || strcmp("..", entry->d_name)==0)
+				continue;
+			if(entry->d_type != DT_REG)
+				continue;
+			
+			Debug::log(entry->d_name);
+								
+			int len = strlen(entry->d_name);
+			if(len!=28) continue;
+			if(strcmp(".ppm", entry->d_name+len-4)!=0 && strcmp(".PPM", entry->d_name+len-4)!=0)
+				continue;
+			
+			Debug::log("Here?");					
+			
+			for(int i=0;i<len;i++) 
+			{
+				Debug::log("%i %i",len, i);
+				dest_name->chars[i]=entry->d_name[i];
+			}
+			for(int i=len;i<24;i++)
+			{
+				Debug::log("%i",i);
+				dest_name->chars[i]=0;		
+			}
+								
+			location->filenames.push_back(*dest_name);					
+			
+			vwf->clear_row(6, Pal4bit);
+			vwf->set_cursor(6, 80);										
+			vwf->put_text(str_print(buff, "Found %i flipnotes", ++cnt), Pal4bit, SolidColorBrush(0x2));
+			swiWaitForVBlank();
+		}	
+		delete dest_name;
+		delete[] buff;
+		delete[] picked_folder_path;
+		picked_folder_path = nullptr;				
+		
+		
+		for(int i=10;i<30;i++) swiWaitForVBlank();				
+		vwf->set_cursor(7, 110);
+		vwf->put_text("Saving", Pal4bit, SolidColorBrush(0x2));
+		for(int i=10;i<10;i++) swiWaitForVBlank();							
+		locations_provider->save();
+		
+		vwf->clear_row(7, Pal4bit);
+		vwf->set_cursor(7, 114);			
+		vwf->put_text("Done", Pal4bit, SolidColorBrush(0x2));
+		for(int i=0;i<60;i++)
+			swiWaitForVBlank();
+		
+		add_folder_icon->show();
+		reindex_icon->show();
+		remove_icon->show();
+		back_arrow->show();
 	}
 	
 	~PlaylistsScene()

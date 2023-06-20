@@ -490,7 +490,7 @@ public:
 	void set_autoplay(bool value)
 	{
 		autoplay = value;
-		replay_button->set_frame(0, autoplay ? replay_on_frame : replay_off_frame);		
+		replay_button->set_frame(0, autoplay ? replay_on_frame : replay_off_frame);
 	}
 	
 	void toggle_autoplay() { set_autoplay(!autoplay); }
