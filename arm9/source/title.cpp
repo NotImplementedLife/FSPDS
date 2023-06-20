@@ -10,6 +10,7 @@
 #include "title_spr.h"
 #include "opt_box.h"
 #include "fat_fail.h"
+#include "empty.h"
 
 #include "scenes.hpp"
 
@@ -43,9 +44,9 @@ class TitleScene : public GenericScene256
 	float rotateX = 0.0;
 	float rotateY = 0.0;	
 		
+	Sprite* empty = nullptr;
 	Sprite* title[2];
 	Sprite* fat_fail;
-	
 	void* ______ = BK_RESERVED;
 	
 	Sprite* esodev_logo;
@@ -68,6 +69,9 @@ class TitleScene : public GenericScene256
 		
 		
 		begin_sprites_init();		
+		
+		empty = create_sprite(new Sprite(SIZE_8x8, Engine::Sub));
+		empty->add_frame(new ObjFrame(&ROA_empty8, 0,0));		
 		
 		title[0]->add_frame(new ObjFrame(&ROA_title_spr8, 0,0));
 		title[1]->add_frame(new ObjFrame(&ROA_title_spr8, 0,1));			
@@ -125,7 +129,7 @@ class TitleScene : public GenericScene256
 	
 	typedef Scene*(*fgen)();
 	
-	inline static constexpr fgen scenegens[4] = { &get_browse_scene, &get_simple_scene, &get_simple_scene, &get_credits_scene  };
+	inline static constexpr fgen scenegens[4] = { &get_browse_scene, &get_settings_scene, &get_simple_scene, &get_credits_scene  };
 	
 	void on_key_down(void* sender, void* args)
 	{
@@ -378,6 +382,7 @@ class TitleScene : public GenericScene256
 		key_down.remove_event(&TitleScene::on_key_down, this);
 		key_held.remove_event(&TitleScene::on_key_held, this);
 		delete vwf;	
+		delete empty;
 
 		delete title[0];
 		delete title[1];
