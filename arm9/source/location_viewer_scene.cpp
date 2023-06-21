@@ -30,7 +30,6 @@ private:
 	int dir_len;
 	char* flipnote_path;
 	char* file_part_path;
-		
 	
 	void load_path(int i)
 	{
@@ -196,7 +195,7 @@ public:
 	{
 		int index = 3*thumbnail_sel_row+thumbnail_sel_col;
 		if(ppm_states[index]<0)
-			return;							
+			return;			
 		load_path(9*crt_page+index);
 		
 		Debug::log(flipnote_path);
@@ -206,6 +205,7 @@ public:
 		
 		selected_thumbnail_page = crt_page;
 		selected_thumbnail_index = index;			
+		location_flipnotes_count = selected_location->filenames.size();
 
 		delete[] selected_location->path;
 		selected_location->path = nullptr;

@@ -14,7 +14,7 @@ Scene* folder_picker_return_to_playlists();
 
 class PlaylistsScene : public SimpleScene
 {
-private:	
+private:		
 	ObjFrame* folder_highlighted_frame;
 	Sprite* folder_icons[4];
 	Sprite* add_folder_icon=nullptr;

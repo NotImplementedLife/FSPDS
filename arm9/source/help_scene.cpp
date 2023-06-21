@@ -21,6 +21,14 @@ private:
 	int sp_loc_reindex;
 	int sp_loc_remove;
 	int sp_green_frog_ss;
+	
+	touchPosition touch;
+	bool touch_in_rect(int x, int y, int w, int h)
+	{
+		if(touch.px<x || touch.px>=x+w) return false;
+		if(touch.py<y || touch.py>=y+h) return false;
+		return true;
+	}
 public:
 	void init() override
 	{
@@ -129,6 +137,16 @@ public:
 				draw_top();
 			}
 		}				
+		else if(keys & KEY_B)
+		{
+			close()->next(gen_title_scene());
+		}
+		else if(keys & KEY_TOUCH)
+		{
+			touchRead(&touch);
+			if(touch_in_rect(0,0,32,32))
+				close()->next(gen_title_scene());
+		}
 	}
 	
 	void draw_top()

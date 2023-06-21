@@ -6,6 +6,13 @@
 
 static constexpr int frames[] = { 2, 120, 60, 30, 15, 10, 5, 3, 2 };
 
+void PPMReader::clear()
+{
+	int* b32 = (int*)buffer;
+	for(int i=0;i<(1<<20)/4;i++)
+		b32[i]=0;
+}
+
 int PPMReader::peek_only_metadata(const char* filename, void* dest)
 {
 	if(filename==nullptr) return ERR_NULL_ARGUMENT;

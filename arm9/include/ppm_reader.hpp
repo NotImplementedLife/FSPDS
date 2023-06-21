@@ -14,6 +14,8 @@ public:
 
 	unsigned char buffer[1<<20];
 	
+	void clear();
+	
 	int getAnimationDataSize() const;
 	int getSoundDataSize() const;
 	int getFrameCount() const;

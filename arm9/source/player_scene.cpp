@@ -17,6 +17,20 @@
 #include <stdlib.h>
 #include <malloc.h>
 
+// https://stackoverflow.com/questions/1046714/what-is-a-good-random-number-generator-for-a-game
+static unsigned long x=123456789, y=362436069, z=521288629;
+unsigned long qrand() {          //period 2^96-1
+	unsigned long t;
+	x ^= x << 16;
+	x ^= x >> 5;
+	x ^= x << 1;
+	t = x;
+	x = y;
+	y = z;
+	z = t ^ x ^ y;
+	return z;
+}
+
 void* operator new(std::size_t n)
 {
 	if(n>256)
@@ -34,6 +48,8 @@ void operator delete(void* p)
 	//Debug::log("[new] Freeing %X", p);
 	free(p);
 }
+
+void operator delete( void* p, std::size_t sz) { free(p); }
 
 const char* selected_flipnote_path = nullptr; // "fat://flipnotes/0BC769_0A978C458A07A_002.ppm";
 
@@ -54,20 +70,55 @@ class PlayerScene : public GenericScene256
 private:
 	Sprite* loading_text;
 	Sprite* bar_fragments[14];	
-	ObjFrame* bar_frames[17];	
+	ObjFrame* bar_frames[17];		
 	
 	ObjFrame* play_frame;
 	ObjFrame* resume_frame;
 	ObjFrame* replay_off_frame;
 	ObjFrame* replay_on_frame;	
 	
+	ObjFrame* shuffle_on_frame;	
+	ObjFrame* shuffle_off_frame;	
+	
 	Sprite* play_resume_button;
 	Sprite* replay_button;
+	Sprite* shuffle_button;
 	 
 	PPMReader* ppm_reader = new PPMReader();
 	bool autoplay = false;
 	
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
+	
+	void launch_other_flipnote(int index)
+	{		
+		LocationsProvider* locations_provider = new LocationsProvider();		
+		Location* loc = locations_provider->get_at(selected_location_index);		
+		
+		Debug::log("Launching other flipnote (%i/%i)", index, loc->filenames.size());
+		
+		char* path = new char[strlen(loc->path)+29];
+		path[0]=0;
+		strcpy(path, loc->path);		
+		char* filename = path + strlen(loc->path);		
+		
+		int j=0;
+		for(char* ptr = loc->filenames[index].chars;j<24 && *ptr;j++)
+		{
+			filename[j]=*(ptr++);				
+		}		
+		strcpy(filename+j, ".ppm");		
+		selected_flipnote_path = path;
+		
+		selected_thumbnail_page = index/9;
+		selected_thumbnail_index = index%9;
+		
+		Debug::log("Filename = %s", selected_flipnote_path);
+		
+		delete locations_provider;
+		//LocationsProvider::operator delete(locations_provider);		
+		close()->next(get_player_scene());
+		
+	}
 public:
 	void init() override
 	{
@@ -105,6 +156,12 @@ public:
 		replay_on_frame = new ObjFrame(&ROA_player_icons8, 3, 0);
 		get_obj_allocator_sub()->allocate(replay_on_frame);
 		
+		shuffle_on_frame = new ObjFrame(&ROA_player_icons8, 4, 0);
+		get_obj_allocator_sub()->allocate(shuffle_on_frame);
+		
+		shuffle_off_frame = new ObjFrame(&ROA_player_icons8, 5, 0);
+		get_obj_allocator_sub()->allocate(shuffle_off_frame);
+		
 		play_resume_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
 		play_resume_button->set_default_allocator(nullptr);
 		play_resume_button->add_frame(play_frame);
@@ -119,9 +176,15 @@ public:
 		loading_text->add_frame(new ObjFrame(&ROA_loading_text8, 0, 0));
 		loading_text->set_position(96, 80);		
 		
+		shuffle_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
+		shuffle_button->set_default_allocator(nullptr);
+		shuffle_button->add_frame(shuffle_off_frame);
+		shuffle_button->set_position(153,146);		
+		
 		end_sprites_init();
 		
-		set_autoplay(true);
+		set_autoplay(is_player_autoplay());
+		set_shuffle(is_player_shuffle());
 	}
 	
 	void set_player_bar(int value)
@@ -184,7 +247,9 @@ public:
 			touchRead(&touch);
 			if(touch_in_rect(89,147,16,16))
 				toggle_autoplay();
-			if(touch_in_range(128,156,16))
+			else if(touch_in_rect(153,146, 16, 16))
+				toggle_shuffle();
+			else if(touch_in_range(128,156,16))
 			{
 				paused ? resume() : pause();
 			}
@@ -201,6 +266,10 @@ public:
 		else if(keys & KEY_Y)
 		{
 			toggle_autoplay();
+		}
+		else if(keys & KEY_X)
+		{
+			toggle_shuffle();
 		}
 	}
 	
@@ -229,7 +298,7 @@ public:
 			case 3: return Colors::Blue;
 			default: return 0x7fff-paperColor;
 		}
-	}
+	}	
 	
 	int frame_countdown = 0;
 	
@@ -239,7 +308,9 @@ public:
 	{						
 		if(load_error)
 		{			
-			GenericScene256::frame();
+			for(int i=0;i<20;i++)
+				GenericScene256::frame();
+			auto_next_flipnote();			
 			return;
 		}
 		working=true;
@@ -280,7 +351,11 @@ public:
 			{
 				soundKill(bgmId);
 				if(!autoplay)					
-					pause();
+				{		
+					working=false;																									
+					auto_next_flipnote();
+					pause();	
+				}
 			}
 			frame_index%=frames_count;
 		}
@@ -296,6 +371,33 @@ public:
 		
 		working=false;
 	}	
+	
+	void auto_next_flipnote()
+	{
+		if(shuffle && location_flipnotes_count<2) return;
+		if(!shuffle && location_flipnotes_count<1) return;
+		
+		int index = selected_thumbnail_page*9+selected_thumbnail_index;
+		if(shuffle)
+		{			
+			int new_index = qrand()%(location_flipnotes_count/2) - location_flipnotes_count;
+			if(new_index==0) new_index=1;														
+			new_index = (index + new_index)%location_flipnotes_count;
+			if(new_index<0) 
+				new_index = location_flipnotes_count+new_index;	
+			
+			Debug::log("new_index = %i", new_index);
+			
+			launch_other_flipnote(new_index);
+		}
+		else
+		{
+			int index = selected_thumbnail_page*9+selected_thumbnail_index;
+			index++;
+			if(index>=location_flipnotes_count) index=0;			
+			launch_other_flipnote(index);
+		}
+	}
 		
 	__attribute__((noinline))
 	void run() override
@@ -355,7 +457,27 @@ public:
 	{
 		if(selected_flipnote_path!=nullptr)
 		{
+			ppm_reader->clear();
 			int res = ppm_reader->read_file(selected_flipnote_path);							
+			
+			if(res<0)
+			{
+				load_error=true;
+				vwf->set_cursor(6, 120);
+				vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));						
+				switch(res)
+				{
+					case PPMReader::ERR_NULL_ARGUMENT:
+						vwf->set_cursor(7, 20); vwf->put_text("Internal error (ERR_NULL_ARGUMENT)", Pal4bit, SolidColorBrush(0x3)); break;
+					case PPMReader::ERR_FOPEN:									
+						vwf->set_cursor(7, 24); vwf->put_text("Could not open the file (ERR_FOPEN)", Pal4bit, SolidColorBrush(0x3)); break;					
+					case PPMReader::ERR_SIZE_EXCEEDED:
+						vwf->set_cursor(7, 24); vwf->put_text("File too large (ERR_SIZE_EXCEEDED)", Pal4bit, SolidColorBrush(0x3)); break;
+					case PPMReader::ERR_READ_COUNT:
+						vwf->set_cursor(7, 24); vwf->put_text("File reading error (ERR_READ_COUNT)", Pal4bit, SolidColorBrush(0x3)); break;					
+				}
+			}
+			
 			Debug::log("Player read finished %i", res);
 			Debug::log("Animation data size = %i", ppm_reader->getAnimationDataSize());
 			Debug::log("Sound data size = %i", ppm_reader->getSoundDataSize());
@@ -373,16 +495,7 @@ public:
 				*(d++)=*(s++);
 		}					
 		
-		soundFreq = ppm_reader->getSoundFreq();
-		/*Debug::log("FREQ = %i",ppm_reader->getSoundFreq());
-			
-		for(int i=0;i<10;i++)
-		{
-			Debug::log("Frame %i", i);						
-			char* f=ppm_reader->getFrame(i);
-			Debug::log("Offset %X",(int)f-(int)ppm_reader);
-			Debug::log("%X %X %X %X %X %X %X %X %X %X", f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9]);
-		}*/						
+		soundFreq = ppm_reader->getSoundFreq();		
 		frames_count = ppm_reader->getFrameCount();		
 		framePbSpeed = ppm_reader->getFramePlaybackSpeed();		
 		
@@ -405,7 +518,7 @@ public:
 			return;			
 		}		
 				
-		sound_buffer = (short*)malloc(bgmSize*4);
+		sound_buffer = (short*)malloc(bgmSize*4);				
 		Debug::log("Here? %X", sound_buffer);
 		if(sound_buffer==nullptr)
 		{
@@ -416,6 +529,10 @@ public:
 			vwf->put_text("Sount buffer not allocated", Pal4bit, SolidColorBrush(0x3));
 			return;			
 		}
+		
+		for(int i=0;i<bgmSize*2;i++)
+			sound_buffer[i]=0;			
+		
 		Debug::log("Here2?");
 		SoundDecoder::ADPCM2PCM16(ppm_reader->getBgmTrack(), sound_buffer, bgmSize);
 		bgmSize*=4;
@@ -448,12 +565,23 @@ public:
 		
 		play_resume_button->set_frame(0, nullptr);
 		replay_button->set_frame(0, nullptr);
+		shuffle_button->set_frame(0, nullptr);
+		
 		
 		delete play_frame;
 		delete resume_frame;
 		delete replay_off_frame;
 		delete replay_on_frame;		
+		delete shuffle_on_frame;
+		delete shuffle_off_frame;		
 		delete loading_text;
+		
+		delete shuffle_button;
+		delete play_resume_button;
+		delete replay_button;
+
+		set_player_autoplay(autoplay);
+		set_player_shuffle(shuffle);		
 	}
 		
 	static int sound_frame_counter;	
@@ -484,7 +612,10 @@ public:
 	{				
 		soundKill(bgmId);
 		Debug::log("ssss = %i",4*bgmSize-2*sound_frame_counter);
-		bgmId = soundPlaySample(sound_buffer+sound_frame_counter,SoundFormat_16Bit,4*bgmSize-2*sound_frame_counter, soundFreq, 100, 64, false, 0);
+		if(bgmSize>0)
+		{			
+			bgmId = soundPlaySample(sound_buffer+sound_frame_counter,SoundFormat_16Bit,4*bgmSize-2*sound_frame_counter, soundFreq, 100, 64, false, 0);
+		}
 	}
 	
 	void set_autoplay(bool value)
@@ -493,7 +624,16 @@ public:
 		replay_button->set_frame(0, autoplay ? replay_on_frame : replay_off_frame);
 	}
 	
+	bool shuffle = false;
+	
+	void set_shuffle(bool value)
+	{
+		shuffle = value;
+		shuffle_button->set_frame(0, shuffle ? shuffle_on_frame : shuffle_off_frame);
+	}
+		
 	void toggle_autoplay() { set_autoplay(!autoplay); }
+	void toggle_shuffle() { set_shuffle(!shuffle); }
 };
 
 int PlayerScene::sound_frame_counter = 0;
