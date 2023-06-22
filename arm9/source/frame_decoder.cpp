@@ -42,7 +42,7 @@ void rsh_nibbles(int* buff, int cnt, int shift_pos, int* dest)
 	{		
 		v=*(--buff);
 		*(dest)|=(v>>(32-shift_pos));
-		*(--dest) = v<<shift_pos;	    
+		*(--dest) = v<<shift_pos;
 	}
 	for(;off--;*(--dest) = 0);
 }
@@ -57,7 +57,7 @@ char* typed_decode(char* linedata, char* encoded, int* dest)
 		{				
 			int enc_type = byte&3;
 			byte>>=2;
-			
+						
 			switch(enc_type)
 			{
 				case 0:
@@ -73,28 +73,21 @@ char* typed_decode(char* linedata, char* encoded, int* dest)
 					//while(chunk_flags)
 					for(int i=32;i--;)
 					{
-						if(chunk_flags & 0x80000000)
-						{							
-							int pixels = *(encoded++);
-							//DSC::Debug::log("px %X %X", pixels, chunks32[pixels]);
-							*(dest++)=chunks32[pixels];
-						}
-						else *(dest++)= default_value;
+						*(dest++) = (chunk_flags & 0x80000000) ? chunks32[(unsigned int)*(encoded++)] : default_value;						
 						chunk_flags <<= 1;
 					}		
 					break;
 				}					
 				case 3:
 					for(int i=32;i--;)
-					{
-						int pixels = *(encoded++);
-						*(dest++)=chunks32[pixels];
+					{						
+						*(dest++)=chunks32[*(encoded++)];
 					}					
 					break;					
 			}			
 		}		
 	}
-	DSC::Debug::log("New encoded = %X", encoded);
+	//DSC::Debug::log("New encoded = %X", encoded);
 	
 	return encoded;
 }
@@ -125,13 +118,7 @@ char* typed_decode_xor(char* linedata, char* encoded, int* dest)
 					//while(chunk_flags)
 					for(int i=32;i--;)
 					{
-						if(chunk_flags & 0x80000000)
-						{							
-							int pixels = *(encoded++);
-							//DSC::Debug::log("px %X %X", pixels, chunks32[pixels]);
-							*(dest++)^=chunks32[pixels];
-						}
-						else *(dest++)^=default_value;
+						*(dest++) ^= (chunk_flags & 0x80000000) ? chunks32[(unsigned int)*(encoded++)] : default_value;
 						chunk_flags <<= 1;
 					}		
 					break;
@@ -146,7 +133,7 @@ char* typed_decode_xor(char* linedata, char* encoded, int* dest)
 			}			
 		}		
 	}
-	DSC::Debug::log("New encoded = %X", encoded);
+	//DSC::Debug::log("New encoded = %X", encoded);
 	
 	return encoded;
 }
@@ -170,12 +157,12 @@ int FrameDecoder::decode(int* buffer1, int* buffer2, char* frame_data)
 		typed_decode_f = typed_decode_xor;
 	}
 	
-	DSC::Debug::log("Frame data = %X", frame_data);
+	//DSC::Debug::log("Frame data = %X", frame_data);
 	DSC::Debug::log("Diffing = %s", (frame_header & 0x80)==0 ? "YES" : "NO");
-	if((frame_header & 0x80)==0)
+	/*if((frame_header & 0x80)==0)
 	{
 		DSC::Debug::log("x,y = %i, %i", dx, dy);
-	}
+	}*/
 		
 	void (*sh_nibbles)(int*, int, int, int*) = rsh_nibbles;
 	

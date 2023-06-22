@@ -262,6 +262,14 @@ public:
 				}				
 				back_to_location_viewer();				
 			}
+			else if(touch_in_rect(57,145,16,16))
+			{
+				prev_flipnote();
+			}
+			else if(touch_in_rect(183, 145, 16, 16))
+			{
+				next_flipnote();
+			}
 		}
 		else if(keys & KEY_Y)
 		{
@@ -270,6 +278,14 @@ public:
 		else if(keys & KEY_X)
 		{
 			toggle_shuffle();
+		}
+		else if(keys & KEY_L)
+		{
+			prev_flipnote();
+		}
+		else if(keys & KEY_R)
+		{
+			next_flipnote();
 		}
 	}
 	
@@ -327,15 +343,8 @@ public:
 			char header = ppm_reader->getFrame(frame_index)[0];		
 			BG_PALETTE[0x00] = (header&1) ? Colors::White : Colors::Black;
 			BG_PALETTE[0xE1] = get_layer_color((header>>3)&3, BG_PALETTE[0x00]);
-			BG_PALETTE[0xE2] = BG_PALETTE[0xE3] = get_layer_color((header>>1)&3, BG_PALETTE[0x00]);
-			
-			for(int ty=0;ty<24;ty++)
-			{
-				for(int i=0;i<32;i++)
-					for(int j=0;j<8;j++)
-						layer1[256*ty+8*i+j] = buffer2[256*ty+32*j+i] | (buffer1[256*ty+32*j+i]<<1);
-			}
-			
+			BG_PALETTE[0xE2] = BG_PALETTE[0xE3] = get_layer_color((header>>1)&3, BG_PALETTE[0x00]);	
+
 			if(frame_index==0)
 			{
 				sound_frame_counter=0;
@@ -357,18 +366,24 @@ public:
 					pause();	
 				}
 			}
-			frame_index%=frames_count;
+			frame_index%=frames_count;			
 		}
 		else if(frame_countdown==1)
-		{					
-			set_player_bar(frame_index*256/frames_count);			
+		{			
+			for(int ty=0;ty<24;ty++)
+			{
+				for(int i=0;i<32;i++)
+					for(int j=0;j<8;j++)
+						layer1[256*ty+8*i+j] = buffer2[256*ty+32*j+i] | (buffer1[256*ty+32*j+i]<<1);
+			}
+	
+			set_player_bar(frame_index*256/frames_count);						
 		}
 		
 		frame_countdown++;
 		if(frame_countdown==framePbSpeed) frame_countdown=0;
 				
 		GenericScene256::frame();
-		
 		working=false;
 	}	
 	
@@ -398,6 +413,23 @@ public:
 			launch_other_flipnote(index);
 		}
 	}
+	
+	void next_flipnote()
+	{
+		int index = selected_thumbnail_page*9+selected_thumbnail_index;
+		index++;
+		if(index>=location_flipnotes_count) return;
+		launch_other_flipnote(index);
+	}
+	
+	void prev_flipnote()
+	{
+		int index = selected_thumbnail_page*9+selected_thumbnail_index;
+		if(index<=0) return;
+		index--;
+		launch_other_flipnote(index);				
+	}
+		
 		
 	__attribute__((noinline))
 	void run() override
