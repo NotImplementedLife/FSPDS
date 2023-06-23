@@ -355,6 +355,19 @@ public:
 		
 		return val;
 	}
+	
+	int measure_string(const char* text)
+	{
+		int result=0;
+		for(;*text;++text)		
+			result+=Resources::Fonts::default_8x16.get_glyph_width(*text);		
+		return result;
+	}
+
+	VwfEngine sel_vwf = VwfEngine(Resources::Fonts::default_8x16);
+	char* list_buffer[4] = { nullptr, nullptr, nullptr, nullptr };
+	int list_tiles_len [4]= { 0,0,0,0 };
+	int sel_scroll = 0;
 
 	int loc_selected_index=0;
 	void display_page()
@@ -378,13 +391,27 @@ public:
 		int index = page_id*4;
 		
 		char* buff=new char[32];
+		for(int i=0;i<4;i++) 
+		{
+			delete[] list_buffer[i];
+			list_buffer[i] = nullptr;
+			list_tiles_len[i]=0;
+		}
 				
 		for(int i=0;i<4 && index<locations_provider->get_count();i++, index++)
 		{			
 			Location* location = locations_provider->get_at(index);			
-			folder_icons[i]->show();
-			vwf->set_cursor(2+2*i, 48);
-			vwf->put_text(location->path, Pal4bit, SolidColorBrush(index==loc_selected_index ? 0x2 : 0x1));
+			folder_icons[i]->show();			
+									
+			list_tiles_len[i] = (measure_string(location->path)+7)/8;
+			list_buffer[i] = new char[list_tiles_len[i]*64]();
+			sel_vwf.set_render_space(list_buffer[i], 2, list_tiles_len[i]);
+			sel_vwf.put_text(location->path, Pal4bit, SolidColorBrush(0x1+(index==loc_selected_index)));
+			sel_scroll = 0;
+			display_selection(i);
+										
+			//vwf->set_cursor(2+2*i, 48);
+			//vwf->put_text(location->path, Pal4bit, SolidColorBrush(0x1));			
 			vwf->set_cursor(3+2*i, 48);
 			vwf->put_text(str_print(buff, "%i flipnotes", location->filenames.size()), Pal4bit, SolidColorBrush(index==loc_selected_index ? 0x2 : 0x4));
 		}
@@ -392,8 +419,37 @@ public:
 		delete[] buff;
 	}
 	
+	void display_selection(int i)
+	{		
+		short* gfx = (short*)((int)bgGetGfxPtr(6) + 64*32*(2+2*i)+64*6);
+		short* src = (short*)list_buffer[i];		
+		
+		if(loc_selected_index%4 == i && list_tiles_len[i]>24)
+		{			
+			int w = 32*(sel_scroll/16); 
+			src+=w;
+			int sz = list_tiles_len[i]*32 - w;
+			int k=0;
+			for(;k<min(24*32, sz);k++) *(gfx++) = *(src++);			
+			volatile int zero=0;			
+			for(;k<24*32;k++) *(gfx++) = zero;
+			sel_scroll++;
+			if(sel_scroll>=16*list_tiles_len[i])
+				sel_scroll=0;
+		}
+		else
+		{
+			for(int k=0;k<min(24*32, list_tiles_len[i]*32);k++)
+			{
+				*(gfx++) = *(src++);
+			}	
+		}		
+	}
+	
+	
 	void frame() override
 	{		
+		display_selection(loc_selected_index%4);
 		GenericScene256::frame();		
 	}
 	
@@ -453,7 +509,7 @@ public:
 				Debug::log("%i",i);
 				dest_name->chars[i]=0;		
 			}
-								
+			
 			location->filenames.push_back(*dest_name);					
 			
 			vwf->clear_row(6, Pal4bit);
@@ -486,12 +542,13 @@ public:
 	}
 	
 	~PlaylistsScene()
-	{				
+	{		
 		delete vwf;		
 		for(int i=0;i<4;i++)
 		{
 			folder_icons[i]->set_frame(0, nullptr);
 			delete folder_icons[i];
+			delete[] list_buffer[i];
 		}
 			
 		delete back_arrow;
