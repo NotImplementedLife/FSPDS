@@ -187,7 +187,9 @@ public:
 		}
 		else if(keys & KEY_A)
 		{								
-			go_to_player();			
+			int index = 9*crt_page+3*thumbnail_sel_row+thumbnail_sel_col;
+			if(0<=index && index<selected_location->filenames.size())
+				go_to_player();
 		}
 	}	
 	
