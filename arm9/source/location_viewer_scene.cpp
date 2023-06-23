@@ -241,7 +241,7 @@ public:
 				break;
 			}
 		}		
-	}
+	}	
 	
 	int total_pages_count = 0;
 	int crt_page=0;
@@ -382,7 +382,7 @@ public:
 		/*z++;
 		if(z<10 && selected_thumbnail_index!=0)
 			close()->next(new LocationViewerScene());*/
-		
+		display_path();
 		thumbnail_selector->set_position(16+thumbnail_sel_col*80, 16+thumbnail_sel_row*56);
 		SimpleScene::frame();
 	}	
@@ -394,6 +394,10 @@ public:
 		torgb15(0x4840FF), torgb15(0x514FB8), torgb15(0xADABFF), torgb15(0x00FF00),
 		torgb15(0xB657B7), torgb15(0x00FF00), torgb15(0x00FF00), torgb15(0x00FF00)
 	};
+	
+	int sel_location_width;
+	short* sel_buffer;
+	int sel_scroll = 0;
 	
 	__attribute__((noinline))
 	void run() override
@@ -420,9 +424,14 @@ public:
 		VwfEngine::prepare_map(*vwf, MAIN_BG2, 32, 0, 0, 0x9);
 		vwf->clear(Pal4bit);			
 								
+								
+		sel_location_width = (measure_string(selected_location->path)+8+7)/8;
+		sel_buffer = new short[2*sel_location_width*32]();
+		
+		vwf->set_render_space(sel_buffer,2,sel_location_width);
 		vwf->set_cursor(0, 8);
 		vwf->put_text(selected_location->path, Pal4bit, SolidColorBrush(0x2));
-		
+		display_path();
 			
 		vwf->set_render_space(bgGetGfxPtr(6),24,32);
 		VwfEngine::prepare_map(*vwf, SUB_BG2, 32, 0, 0, 0x9);
@@ -466,11 +475,45 @@ public:
 		Scene::run();	
 	}
 	
+	static int measure_string(const char* text)
+	{
+		int result=0;
+		for(;*text;++text)		
+			result+=Resources::Fonts::default_8x16.get_glyph_width(*text);		
+		return result;
+	}
+	
+	void display_path()
+	{		
+		short* gfx = (short*)(bgGetGfxPtr(2));
+		short* src = (short*)sel_buffer;
+				
+		if(sel_location_width>32)
+		{
+			int w = 32*(sel_scroll/16);
+			src+=w;
+			int sz = sel_location_width*32 - w;
+			int k=0;
+			for(;k<min(32*32, sz);k++) *(gfx++) = *(src++);			
+			volatile int zero=0;			
+			for(;k<32*32;k++) *(gfx++) = zero;
+			sel_scroll++;
+			if(sel_scroll>=16*sel_location_width)
+				sel_scroll=0;		
+		}
+		else
+		{
+			for(int k=0;k<min(24*32, sel_location_width*32);k++)			
+				*(gfx++) = *(src++);			
+		}
+	}
+	
 	
 	~LocationViewerScene()
-	{
+	{		
 		key_down.remove_event(&LocationViewerScene::on_key_down, this);
 		delete vwf;
+		delete[] sel_buffer;
 		
 		delete back_arrow;
 		delete thumbnail_selector;

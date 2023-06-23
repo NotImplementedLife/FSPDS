@@ -450,7 +450,7 @@ public:
 	void frame() override
 	{		
 		display_item(loc_selected_index%4);
-		GenericScene256::frame();		
+		GenericScene256::frame();
 	}
 	
 	void reindex_selected()
