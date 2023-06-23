@@ -193,9 +193,19 @@ class FolderPickerScene : public SimpleScene
 	}
 	
 	void frame() override
-	{		
+	{	
+		if(!(depth==0 && max_subfolders==0))
+			display_item(selected_index%5);	
 		GenericScene256::frame();
 	}	
+	
+	static int measure_string(const char* text)
+	{
+		int result=0;
+		for(;*text;++text)		
+			result+=Resources::Fonts::default_8x16.get_glyph_width(*text);		
+		return result;
+	}
 	
 	bool is_default_location(const char* name)
 	{
@@ -213,6 +223,11 @@ class FolderPickerScene : public SimpleScene
 		free(tmp);
 		return false;
 	}
+	
+	VwfEngine sel_vwf = VwfEngine(Resources::Fonts::default_8x16);
+	char* list_buffer[5] = { nullptr, nullptr, nullptr, nullptr };
+	int list_tiles_len[5]= { 0,0,0,0 };
+	int sel_scroll = 0;
 	
 	void display_page(int page)
 	{		
@@ -238,6 +253,13 @@ class FolderPickerScene : public SimpleScene
 		}
 		
 		vwf->clear(Pal4bit);
+		
+		for(int i=0;i<5;i++) 
+		{
+			delete[] list_buffer[i];
+			list_buffer[i] = nullptr;
+			list_tiles_len[i]=0;
+		}
 	
 		int k=page*5;
 		int i=0;
@@ -254,8 +276,15 @@ class FolderPickerScene : public SimpleScene
 			}
 			Debug::log(subfolders[k]);
 			
-			vwf->set_cursor(1+2*i, 42);
-			vwf->put_text(subfolders[k], Pal4bit, SolidColorBrush(0x1 + (k==selected_index)));
+			list_tiles_len[i] = (measure_string(subfolders[k])+7)/8;
+			list_buffer[i] = new char[list_tiles_len[i]*64]();
+			sel_vwf.set_render_space(list_buffer[i], 2, list_tiles_len[i]);
+			sel_vwf.put_text(subfolders[k], Pal4bit, SolidColorBrush(0x1+(k==selected_index)));
+			sel_scroll = 0;
+			display_item(i);
+			
+			//vwf->set_cursor(1+2*i, 42);
+			//vwf->put_text(subfolders[k], Pal4bit, SolidColorBrush(0x1 + (k==selected_index)));
 		}		
 		for(;i<5;i++)
 		{
@@ -266,6 +295,34 @@ class FolderPickerScene : public SimpleScene
 		vwf->put_text("Select", Pal4bit, SolidColorBrush(0x1));
 	}
 	
+	void display_item(int i)
+	{		
+		short* gfx = (short*)((int)bgGetGfxPtr(6) + 64*32*(1+2*i)+64*6);
+		short* src = (short*)list_buffer[i];
+		
+		if(selected_index%5 == i && list_tiles_len[i]>24)
+		{			
+			int w = 32*(sel_scroll/16);
+			src+=w;
+			int sz = list_tiles_len[i]*32 - w;
+			int k=0;
+			for(;k<min(24*32, sz);k++) *(gfx++) = *(src++);			
+			volatile int zero=0;			
+			for(;k<24*32;k++) *(gfx++) = zero;
+			sel_scroll++;
+			if(sel_scroll>=16*list_tiles_len[i])
+				sel_scroll=0;
+		}
+		else
+		{
+			for(int k=0;k<min(24*32, list_tiles_len[i]*32);k++)
+			{
+				*(gfx++) = *(src++);
+			}	
+		}		
+	}
+	
+	
 	static char* sptr(const char* val)
 	{
 		char* r = (char*)malloc(strlen(val)+1);
@@ -275,6 +332,8 @@ class FolderPickerScene : public SimpleScene
 	
 	void enter_selected()
 	{		
+		if(depth==0 && max_subfolders==0)
+			return;
 		if(depth>0 && selected_index==0)
 		{
 			depth--;
@@ -334,6 +393,7 @@ class FolderPickerScene : public SimpleScene
 		{
 			folder_icons[i]->set_frame(0, nullptr);
 			delete folder_icons[i];
+			delete[] list_buffer[i];
 		}
 		delete pick_box;
 		

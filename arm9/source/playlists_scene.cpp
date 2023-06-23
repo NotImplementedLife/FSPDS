@@ -356,7 +356,7 @@ public:
 		return val;
 	}
 	
-	int measure_string(const char* text)
+	static int measure_string(const char* text)
 	{
 		int result=0;
 		for(;*text;++text)		
@@ -408,7 +408,7 @@ public:
 			sel_vwf.set_render_space(list_buffer[i], 2, list_tiles_len[i]);
 			sel_vwf.put_text(location->path, Pal4bit, SolidColorBrush(0x1+(index==loc_selected_index)));
 			sel_scroll = 0;
-			display_selection(i);
+			display_item(i);
 										
 			//vwf->set_cursor(2+2*i, 48);
 			//vwf->put_text(location->path, Pal4bit, SolidColorBrush(0x1));			
@@ -419,14 +419,14 @@ public:
 		delete[] buff;
 	}
 	
-	void display_selection(int i)
+	void display_item(int i)
 	{		
 		short* gfx = (short*)((int)bgGetGfxPtr(6) + 64*32*(2+2*i)+64*6);
 		short* src = (short*)list_buffer[i];		
 		
 		if(loc_selected_index%4 == i && list_tiles_len[i]>24)
 		{			
-			int w = 32*(sel_scroll/16); 
+			int w = 32*(sel_scroll/16);
 			src+=w;
 			int sz = list_tiles_len[i]*32 - w;
 			int k=0;
@@ -449,7 +449,7 @@ public:
 	
 	void frame() override
 	{		
-		display_selection(loc_selected_index%4);
+		display_item(loc_selected_index%4);
 		GenericScene256::frame();		
 	}
 	
