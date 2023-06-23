@@ -217,6 +217,13 @@ public:
 		cy-=touch.py;
 		return cx*cx+cy*cy<=r*r;
 	}
+	
+	bool player_screen_on=true;
+		
+	void show_player_screen(bool value)
+	{		
+		fifoSendValue32(FIFO_USER_01, (player_screen_on = value) ? 0x0002 : 0x0001);
+	}
 		
 	void on_key_down(void*, void* _k)
 	{
@@ -244,6 +251,12 @@ public:
 		}		
 		else if(keys & KEY_TOUCH)
 		{
+			if(!player_screen_on)
+			{
+				show_player_screen(true);
+				return;
+			}
+			
 			touchRead(&touch);
 			if(touch_in_rect(89,147,16,16))
 				toggle_autoplay();
@@ -269,6 +282,10 @@ public:
 			else if(touch_in_rect(183, 145, 16, 16))
 			{
 				next_flipnote();
+			}
+			else if(touch_in_rect(224,0,32,32))
+			{
+				show_player_screen(false);
 			}
 		}
 		else if(keys & KEY_Y)
