@@ -6,6 +6,7 @@
 #include "folder_icon.h"
 #include "green_frog_ss.h"
 
+#include "version.h"
 
 class HelpScene : public SimpleScene
 {
@@ -103,6 +104,7 @@ public:
 	}
 		
 	
+	char buffer[100];
 	int selected_menu_option = 0;
 	void draw_bottom_menu()
 	{
@@ -113,6 +115,12 @@ public:
 			vwf_bottom.set_cursor(2+i, 8);
 			vwf_bottom.put_text(menu_options[i], Pal4bit, SolidColorBrush(0x1 + (selected_menu_option==i)));
 		}
+		
+		
+		vwf_bottom.set_cursor(9, 8);
+		vwf_bottom.put_text(str_print(buffer, "FSPDS V%i.%i.%i", MAJOR, MINOR, BUILD), Pal4bit, SolidColorBrush(0x1));
+		vwf_bottom.set_cursor(10, 8);
+		vwf_bottom.put_text(str_print(buffer, "%s build", BUILD_TYPE=='D' ? "Debug" : "Release"), Pal4bit, SolidColorBrush(0x1));
 	}
 	
 	void on_key_down(void*, void* _keys)
@@ -238,7 +246,7 @@ public:
 		"Where to find flipnotes?",
 		"What is location indexing?",		
 		"What is the dead green frog thumbnail?",
-		"\"FAT init FAILED\", why?",
+		"\"FAT init FAILED\", why?",		
 	};
 	inline static constexpr int menu_options_count = 5;
 	
