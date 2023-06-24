@@ -134,21 +134,24 @@ char* PPMReader::getFrame(int index) const
 
 // Sound data
 
+char* PPMReader::getSfxMapping() const { return point_at(0x6A0+getAnimationDataSize()); }
+
 int PPMReader::getSoundHeaderOffset() const { return ((0x6A0+getAnimationDataSize()+getFrameCount()+3)/4)*4;  }
 
 int PPMReader::getFramePlaybackSpeed() const { return frames[8-(int)read8(getSoundHeaderOffset() + 16)]; } 
 int PPMReader::getBgmFramePlaybackSpeed() const { return frames[8-(int)read8(getSoundHeaderOffset() + 17)]; }
 
 int PPMReader::getBgmTrackSize() const { return read32(getSoundHeaderOffset());  }
-int PPMReader::getSfxTrackSize(int i) const { return read32(getSoundHeaderOffset()+4*i); }
+int PPMReader::getSfxTrackSize(int i) const { return read32(getSoundHeaderOffset()+4*(i+1)); }
 
 char* PPMReader::getBgmTrack() const { return point_at(getSoundHeaderOffset()+32); }
 char* PPMReader::getSfxTrack(int i) const
 {
 	int offset=getSoundHeaderOffset()+32+getBgmTrackSize();
-	for(int k=0;--i;k++)
+	for(int k=0;i--;k++)
 		offset+=getSfxTrackSize(k);		
 	return point_at(offset);	
 }
 
 int PPMReader::getSoundFreq() const { return 8192*getBgmFramePlaybackSpeed()/getFramePlaybackSpeed(); }
+int PPMReader::getSamplesPerFrame() const { return getSoundFreq()*getFramePlaybackSpeed()/60; }

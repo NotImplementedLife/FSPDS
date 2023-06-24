@@ -161,21 +161,19 @@ void LocationsProvider::load()
 		
 		DSC::Debug::log("S = %i", s);
 		
-		Char24* char24 = new Char24();				
+		Char24 char24;
 		for(int j=0;j<s;j++)
 		{
-			fread(char24->chars, sizeof(char), 24, fptr);
-			location->filenames.push_back(*char24);
+			fread(char24.chars, sizeof(char), 24, fptr);
+			location->filenames.push_back(char24);
 		}
 
-		DSC::Debug::log("C24 = %X", (int)char24->chars);
+		DSC::Debug::log("C24 = %X", (int)char24.chars);
 		
 		for(int j=0;j<s;j++)
 		{
 			DSC::Debug::log("%X", (int)location->filenames[j].chars);
-		}
-		
-		delete char24;		
+		}		
 		
 		locations.push_back(location);
 	}	

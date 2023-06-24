@@ -397,8 +397,8 @@ public:
 		torgb15(0xB657B7), torgb15(0x00FF00), torgb15(0x00FF00), torgb15(0x00FF00)
 	};
 	
-	int sel_location_width;
-	short* sel_buffer;
+	int sel_location_width = 0;
+	short* sel_buffer = nullptr;
 	int sel_scroll = 0;
 	
 	__attribute__((noinline))

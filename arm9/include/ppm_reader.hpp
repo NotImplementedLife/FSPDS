@@ -45,7 +45,10 @@ public:
 	char* getBgmTrack() const;
 	char* getSfxTrack(int i) const;
 	
+	char* getSfxMapping() const;
+	
 	int getSoundFreq() const;
+	int getSamplesPerFrame() const;
 	
 	
 	int read_metadata(const char* filename);

@@ -36,7 +36,9 @@ void* operator new(std::size_t n)
 	if(n>256)
 		Debug::log("[new] Allocating %i bytes", n);	
 	void* ptr = malloc(n);
-	nds_assert(ptr!=nullptr, "Allocation failed");	
+	Debug::log("[new] P= %X", ptr);	
+	nds_assert(((unsigned int)ptr&0xFF000000) == 0x02000000 , "Allocation failed (corrupted)");	
+	nds_assert(ptr!=nullptr, "Allocation failed");		
 	if(n>256)
 		Debug::log("[new] Reserved address %X", ptr);
 	return ptr;  
@@ -45,11 +47,15 @@ void* operator new(std::size_t n)
 void operator delete(void* p)
 {		
 	//Debug::log("free %i", malloc_usable_size(p));
-	//Debug::log("[new] Freeing %X", p);
+	Debug::log("[new] Freeing %X", p);
 	free(p);
 }
 
-void operator delete( void* p, std::size_t sz) { free(p); }
+void operator delete( void* p, std::size_t sz) 
+{ 
+	Debug::log("[new] Freeing_sz %X", p);
+	free(p); 
+}
 
 const char* selected_flipnote_path = nullptr; // "fat://flipnotes/0BC769_0A978C458A07A_002.ppm";
 
@@ -91,8 +97,12 @@ private:
 	
 	void launch_other_flipnote(int index)
 	{		
+		Debug::log("C1 - Closing");
+		auto* scenecom = close();
+		Debug::log("C2 - Create loc prov");
 		LocationsProvider* locations_provider = new LocationsProvider();		
-		Location* loc = locations_provider->get_at(selected_location_index);		
+		Debug::log("C3 - Getting");
+		Location* loc = locations_provider->get_at(selected_location_index);
 		
 		Debug::log("Launching other flipnote (%i/%i)", index, loc->filenames.size());
 		
@@ -116,7 +126,7 @@ private:
 		
 		delete locations_provider;
 		//LocationsProvider::operator delete(locations_provider);		
-		close()->next(get_player_scene());
+		scenecom->next(get_player_scene());
 		
 	}
 public:
@@ -200,7 +210,7 @@ public:
 	
 	int bgmId;
 	int bgmSize;
-	int soundFreq;	
+	int soundFreq;		
 	
 	touchPosition touch;
 	
@@ -366,7 +376,7 @@ public:
 			{
 				sound_frame_counter=0;
 				play_resume_button->set_frame(0, resume_frame);
-				soundKill(bgmId);				
+				soundKill(bgmId);								
 				play_sound();				
 				timerStart(0, ClockDivider_1, TIMER_FREQ(soundFreq/4), &PlayerScene::timerCallback);		
 			}
@@ -375,7 +385,7 @@ public:
 			FrameDecoder::decode(buffer1, buffer2, ppm_reader->getFrame(frame_index++));			
 			if(frame_index==frames_count)
 			{
-				soundKill(bgmId);
+				soundKill(bgmId);				
 				if(!autoplay)					
 				{		
 					working=false;																									
@@ -405,7 +415,7 @@ public:
 	}	
 	
 	void auto_next_flipnote()
-	{
+	{		
 		if(shuffle && location_flipnotes_count<2) return;
 		if(!shuffle && location_flipnotes_count<1) return;
 		
@@ -423,7 +433,7 @@ public:
 			launch_other_flipnote(new_index);
 		}
 		else
-		{
+		{			
 			int index = selected_thumbnail_page*9+selected_thumbnail_index;
 			index++;
 			if(index>=location_flipnotes_count) index=0;			
@@ -586,9 +596,61 @@ public:
 		SoundDecoder::ADPCM2PCM16(ppm_reader->getBgmTrack(), sound_buffer, bgmSize);
 		bgmSize*=4;
 		
+		unsigned short* sfx[3] = {nullptr, nullptr, nullptr};
+		int sfxLen[3] = {0,0,0};
+		for(int i=0;i<3;i++)
+		{
+			Debug::log("ii=%i", i);
+			int size = ppm_reader->getSfxTrackSize(i);
+			if(size==0) continue;
+			sfx[i] = (unsigned short*)malloc(size*4);
+			Debug::log("alloced=%X", sfx[i]);
+			
+			if(sound_buffer==nullptr)
+			{
+				load_error=true;
+				vwf->set_cursor(6, 113);
+				vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));		
+				vwf->set_cursor(7, 52);
+				vwf->put_text("Sfx buffer not allocated", Pal4bit, SolidColorBrush(0x3));
+				return;			
+			}
+			Debug::log("size=%i", size);
+			for(int j=0;j<size*2;j++) sfx[i][j]=0;					
+			Debug::log("Decoding");
+			SoundDecoder::ADPCM2PCM16(ppm_reader->getSfxTrack(i), (short*)sfx[i], size);			
+			Debug::log("Done");
+			sfxLen[i]=2*size;
+		}
+		
+		Debug::log("SPF");
+		int spf = ppm_reader->getSamplesPerFrame();
+		Debug::log("SFX");
+		char* sfx_map = ppm_reader->getSfxMapping();		
+		unsigned short* sbuff = (unsigned short*)sound_buffer;
+		for(int i=0;i<frames_count;i++)
+		{						
+			for(int k=0;k<3;k++)
+			{				
+				if(!(sfx_map[i]&(1<<k))) continue;				
+				if(sfxLen[k]==0) continue;				
+				int d = spf*i;				
+				unsigned short* src=sfx[k];
+				for(int q=0;q<sfxLen[k] && d+q<bgmSize/2;q++)
+				{																
+					int sample = sbuff[d+q] + src[q];				
+					sbuff[d+q] = clamp(sample, 0, 65535);
+				}
+			}			
+		}
+		
+		Debug::log("Freeing");
+		for(int i=0;i<3;i++) free(sfx[i]);
+				
 		Debug::log("Here5?");
 	}
-
+	
+	static int clamp(int x, int a, int b) { return x<=a ? a : x>=b ? b : x; }
 	
 	~PlayerScene()
 	{
@@ -646,7 +708,7 @@ public:
 		play_resume_button->set_frame(0, play_frame);		
 		paused=true;
 		timerPause(0);
-		soundKill(bgmId);						
+		soundKill(bgmId);								
 	}	
 	
 	void resume()
@@ -659,7 +721,7 @@ public:
 	
 	void play_sound()
 	{				
-		soundKill(bgmId);
+		soundKill(bgmId);		
 		Debug::log("ssss = %i",4*bgmSize-2*sound_frame_counter);
 		if(bgmSize>0)
 		{			
