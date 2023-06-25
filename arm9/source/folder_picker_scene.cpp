@@ -201,9 +201,11 @@ class FolderPickerScene : public SimpleScene
 	
 	static int measure_string(const char* text)
 	{
+		Debug::log("MEASURED TEXT = %s", text);
 		int result=0;
 		for(;*text;++text)		
 			result+=Resources::Fonts::default_8x16.get_glyph_width(*text);		
+		Debug::log("RESULT = %i", result);
 		return result;
 	}
 	
@@ -276,7 +278,7 @@ class FolderPickerScene : public SimpleScene
 			}
 			Debug::log(subfolders[k]);
 			
-			list_tiles_len[i] = (measure_string(subfolders[k])+7)/8;
+			list_tiles_len[i] = (measure_string(subfolders[k])+8)/8;
 			list_buffer[i] = new char[list_tiles_len[i]*64]();
 			sel_vwf.set_render_space(list_buffer[i], 2, list_tiles_len[i]);
 			sel_vwf.put_text(subfolders[k], Pal4bit, SolidColorBrush(0x1+(k==selected_index)));

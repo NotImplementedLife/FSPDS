@@ -176,7 +176,7 @@ public:
 	void draw_what_is_fspds()
 	{
 		vwf_top.put_text("FSPDS is a homebrew tool aimed to bring DSi\nFlipnote Studio creations to the original Nintendo DS. ", Pal4bit, SolidColorBrush(0x1));
-		vwf_top.put_text("Flashcards are the intended way to load this application, but it can also run from modded a modded DSi/3DS.", Pal4bit, SolidColorBrush(0x1));		
+		vwf_top.put_text("Flashcards are the intended way to load this application, but it can also run from a modded DSi/3DS.", Pal4bit, SolidColorBrush(0x1));		
 		vwf_top.put_text("This way, users who don't own a DSi, or don't have access to a legit copy of Flipnote Studio, can as well enjoy ", Pal4bit, SolidColorBrush(0x1));
 		vwf_top.put_text("playing flipnotes from their DS consoles. ", Pal4bit, SolidColorBrush(0x1));
 		vwf_top.put_text("Note that FSPDS is just a playback utility, not a PPM flipnote creator!", Pal4bit, SolidColorBrush(0x1));
@@ -192,7 +192,7 @@ public:
 	
 	void draw_what_is_location_indexing()
 	{
-		vwf_top.put_text("Flipnote paths are stored into a configuration file to optimize their access. You can choose which location will FSPDS manage", Pal4bit, SolidColorBrush(0x1));
+		vwf_top.put_text("Flipnote paths are stored into a configuration file to optimize their access. You can choose which location FSPDS will manage", Pal4bit, SolidColorBrush(0x1));
 		show(sp_loc_add, 8, 64+8);
 		show(sp_loc_reindex, 8, 96+8);
 		show(sp_loc_remove, 8, 128+8);

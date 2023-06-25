@@ -351,8 +351,14 @@ public:
 	{						
 		if(load_error)
 		{			
-			for(int i=0;i<20;i++)
+			for(int i=0;i<60;i++)
+			{
+				scanKeys();
+				int k = keysDown();
+				if(k & KEY_B)
+					back_to_location_viewer();				
 				GenericScene256::frame();
+			}
 			auto_next_flipnote();			
 			return;
 		}

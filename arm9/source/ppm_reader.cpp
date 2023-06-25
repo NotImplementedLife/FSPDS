@@ -110,6 +110,10 @@ int PPMReader::getFrameCount() const { return read16(0xC)+1; }
 int PPMReader::getFormatVersion() const { return read16(0xE); }
 bool PPMReader::isLocked() const { return read16(0x10 + 0x00)!=0; }
 
+char* PPMReader::getRootAuthor() const { return point_at(0x14); }
+char* PPMReader::getParentAuthor() const { return point_at(0x2A); }
+char* PPMReader::getCurrentAuthor() const { return point_at(0x40); }
+
 // Metadata
 int PPMReader::getThumbnailFrameIndex() const { return read16(0x10 + 0x02)!=0; }
 int PPMReader::getTimestamp() const { return read32(0x10 + 0x8A)!=0; }

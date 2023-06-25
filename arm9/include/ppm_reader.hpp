@@ -24,6 +24,11 @@ public:
 	int getThumbnailFrameIndex() const;		
 	int getTimestamp() const;	
 	
+	char* getRootAuthor() const;
+	char* getParentAuthor() const;
+	char* getCurrentAuthor() const;
+	
+	
 	char* getThumbnailImage() const;
 	
 	int getFrameOffsetTableSize() const;

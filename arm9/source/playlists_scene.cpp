@@ -403,7 +403,7 @@ public:
 			Location* location = locations_provider->get_at(index);			
 			folder_icons[i]->show();			
 									
-			list_tiles_len[i] = (measure_string(location->path)+7)/8;
+			list_tiles_len[i] = (measure_string(location->path)+8)/8;
 			list_buffer[i] = new char[list_tiles_len[i]*64]();
 			sel_vwf.set_render_space(list_buffer[i], 2, list_tiles_len[i]);
 			sel_vwf.put_text(location->path, Pal4bit, SolidColorBrush(0x1+(index==loc_selected_index)));

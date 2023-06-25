@@ -357,6 +357,8 @@ public:
 		timestamp|=ppm_metadata[index][0x9C]<<16;
 		timestamp|=ppm_metadata[index][0x9D]<<24;		
 		
+		char author_name[24];
+		
 		int d=1;
 		int m=1;
 		int y=2000;
@@ -367,10 +369,125 @@ public:
 		
 		vwf->set_cursor(5, 8);		
 		vwf->put_text(str_print(vwf_buffer, "Locked: %s", ppm_metadata[index][10] ? "Yes" : "No"), Pal4bit, SolidColorBrush(0x1));
+		
+		convert_author_name(author_name, (unsigned short*)(&ppm_metadata[index][0x14]));		
+		vwf->set_cursor(6, 8);		
+		vwf->put_text(str_print(vwf_buffer, "Root author: %s", author_name), Pal4bit, SolidColorBrush(0x1));
+		
+		convert_author_name(author_name, (unsigned short*)(&ppm_metadata[index][0x2A]));
+		vwf->set_cursor(7, 8);		
+		vwf->put_text(str_print(vwf_buffer, "Parent author: %s", author_name), Pal4bit, SolidColorBrush(0x1));
+		
+		convert_author_name(author_name, (unsigned short*)(&ppm_metadata[index][0x40]));
+		vwf->set_cursor(8, 8);		
+		vwf->put_text(str_print(vwf_buffer, "Current author: %s", author_name), Pal4bit, SolidColorBrush(0x1));
 
 		opt_box->show();
 		vwf->set_cursor(10, 116);		
 		vwf->put_text("Play", Pal4bit, SolidColorBrush(0x1));		
+	}
+	
+	inline static constexpr int charsets20xx[] = 
+	{
+		0x201C, 0x201D, 0x2022, 0x2026, 0x2033, 0x203B, 0x20AC, 0x2122, 
+		0x2190, 0x2191, 0x2192, 0x2193, 0x221E, 0x2234, 0x25A0, 0x25A1, 
+		0x25B2, 0x25B3, 0x25BC, 0x25BD, 0x25C6, 0x25C7, 0x25CB, 0x25CE, 
+		0x25CF, 0x2605, 0x2606, 0x266A, 0x266D
+	};	
+	
+	inline static constexpr int index_of20xx(int v)
+	{
+		for(int i=0;i<29;i++)
+		{
+			if(charsets20xx[i]==v)
+				return 0x82+i;
+		}
+		return 0;
+	}	
+
+	inline static constexpr int charsetsE0xx[] = 
+	{
+		0xE000, 0xE001, 0xE002, 0xE003, 0xE004, 0xE005, 0xE006, 0xE007, 
+		0xE008, 0xE009, 0xE00A, 0xE00B, 0xE00C, 0xE00D, 0xE00E, 0xE00F, 
+		0xE010, 0xE011, 0xE012, 0xE013, 0xE015, 0xE016, 0xE017, 0xE018, 
+		0xE019, 0xE01A, 0xE01B, 0xE01C, 0xE028
+	};
+	
+	inline static constexpr int index_ofE0xx(int v)
+	{
+		for(int i=0;i<29;i++)
+		{
+			if(charsetsE0xx[i]==v)
+				return 0x20+i;
+		}
+		return 0;
+	}	
+	
+	inline static constexpr int charsetsFFxx[] = { 0xFF01,0xFF0F,0xFF1F,0xFF3C,0xFF5C,0xFF5E };
+	
+	inline static constexpr int index_ofFFxx(int v)
+	{
+		for(int i=0;i<6;i++)
+		{
+			if(charsetsFFxx[i]==v)
+				return 0xB2+i;
+		}
+		return 0;
+	}	
+	
+	static void convert_author_name(char* dest, const unsigned  short* src)
+	{		
+		for(int i=0;i<11;i++)
+		{
+			Debug::log("Char = %X", src[i]&0xFFFF);
+			if(src[i]<0x80) 
+			{
+				*(dest++) = src[i];			
+			}
+			else if(src[i]<0xFF)
+			{
+				*(dest++) = 0x11;
+				*(dest++) = src[i];
+			}
+			else if((src[i]&0xFFFE)==0x0152)
+			{
+				*(dest++) = 0x80+(src[i]&1);
+			}
+			else if((src[i]&0xFF00)==0x3000)
+			{				
+				*(dest++) = src[i]<0x3080 ? 0x12: 0x14;
+				*(dest++) = 0x80|(src[i] & 0x7F);
+			}
+			else if((src[i]&0xF000)==0x2000)
+			{
+				int code = index_of20xx(src[i]);
+				if(code!=0)
+				{
+					*(dest++) = 0x11;
+					*(dest++) = code;
+				}			
+			}
+			else if((src[i]&0xF000)==0xE000)
+			{				
+				int code = index_ofE0xx(src[i]);
+				if(code!=0)
+				{
+					*(dest++) = 0x12;
+					*(dest++) = 0x80|code;
+				}			
+			}
+			else if((src[i]&0xFF00)==0xFF00)
+			{
+				int code = index_ofFFxx(src[i]);
+				if(code!=0)
+				{
+					*(dest++) = 0x11;
+					*(dest++) = code;
+				}							
+			}				
+			
+		}		
+		*(dest++)='\0';
 	}
 	
 	char vwf_buffer[64];
@@ -427,7 +544,7 @@ public:
 		vwf->clear(Pal4bit);			
 								
 								
-		sel_location_width = (measure_string(selected_location->path)+8+7)/8;
+		sel_location_width = (measure_string(selected_location->path)+8+8)/8;
 		sel_buffer = new short[2*sel_location_width*32]();
 		
 		vwf->set_render_space(sel_buffer,2,sel_location_width);
@@ -515,7 +632,7 @@ public:
 	{		
 		key_down.remove_event(&LocationViewerScene::on_key_down, this);
 		delete vwf;
-		delete[] sel_buffer;
+		delete[] sel_buffer;   
 		
 		delete back_arrow;
 		delete thumbnail_selector;
