@@ -13,6 +13,7 @@
 #include "bar_fragments.h"
 #include "player_icons.h"
 #include "loading_text.h"
+#include "strings.hpp"
 
 #include <stdlib.h>
 #include <malloc.h>
@@ -528,18 +529,26 @@ public:
 			if(res<0)
 			{
 				load_error=true;
-				vwf->set_cursor(6, 120);
-				vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));						
+				vwf->set_cursor(6, Strings::pcx_error);
+				vwf->put_text(Strings::str_error, Pal4bit, SolidColorBrush(0x3));						
 				switch(res)
 				{
 					case PPMReader::ERR_NULL_ARGUMENT:
-						vwf->set_cursor(7, 20); vwf->put_text("Internal error (ERR_NULL_ARGUMENT)", Pal4bit, SolidColorBrush(0x3)); break;
+						vwf->set_cursor(7, Strings::pcx_err_null_argument); 
+						vwf->put_text(Strings::str_err_null_argument, Pal4bit, SolidColorBrush(0x3)); 
+						break;
 					case PPMReader::ERR_FOPEN:									
-						vwf->set_cursor(7, 24); vwf->put_text("Could not open the file (ERR_FOPEN)", Pal4bit, SolidColorBrush(0x3)); break;					
+						vwf->set_cursor(7, Strings::pcx_err_fopen); 
+						vwf->put_text(Strings::str_err_fopen, Pal4bit, SolidColorBrush(0x3)); 
+						break;					
 					case PPMReader::ERR_SIZE_EXCEEDED:
-						vwf->set_cursor(7, 24); vwf->put_text("File too large (ERR_SIZE_EXCEEDED)", Pal4bit, SolidColorBrush(0x3)); break;
+						vwf->set_cursor(7, Strings::pcx_err_size_exceeded); 
+						vwf->put_text(Strings::str_err_size_exceeded, Pal4bit, SolidColorBrush(0x3)); 
+						break;
 					case PPMReader::ERR_READ_COUNT:
-						vwf->set_cursor(7, 24); vwf->put_text("File reading error (ERR_READ_COUNT)", Pal4bit, SolidColorBrush(0x3)); break;					
+						vwf->set_cursor(7, Strings::pcx_err_read_count); 
+						vwf->put_text(Strings::str_err_read_count, Pal4bit, SolidColorBrush(0x3)); 
+						break;					
 				}
 			}
 			
@@ -576,10 +585,10 @@ public:
 		if(bgmSize>=491520/2+100)
 		{
 			load_error=true;
-			vwf->set_cursor(6, 120);
-			vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));		
-			vwf->set_cursor(7, 78);
-			vwf->put_text("Sound size too large", Pal4bit, SolidColorBrush(0x3));		
+			vwf->set_cursor(6, Strings::pcx_error);
+			vwf->put_text(Strings::str_error, Pal4bit, SolidColorBrush(0x3));		
+			vwf->set_cursor(7, Strings::pcx_sound_size_too_large);
+			vwf->put_text(Strings::str_sound_size_too_large, Pal4bit, SolidColorBrush(0x3));		
 			return;			
 		}		
 				
@@ -588,10 +597,10 @@ public:
 		if(sound_buffer==nullptr)
 		{
 			load_error=true;
-			vwf->set_cursor(6, 113);
-			vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));		
-			vwf->set_cursor(7, 52);
-			vwf->put_text("Sount buffer not allocated", Pal4bit, SolidColorBrush(0x3));
+			vwf->set_cursor(6, Strings::pcx_error);
+			vwf->put_text(Strings::str_error, Pal4bit, SolidColorBrush(0x3));		
+			vwf->set_cursor(7, Strings::pcx_sound_buffer_not_allocated);
+			vwf->put_text(Strings::str_sound_buffer_not_allocated, Pal4bit, SolidColorBrush(0x3));
 			return;			
 		}
 		
@@ -615,10 +624,10 @@ public:
 			if(sound_buffer==nullptr)
 			{
 				load_error=true;
-				vwf->set_cursor(6, 113);
-				vwf->put_text("Error", Pal4bit, SolidColorBrush(0x3));		
-				vwf->set_cursor(7, 52);
-				vwf->put_text("Sfx buffer not allocated", Pal4bit, SolidColorBrush(0x3));
+				vwf->set_cursor(6, Strings::pcx_error);
+				vwf->put_text(Strings::str_error, Pal4bit, SolidColorBrush(0x3));		
+				vwf->set_cursor(7, Strings::pcx_sfx_buffer_not_allocated);
+				vwf->put_text(Strings::str_sfx_buffer_not_allocated, Pal4bit, SolidColorBrush(0x3));				
 				return;			
 			}
 			Debug::log("size=%i", size);

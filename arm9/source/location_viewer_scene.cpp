@@ -7,6 +7,7 @@
 #include "error_thumbnail.h"
 #include "thumbnail_selector.h"
 #include "opt_box.h"
+#include "strings.hpp"
 
 constexpr short torgb15(int rgb24)
 {
@@ -78,7 +79,7 @@ public:
 		opt_box = create_sprite(new Sprite(SIZE_64x32, Engine::Sub));
 		opt_box->set_default_allocator(nullptr);
 		opt_box->add_frame(opt_frame);
-		opt_box->set_position(96, 150);
+		opt_box->set_position(play_button_x, 152);
 		opt_box->set_priority(3);
 		
 		end_sprites_init();
@@ -176,7 +177,7 @@ public:
 			{
 				close()->next(get_playlists_scene());
 			}
-			else if(touch_in_rect(96,154,64,24))
+			else if(touch_in_rect(play_button_x,152,64,24))
 			{
 				go_to_player();
 			}
@@ -315,6 +316,8 @@ public:
 		day = 1+timestamp/86400;
 	}
 	
+	int play_button_x = Strings::pcx_play+(Strings::len_play-64)/2;
+	
 	void display_info()
 	{
 		opt_box->hide();
@@ -383,8 +386,8 @@ public:
 		vwf->put_text(str_print(vwf_buffer, "Current author: %s", author_name), Pal4bit, SolidColorBrush(0x1));
 
 		opt_box->show();
-		vwf->set_cursor(10, 116);		
-		vwf->put_text("Play", Pal4bit, SolidColorBrush(0x1));		
+		vwf->set_cursor(10, Strings::pcx_play);
+		vwf->put_text(Strings::str_play, Pal4bit, SolidColorBrush(0x1));		
 	}
 	
 	inline static constexpr int charsets20xx[] = 

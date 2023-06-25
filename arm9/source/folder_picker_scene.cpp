@@ -5,6 +5,7 @@
 #include "filesystem.hpp"
 #include "opt_box.h"
 #include "globals.hpp"
+#include "strings.hpp"
 
 class FolderPickerScene : public SimpleScene
 {
@@ -168,13 +169,13 @@ class FolderPickerScene : public SimpleScene
 		VwfEngine::prepare_map(*vwf, MAIN_BG2, 32, 0, 0, 0x9);
 		vwf->clear(Pal4bit);			
 						
-		vwf->set_cursor(6, 74);
-		vwf->put_text("Pick a directory", Pal4bit, SolidColorBrush(0x1));		
+		vwf->set_cursor(6, Strings::pcx_pick_a_directory);
+		vwf->put_text(Strings::str_pick_a_directory, Pal4bit, SolidColorBrush(0x1));		
 		
+		vwf->set_cursor(9, 8);
+		vwf->put_text("Enter in a directory of your choice, then touch the", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(10, 8);
-		vwf->put_text("Enter in a directory of your choice, then", Pal4bit, SolidColorBrush(0x1));
-		vwf->set_cursor(11, 8);
-		vwf->put_text("touch the Select button.", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("Select button.", Pal4bit, SolidColorBrush(0x1));
 		
 			
 		vwf->set_render_space(bgGetGfxPtr(6),24,32);
@@ -293,8 +294,8 @@ class FolderPickerScene : public SimpleScene
 			folder_icons[i]->hide();
 		}		
 		
-		vwf->set_cursor(11, 200);
-		vwf->put_text("Select", Pal4bit, SolidColorBrush(0x1));
+		vwf->set_cursor(11, 256-4-64+(64-Strings::len_select)/2);
+		vwf->put_text(Strings::str_select, Pal4bit, SolidColorBrush(0x1));
 	}
 	
 	void display_item(int i)

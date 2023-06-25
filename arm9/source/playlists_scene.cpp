@@ -7,6 +7,7 @@
 #include "globals.hpp"
 
 #include "back_arrow.h"
+#include "strings.hpp"
 
 
 Scene* folder_picker_return_to_playlists();
@@ -74,14 +75,14 @@ public:
 			}
 			else if(touch_in_rect(180,0,32,32))
 			{
-				if(show_yes_no_dialog("Do you want to reindex the location?", 24))
+				if(show_yes_no_dialog(Strings::str_location_ask_reindex, Strings::pcx_location_ask_reindex))
 				{
 					Debug::log("Dialog accepted");
 					vwf->clear(Pal4bit);
 					for(int i=0;i<4;i++)
 						folder_icons[i]->hide();					
-					vwf->set_cursor(6, 90);	
-					vwf->put_text("Please wait", Pal4bit, SolidColorBrush(0x1));
+					vwf->set_cursor(6, Strings::pcx_please_wait);	
+					vwf->put_text(Strings::str_please_wait, Pal4bit, SolidColorBrush(0x1));
 					GenericScene256::frame();
 					
 					reindex_selected();		
@@ -90,14 +91,14 @@ public:
 			}
 			else if(touch_in_rect(140, 0, 32, 32))
 			{
-				if(show_yes_no_dialog("Do you want to remove the location?", 24))
+				if(show_yes_no_dialog(Strings::str_location_ask_remove, Strings::pcx_location_ask_remove))
 				{
 					Debug::log("Dialog accepted");
 					vwf->clear(Pal4bit);
 					for(int i=0;i<4;i++)
 						folder_icons[i]->hide();					
-					vwf->set_cursor(6, 90);	
-					vwf->put_text("Please wait", Pal4bit, SolidColorBrush(0x1));
+					vwf->set_cursor(6, Strings::pcx_please_wait);	
+					vwf->put_text(Strings::str_please_wait, Pal4bit, SolidColorBrush(0x1));
 					GenericScene256::frame();
 					
 					locations_provider->remove_location(loc_selected_index);
@@ -189,16 +190,16 @@ public:
 		VwfEngine::prepare_map(*vwf, MAIN_BG2, 32, 0, 0, 0x9);
 		vwf->clear(Pal4bit);			
 						
-		vwf->set_cursor(6, 78);
-		vwf->put_text("Browse flipnotes", Pal4bit, SolidColorBrush(0x1));		
+		vwf->set_cursor(6, Strings::pcx_browse_flipnotes);
+		vwf->put_text(Strings::str_browse_flipnotes, Pal4bit, SolidColorBrush(0x1));		
 		
 			
 		vwf->set_render_space(bgGetGfxPtr(6),24,32);
 		VwfEngine::prepare_map(*vwf, SUB_BG2, 32, 0, 0, 0x9);
 		vwf->clear(Pal4bit);			
 		
-		vwf->set_cursor(6, 90);	
-		vwf->put_text("Please wait", Pal4bit, SolidColorBrush(0x1));
+		vwf->set_cursor(6, Strings::pcx_please_wait);	
+		vwf->put_text(Strings::str_please_wait, Pal4bit, SolidColorBrush(0x1));
 					
 		Hardware::MainEngine::objEnable(128, true); // set to 128		
 		Hardware::SubEngine::objEnable(128, true); // set to 128	
@@ -219,8 +220,8 @@ public:
 			if(locations_provider->get_by_path(picked_folder_path)==nullptr)
 			{
 				vwf->clear(Pal4bit);					
-				vwf->set_cursor(5, 90);					
-				vwf->put_text("Indexing files", Pal4bit, SolidColorBrush(0x2));				
+				vwf->set_cursor(5, Strings::pcx_indexing_files);
+				vwf->put_text(Strings::str_indexing_files, Pal4bit, SolidColorBrush(0x2));				
 						
 				add_folder_icon->hide();
 				reindex_icon->hide();
@@ -241,8 +242,8 @@ public:
 				strcpy(location->path, picked_folder_path);
 				
 				vwf->clear_row(6, Pal4bit);
-				vwf->set_cursor(6, 80);										
-				vwf->put_text(str_print(buff, "Found %i flipnotes", cnt), Pal4bit, SolidColorBrush(0x2));
+				vwf->set_cursor(6, Strings::pcx_found_n_flipnotes);			
+				vwf->put_text(str_print(buff, Strings::str_found_n_flipnotes, cnt), Pal4bit, SolidColorBrush(0x2));
 				swiWaitForVBlank();
 				
 				Char24* dest_name = new Char24();
@@ -276,8 +277,8 @@ public:
 					location->filenames.push_back(*dest_name);					
 					
 					vwf->clear_row(6, Pal4bit);
-					vwf->set_cursor(6, 80);										
-					vwf->put_text(str_print(buff, "Found %i flipnotes", ++cnt), Pal4bit, SolidColorBrush(0x2));
+					vwf->set_cursor(6, Strings::pcx_found_n_flipnotes);										
+					vwf->put_text(str_print(buff, Strings::str_found_n_flipnotes, ++cnt), Pal4bit, SolidColorBrush(0x2));
 					swiWaitForVBlank();
 				}	
 				delete dest_name;
@@ -287,14 +288,14 @@ public:
 				
 				
 				for(int i=10;i<30;i++) swiWaitForVBlank();				
-				vwf->set_cursor(7, 110);
-				vwf->put_text("Saving", Pal4bit, SolidColorBrush(0x2));
+				vwf->set_cursor(7, Strings::pcx_saving);
+				vwf->put_text(Strings::str_saving, Pal4bit, SolidColorBrush(0x2));
 				for(int i=10;i<10;i++) swiWaitForVBlank();							
 				locations_provider->add_location(location);
 				
 				vwf->clear_row(7, Pal4bit);
-				vwf->set_cursor(7, 114);			
-				vwf->put_text("Done", Pal4bit, SolidColorBrush(0x2));
+				vwf->set_cursor(7, Strings::pcx_done);			
+				vwf->put_text(Strings::str_done, Pal4bit, SolidColorBrush(0x2));
 				for(int i=0;i<60;i++)
 					swiWaitForVBlank();
 			}
@@ -382,8 +383,8 @@ public:
 		{			
 			reindex_icon->hide();
 			remove_icon->hide();
-			vwf->set_cursor(6, 40);	
-			vwf->put_text("No flipnote locations. Add one!", Pal4bit, SolidColorBrush(0x3));
+			vwf->set_cursor(6, Strings::pcx_no_flipnote_locations);	
+			vwf->put_text(Strings::str_no_flipnote_locations, Pal4bit, SolidColorBrush(0x3));
 			return;
 		}		
 		
@@ -412,8 +413,8 @@ public:
 										
 			//vwf->set_cursor(2+2*i, 48);
 			//vwf->put_text(location->path, Pal4bit, SolidColorBrush(0x1));			
-			vwf->set_cursor(3+2*i, 48);
-			vwf->put_text(str_print(buff, "%i flipnotes", location->filenames.size()), Pal4bit, SolidColorBrush(index==loc_selected_index ? 0x2 : 0x4));
+			vwf->set_cursor(3+2*i, Strings::pcx_n_flipnotes);
+			vwf->put_text(str_print(buff, Strings::str_n_flipnotes, location->filenames.size()), Pal4bit, SolidColorBrush(index==loc_selected_index ? 0x2 : 0x4));
 		}
 		
 		delete[] buff;
@@ -456,8 +457,8 @@ public:
 	void reindex_selected()
 	{
 		vwf->clear(Pal4bit);					
-		vwf->set_cursor(5, 90);					
-		vwf->put_text("Indexing files", Pal4bit, SolidColorBrush(0x2));				
+		vwf->set_cursor(5, Strings::pcx_indexing_files);					
+		vwf->put_text(Strings::str_indexing_files, Pal4bit, SolidColorBrush(0x2));				
 				
 		add_folder_icon->hide();
 		reindex_icon->hide();
@@ -478,8 +479,8 @@ public:
 		location->filenames.clear();		
 		
 		vwf->clear_row(6, Pal4bit);
-		vwf->set_cursor(6, 80);										
-		vwf->put_text(str_print(buff, "Found %i flipnotes", cnt), Pal4bit, SolidColorBrush(0x2));
+		vwf->set_cursor(6, Strings::pcx_found_n_flipnotes);										
+		vwf->put_text(str_print(buff, Strings::str_found_n_flipnotes, cnt), Pal4bit, SolidColorBrush(0x2));
 		swiWaitForVBlank();
 		
 		Char24* dest_name = new Char24();
@@ -513,8 +514,8 @@ public:
 			location->filenames.push_back(*dest_name);					
 			
 			vwf->clear_row(6, Pal4bit);
-			vwf->set_cursor(6, 80);										
-			vwf->put_text(str_print(buff, "Found %i flipnotes", ++cnt), Pal4bit, SolidColorBrush(0x2));
+			vwf->set_cursor(6, Strings::pcx_found_n_flipnotes);										
+			vwf->put_text(str_print(buff, Strings::str_found_n_flipnotes, ++cnt), Pal4bit, SolidColorBrush(0x2));
 			swiWaitForVBlank();
 		}	
 		delete dest_name;

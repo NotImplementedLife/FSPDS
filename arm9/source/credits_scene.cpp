@@ -46,26 +46,37 @@ class CreditsScene : public SimpleScene
 		vwf->set_cursor(3, 8);		
 		vwf->put_text("-   ", Pal4bit, SolidColorBrush(0x1));
 		vwf->put_text("RinLovesYou", Pal4bit, SolidColorBrush(0x2));
-		vwf->put_text(" for her ADPCM to PCM", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text(" for her ADPCM to PCM converter", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(4, 8);		
-		vwf->put_text("     converter function in PPMLib", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("    function in PPMLib", Pal4bit, SolidColorBrush(0x1));
 		
 		vwf->set_cursor(5, 8);
 		vwf->put_text("-   ", Pal4bit, SolidColorBrush(0x1));
 		vwf->put_text("tomrow", Pal4bit, SolidColorBrush(0x2));
-		vwf->put_text(" for their suggestion on", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text(" for their suggestion on alternate flipnote", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(6, 8);
-		vwf->put_text("    alternate flipnote browse locations", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("    browse locations", Pal4bit, SolidColorBrush(0x1));
 		
 		vwf->set_cursor(7, 8);
 		vwf->put_text("-   Guys from ", Pal4bit, SolidColorBrush(0x1));
 		vwf->put_text("DSiBrew", Pal4bit, SolidColorBrush(0x2));
 		vwf->put_text(" & ", Pal4bit, SolidColorBrush(0x1));
 		vwf->put_text("Flipnote Collective", Pal4bit, SolidColorBrush(0x2));
+		vwf->put_text(" for their", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(8, 8);
-		vwf->put_text("    for their awesome documentation on .PPM", Pal4bit, SolidColorBrush(0x1));
-		vwf->set_cursor(9, 8);
-		vwf->put_text("    file format", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("    awesome documentation on .PPM file format", Pal4bit, SolidColorBrush(0x1));		
+		
+		vwf->set_cursor(9, 8);	
+		vwf->put_text("-   Shout-out to  ", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("Kenyon Bowers", Pal4bit, SolidColorBrush(0x2));
+		vwf->put_text(", co-author of ", Pal4bit, SolidColorBrush(0x1));		
+		vwf->put_text("DSC", Pal4bit, SolidColorBrush(0x2));
+		
+		vwf->set_cursor(10, 8);			
+		vwf->put_text("     library, now abandonware, but I reused it as a base", Pal4bit, SolidColorBrush(0x1));
+		
+		vwf->set_cursor(11, 8);	
+		vwf->put_text("     to create this app on", Pal4bit, SolidColorBrush(0x1));
 			
 		
 		vwf->set_render_space(bgGetGfxPtr(6),24,32);
@@ -73,9 +84,9 @@ class CreditsScene : public SimpleScene
 		vwf->clear(Pal4bit);			
 		
 		vwf->set_cursor(1, 8);		
-		vwf->put_text("Awesome open-source NDS solutions", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("Awesome open-source NDS projects that helped", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(2, 8);	
-		vwf->put_text("that helped during development:\n", Pal4bit, SolidColorBrush(0x1));
+		vwf->put_text("during development:\n", Pal4bit, SolidColorBrush(0x1));
 		vwf->set_cursor(4, 8);	
 		vwf->put_text("GodMode9i", Pal4bit, SolidColorBrush(0x2));
 		
@@ -87,21 +98,9 @@ class CreditsScene : public SimpleScene
 		
 		vwf->set_cursor(6, 8);	
 		vwf->put_text("Compiled with ", Pal4bit, SolidColorBrush(0x1));
-		vwf->put_text("devkitPro", Pal4bit, SolidColorBrush(0x2));
+		vwf->put_text("devkitPro", Pal4bit, SolidColorBrush(0x2));		
 		
-		vwf->set_cursor(7, 8);	
-		vwf->put_text("Shout-out to  ", Pal4bit, SolidColorBrush(0x1));
-		vwf->put_text("Kenyon Bowers", Pal4bit, SolidColorBrush(0x2));
-		vwf->put_text(", co-author of ", Pal4bit, SolidColorBrush(0x1));		
-		
-		vwf->set_cursor(8, 8);	
-		vwf->put_text("DSC", Pal4bit, SolidColorBrush(0x2));
-		vwf->put_text(" library, now abandonware, but I reused", Pal4bit, SolidColorBrush(0x1));
-		
-		vwf->set_cursor(9, 8);	
-		vwf->put_text("its code to create this app", Pal4bit, SolidColorBrush(0x1));
-		
-		vwf->set_cursor(10, 24);	
+		vwf->set_cursor(10, 40);	
 		vwf->put_text("Touch the screen to return to title", Pal4bit, SolidColorBrush(0x1));
 					
 		Hardware::MainEngine::objEnable(128, true); // set to 128		
