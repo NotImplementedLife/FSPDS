@@ -139,8 +139,8 @@ void DSC::GenericScene256::frame()
 {
 	for(int i=0;i<privates->sprites.size();i++)
 	{
-		privates->sprites[i]->update_visual();
 		privates->sprites[i]->update_position();
+		privates->sprites[i]->update_visual();	
 	}
 	Sprite::oam_deploy_main();		
 	Sprite::oam_deploy_sub();		

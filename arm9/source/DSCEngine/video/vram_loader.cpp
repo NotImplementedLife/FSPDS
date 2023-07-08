@@ -7,6 +7,17 @@
 
 using namespace DSC;
 
+void dmaCopy(const void* buffer, void* dest, int len)
+{
+	const short* src = (const short*)buffer;
+	short* dst = (short*)dest;
+	len/=2;
+	for(;len--;)	
+		__asm("STRH %[_0], [%[dest_map]]"
+				:
+				: [dest_map] "r" (dst++), [_0] "r" (*(src++)));
+}
+
 void DSC::VramLoader::load(const AssetData* asset, void* dest, short* pal_indices, int map_width)
 {	
 	nds_assert(asset!=nullptr);

@@ -181,16 +181,16 @@ public:
 	    replay_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
 		replay_button->set_default_allocator(nullptr);
 		replay_button->add_frame(replay_off_frame);
-		replay_button->set_position(89,147);		
-			
-		loading_text = create_sprite(new Sprite(SIZE_64x32, Engine::Main));
-		loading_text->add_frame(new ObjFrame(&ROA_loading_text8, 0, 0));
-		loading_text->set_position(96, 80);		
+		replay_button->set_position(89,147);				
 		
 		shuffle_button = create_sprite(new Sprite(SIZE_16x16, Engine::Sub));
 		shuffle_button->set_default_allocator(nullptr);
 		shuffle_button->add_frame(shuffle_off_frame);
 		shuffle_button->set_position(153,146);		
+		
+		loading_text = create_sprite(new Sprite(SIZE_64x32, Engine::Main));
+		loading_text->add_frame(new ObjFrame(&ROA_loading_text8, 0, 0));
+		loading_text->set_position(96, 80);		
 		
 		end_sprites_init();
 		
@@ -471,6 +471,13 @@ public:
 		solve_map_requirements();
 		load_assets();
 		
+		Hardware::MainEngine::objEnable(64, true);
+		Hardware::SubEngine::objEnable(128, true);
+		
+		swiWaitForVBlank();
+		GenericScene256::frame();
+		swiWaitForVBlank();
+		
 		BG_PALETTE[0x91]=BG_PALETTE_SUB[0x91]=Colors::Black;
 		BG_PALETTE[0x92]=BG_PALETTE_SUB[0x92]=Colors::Blue;
 		BG_PALETTE[0x93]=BG_PALETTE_SUB[0x93]=Colors::Red;
@@ -498,16 +505,18 @@ public:
 		BG_PALETTE[0x00]=Colors::White;
 		BG_PALETTE[0xE1]=Colors::Red;	
 		BG_PALETTE[0xE2]=Colors::Blue;
-		BG_PALETTE[0xE3]=Colors::Blue;
-						
-		Hardware::MainEngine::objEnable(128, true); // set to 128		
-		Hardware::SubEngine::objEnable(128, true); // set to 128				
+		BG_PALETTE[0xE3]=Colors::Blue;		
 		
+		swiWaitForVBlank();
 		GenericScene256::frame();
-		load();
+		swiWaitForVBlank();
+		load();		
 		
 		loading_text->hide();
+		
+		swiWaitForVBlank();
 		GenericScene256::frame();
+		swiWaitForVBlank();
 		
 		key_down.add_event(&PlayerScene::on_key_down, this);
 		
@@ -661,7 +670,7 @@ public:
 		
 		Debug::log("Freeing");
 		for(int i=0;i<3;i++) free(sfx[i]);
-				
+		
 		Debug::log("Here5?");
 	}
 	
