@@ -227,9 +227,7 @@ public:
 		cx-=touch.px;
 		cy-=touch.py;
 		return cx*cx+cy*cy<=r*r;
-	}
-	
-	bool player_screen_on=true;
+	}	
 		
 	void show_player_screen(bool value)
 	{		

@@ -27,3 +27,5 @@ extern int selected_thumbnail_index;
 
 void load_app_state();
 void save_app_state();
+
+extern bool player_screen_on;

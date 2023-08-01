@@ -62,3 +62,5 @@ void save_app_state()
 	fwrite(&flags, sizeof(int), 1, fptr);		
 	fclose(fptr);	
 }
+
+bool player_screen_on=true;
