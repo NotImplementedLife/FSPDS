@@ -676,6 +676,8 @@ public:
 	
 	~PlayerScene()
 	{
+		soundPause(bgmId);
+		soundKill(bgmId);
 		soundDisable();
 		swiWaitForVBlank();
 		
@@ -714,7 +716,7 @@ public:
 		delete replay_button;
 
 		set_player_autoplay(autoplay);
-		set_player_shuffle(shuffle);		
+		set_player_shuffle(shuffle);	
 	}
 		
 	static int sound_frame_counter;	

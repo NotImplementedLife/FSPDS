@@ -65,7 +65,13 @@ void DSC::OamPool::deploy()
 	{
 		nds_assert(Hardware::SubEngine::objIsEnabled(), "Sub: Deploying with OAM disabled");
 	}		
-	dmaCopy(__obj_attr_buffer, oam_offset(), OBJ_COUNT * 4 * sizeof(u16));
+	
+	short* src = (short*)__obj_attr_buffer;
+	short* dst = (short*)oam_offset();	
+	for(int i=0;i<OBJ_COUNT * 4;i++)
+		*(dst++) = *(src++);
+	
+	//dmaCopy(__obj_attr_buffer, oam_offset(), OBJ_COUNT * 4 * sizeof(u16));
 }
 
 void DSC::OamPool::set_rotation_matrix(int id, int pa, int pb, int pc, int pd)
