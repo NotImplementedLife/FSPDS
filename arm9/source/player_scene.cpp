@@ -14,6 +14,7 @@
 #include "player_icons.h"
 #include "loading_text.h"
 #include "strings.hpp"
+#include "version.h"
 
 #include <stdlib.h>
 #include <malloc.h>
@@ -60,6 +61,8 @@ void operator delete( void* p, std::size_t sz)
 
 const char* selected_flipnote_path = nullptr; // "fat://flipnotes/0BC769_0A978C458A07A_002.ppm";
 
+// The following handler assures that processing a single frame 
+// takes place in time in a single VBlank. Only used in debug mode
 bool working=false;
 int vbl=0;
 void vblank_handler()
@@ -517,10 +520,10 @@ public:
 		swiWaitForVBlank();
 		
 		key_down.add_event(&PlayerScene::on_key_down, this);
-		
-
+				
 		irqEnable(IRQ_VBLANK);
-		irqSet(IRQ_VBLANK, &vblank_handler);		
+		if(BUILD_TYPE=='D')
+			irqSet(IRQ_VBLANK, &vblank_handler);
 		
 		Scene::run();
 	}
