@@ -45,6 +45,19 @@ problems playing original flipnotes. Spin-off flipnotes which contain huge audio
 
 - On the hardware, loading files from FAT system is substantialy faster;
 
+## How to build
+
+```
+git clone https://github.com/NotImplementedLife/FSPDS.git
+cd FSPDS
+make
+```
+
+Python is required to run a build tool script. 
+
+For non-Windows systems, the most challenging part would be running `DSC.Toolchain.AssetBuild.exe`. I'm not a Linux user myself and I can't provide reliable guidance in that problem, but some program like Wine or mono could be of some help, or you can even rebuild the executable directly from its [source code](https://github.com/DS-Creator-Dev/DSC.Toolchain).
+
+
 ## Screenshots
 
 <p align="center">
