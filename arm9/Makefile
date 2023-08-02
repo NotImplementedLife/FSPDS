@@ -6,14 +6,6 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-ifeq ($(strip $(DSCENGINE)),)
-$(error "Environment variable missing DSCENGINE")
-endif
-
-ifeq ($(strip $(DSCTOOLS)),)
-$(error "Environment variable missing DSCTOOLS")
-endif
-
 include $(DEVKITARM)/ds_rules
 
 #---------------------------------------------------------------------------------
@@ -212,7 +204,7 @@ $(SOUNDBANK) : $(MODFILES)
 %.s %.h: %.png
 #---------------------------------------------------------------------------------	
 	echo $*
-	$(DSCTOOLS)/DSC.Toolchain.AssetBuild.exe -i$< -h$*.h -s$*.s
+	../tools/DSC.Toolchain.AssetBuild.exe -i$< -h$*.h -s$*.s
 	# replace #include<> with #include"" because DSC is not an external library in this case
 	sed -i 's/[\<\>]/\"/g' $*.h
 	
