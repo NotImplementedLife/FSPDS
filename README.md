@@ -61,13 +61,13 @@ For non-Windows systems, the most challenging part would be running `DSC.Toolcha
 ## Screenshots
 
 <p align="center">
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/f924d76b-3bc4-4c0f-b04f-0c42a2db8568" alt="ROM in action: Title screen"></img>        
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/965c76f8-8c71-46ec-8186-e052784b61d6" alt="ROM in action: Browse flipnotes"></img>
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/f434f8e2-f3cb-4a62-a070-500ebe19aee0" alt="ROM in action: Pick a flipnotes directory"></img>        
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/816fba2d-3c96-41da-95bc-7e05ee324e4a" alt="ROM in action: Help screen"></img>        
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/f87bf35a-ba11-4c21-87ea-f6fe093b096a" alt="ROM in action: Flipnotes list 1"></img>        
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/0daac322-0788-4a06-9b0b-0e24dea0ae1d" alt="ROM in action: Flipnotes list 2"></img>        
-    <img width="600" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/248c3118-3f92-42e8-8b4e-73929af62f45" alt="ROM in action: Flipnote player"></img>    
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/f924d76b-3bc4-4c0f-b04f-0c42a2db8568" alt="ROM in action: Title screen"></img>        
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/965c76f8-8c71-46ec-8186-e052784b61d6" alt="ROM in action: Browse flipnotes"></img>
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/f434f8e2-f3cb-4a62-a070-500ebe19aee0" alt="ROM in action: Pick a flipnotes directory"></img>        
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/816fba2d-3c96-41da-95bc-7e05ee324e4a" alt="ROM in action: Help screen"></img>        
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/f87bf35a-ba11-4c21-87ea-f6fe093b096a" alt="ROM in action: Flipnotes list 1"></img>        
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/0daac322-0788-4a06-9b0b-0e24dea0ae1d" alt="ROM in action: Flipnotes list 2"></img>        
+    <img width="500" src="https://github.com/NotImplementedLife/FSPDS/assets/70803115/248c3118-3f92-42e8-8b4e-73929af62f45" alt="ROM in action: Flipnote player"></img>    
 </p>
 
 ## History
