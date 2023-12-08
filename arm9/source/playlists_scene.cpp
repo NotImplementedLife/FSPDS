@@ -257,9 +257,11 @@ public:
 					Debug::log(entry->d_name);
 										
 					int len = strlen(entry->d_name);
-					if(len!=28) continue;
+					if(len>28) continue;
 					if(strcmp(".ppm", entry->d_name+len-4)!=0 && strcmp(".PPM", entry->d_name+len-4)!=0)
 						continue;
+					
+					len-=4;
 					
 					Debug::log("Here?");					
 					
@@ -494,9 +496,11 @@ public:
 			Debug::log(entry->d_name);
 								
 			int len = strlen(entry->d_name);
-			if(len!=28) continue;
+			if(len>28) continue;
 			if(strcmp(".ppm", entry->d_name+len-4)!=0 && strcmp(".PPM", entry->d_name+len-4)!=0)
 				continue;
+			
+			len-=4;
 			
 			Debug::log("Here?");					
 			

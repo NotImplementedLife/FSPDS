@@ -183,7 +183,7 @@ void LocationsProvider::load()
 void LocationsProvider::add_location(Location* location)
 {
 	locations.push_back(location);
-	save();	
+	save();
 }
 
 Location* LocationsProvider::get_at(int i) const
