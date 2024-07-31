@@ -8,6 +8,18 @@ endif
 
 include $(DEVKITARM)/ds_rules
 
+
+MAKEFILE_PATH:=$(realpath $(shell dirname $(firstword $(MAKEFILE_LIST))))
+
+$(info MAKEFILE_PATH=$(MAKEFILE_PATH))
+
+
+# Read value of NTFS attribute in ../config.ini (default 0)
+USE_NTFS := ${shell grep -E "^NTFS\s*\=\s*.*\s*$$" $(MAKEFILE_PATH)/../config.ini | sed -E "s/^NTFS\s*\=\s*(.*)\s*$$/\1/" | grep . || echo "0"}
+
+$(info Build Configuration)
+$(info NTFS Enabled = $(USE_NTFS))
+
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -25,7 +37,17 @@ DATA        :=  data
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
-NITRO    :=
+ifeq ($(USE_NTFS), 1)
+$(info NTFS)
+NITRO    := nitrofs
+else
+$(info NO_NTFS)
+NITRO    := 
+endif
+
+
+
+# $(error x)
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -33,7 +55,7 @@ NITRO    :=
 ARCH := -marm -mthumb-interwork -march=armv5te -mtune=arm946e-s
 
 CFLAGS   := -g -Wall -O3\
-            $(ARCH) $(INCLUDE) -DARM9
+            $(ARCH) $(INCLUDE) -DARM9 -DUSE_NTFS=$(USE_NTFS)
 CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS  := -g $(ARCH)
 LDFLAGS   = -specs=ds_arm9.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
