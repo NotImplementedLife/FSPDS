@@ -8,6 +8,12 @@
 
 #include "version.h"
 
+#if USE_NTFS==1
+	#define FMT_VERSION "FSPDS V%i.%i.%i Nitro"
+#else
+	#define FMT_VERSION "FSPDS V%i.%i.%i"
+#endif
+
 class HelpScene : public SimpleScene
 {
 private:
@@ -118,7 +124,9 @@ public:
 		
 		
 		vwf_bottom.set_cursor(9, 8);
-		vwf_bottom.put_text(str_print(buffer, "FSPDS V%i.%i.%i", MAJOR, MINOR, BUILD), Pal4bit, SolidColorBrush(0x1));
+		
+		vwf_bottom.put_text(str_print(buffer, FMT_VERSION, MAJOR, MINOR, BUILD), Pal4bit, SolidColorBrush(0x1));
+
 		vwf_bottom.set_cursor(10, 8);
 		vwf_bottom.put_text(str_print(buffer, "%s build", BUILD_TYPE=='D' ? "Debug" : "Release"), Pal4bit, SolidColorBrush(0x1));
 	}

@@ -2,6 +2,7 @@ __pycache__/
 .git/
 arm7/build/
 arm9/build/
+arm9/nitrofs/data/
 build/
 flipnotes-example/
 fs/

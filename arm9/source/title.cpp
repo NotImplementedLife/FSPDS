@@ -7,10 +7,15 @@
 #include "logo_tb_bin.h"
 #include "esodev_logo.h"
 #include "background.h"
-#include "title_spr.h"
 #include "opt_box.h"
 #include "fat_fail.h"
 #include "empty.h"
+
+#if USE_NTFS==1
+	#include "title_spr_nitro.h"
+#else
+	#include "title_spr.h"
+#endif
 
 #include "scenes.hpp"
 
@@ -71,10 +76,15 @@ class TitleScene : public GenericScene256
 		begin_sprites_init();		
 		
 		empty = create_sprite(new Sprite(SIZE_8x8, Engine::Sub));
-		empty->add_frame(new ObjFrame(&ROA_empty8, 0,0));		
+		empty->add_frame(new ObjFrame(&ROA_empty8, 0,0));
 		
+	#if USE_NTFS==1
+		title[0]->add_frame(new ObjFrame(&ROA_title_spr_nitro8, 0,0));
+		title[1]->add_frame(new ObjFrame(&ROA_title_spr_nitro8, 0,1));
+	#else
 		title[0]->add_frame(new ObjFrame(&ROA_title_spr8, 0,0));
 		title[1]->add_frame(new ObjFrame(&ROA_title_spr8, 0,1));			
+	#endif
 		
 		title[0]->set_position(128-64, 116);
 		title[1]->set_position(128, 116);

@@ -7,8 +7,6 @@
 #include "frame_decoder.hpp"
 #include "sound_decoder.hpp"
 
-#include "0B33C4_0BC1601FB8421_000_bin.h"
-
 #include "player_bg.h"
 #include "bar_fragments.h"
 #include "player_icons.h"
@@ -570,13 +568,13 @@ public:
 		}
 		else
 		{
-			int* d = (int*)ppm_reader;
-			int* s = (int*)_0B33C4_0BC1601FB8421_000_bin;
+			/*int* d = (int*)ppm_reader;
+			int* s = (int*)...;
 			
 			Debug::log("START = %X", d);
 			
 			for(int i=0;i<253196/4;i++)			
-				*(d++)=*(s++);
+				*(d++)=*(s++);*/
 		}					
 		
 		soundFreq = ppm_reader->getSoundFreq();		

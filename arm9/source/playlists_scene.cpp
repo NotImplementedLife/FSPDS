@@ -16,13 +16,15 @@ Scene* folder_picker_return_to_playlists();
 class PlaylistsScene : public SimpleScene
 {
 private:		
-	ObjFrame* folder_highlighted_frame;
 	Sprite* folder_icons[4];
-	Sprite* add_folder_icon=nullptr;
-	Sprite* back_arrow = nullptr;
+	ObjFrame* folder_highlighted_frame;	
+	Sprite* back_arrow = nullptr;	
 
+#if USE_NTFS!=1	
 	Sprite* reindex_icon = nullptr;
 	Sprite* remove_icon = nullptr;
+	Sprite* add_folder_icon=nullptr;
+#endif
 
 	
 	VwfEngine* vwf = new VwfEngine(Resources::Fonts::default_8x16);
@@ -66,6 +68,7 @@ public:
 		else if(keys & KEY_TOUCH)
 		{
 			touchRead(&touch);
+		#if USE_NTFS!=1
 			if(touch_in_rect(220, 0, 32, 32))
 			{
 				folder_picker_next_scene_gen = folder_picker_return_to_playlists;
@@ -110,6 +113,7 @@ public:
 			{
 				close()->next(gen_title_scene());
 			}
+		#endif // USE_NTFS!=1
 		}		
 		else if(keys & KEY_B)
 		{
@@ -149,6 +153,7 @@ public:
 			folder_icons[i]->set_position(8, 32 + 32*i);
 		}
 		
+	#if USE_NTFS!=1
 		add_folder_icon = create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
 		add_folder_icon->add_frame(new ObjFrame(&ROA_folder_icon8,0,3));
 		add_folder_icon->set_position(220, 0);
@@ -164,6 +169,7 @@ public:
 		remove_icon = create_sprite(new Sprite(SIZE_32x32, Engine::Sub));
 		remove_icon->add_frame(new ObjFrame(&ROA_folder_icon8,0,5));
 		remove_icon->set_position(140, 0);
+	#endif
 		
 
 		end_sprites_init();
@@ -222,10 +228,11 @@ public:
 				vwf->clear(Pal4bit);					
 				vwf->set_cursor(5, Strings::pcx_indexing_files);
 				vwf->put_text(Strings::str_indexing_files, Pal4bit, SolidColorBrush(0x2));				
-						
+			#if USE_NTFS!=1		
 				add_folder_icon->hide();
 				reindex_icon->hide();
 				remove_icon->hide();
+			#endif
 				back_arrow->hide();
 				GenericScene256::frame();		
 				swiWaitForVBlank();
@@ -302,10 +309,12 @@ public:
 					swiWaitForVBlank();
 			}
 			
+		#if USE_NTFS!=1
 			add_folder_icon->show();
 			reindex_icon->show();
 			remove_icon->show();
 			back_arrow->show();
+		#endif
 			display_page();
 		}
 		
@@ -375,16 +384,20 @@ public:
 	int loc_selected_index=0;
 	void display_page()
 	{
+	#if USE_NTFS!=1
 		reindex_icon->show();
 		remove_icon->show();
+	#endif
 		vwf->clear(Pal4bit);
 		for(int i=0;i<4;i++)
 			folder_icons[i]->hide();
 		
 		if(locations_provider->get_count()==0)
 		{			
+		#if USE_NTFS!=1
 			reindex_icon->hide();
 			remove_icon->hide();
+		#endif
 			vwf->set_cursor(6, Strings::pcx_no_flipnote_locations);	
 			vwf->put_text(Strings::str_no_flipnote_locations, Pal4bit, SolidColorBrush(0x3));
 			return;
@@ -461,10 +474,11 @@ public:
 		vwf->clear(Pal4bit);					
 		vwf->set_cursor(5, Strings::pcx_indexing_files);					
 		vwf->put_text(Strings::str_indexing_files, Pal4bit, SolidColorBrush(0x2));				
-				
+	#if USE_NTFS!=1	
 		add_folder_icon->hide();
 		reindex_icon->hide();
 		remove_icon->hide();
+	#endif
 		back_arrow->hide();
 		GenericScene256::frame();		
 		swiWaitForVBlank();
@@ -540,14 +554,17 @@ public:
 		for(int i=0;i<60;i++)
 			swiWaitForVBlank();
 		
+	#if USE_NTFS!=1			
 		add_folder_icon->show();
 		reindex_icon->show();
 		remove_icon->show();
+	#endif
 		back_arrow->show();
 	}
 	
 	~PlaylistsScene()
 	{		
+		key_down.remove_event(&PlaylistsScene::on_key_down, this);
 		delete vwf;		
 		for(int i=0;i<4;i++)
 		{
@@ -556,15 +573,14 @@ public:
 			delete[] list_buffer[i];
 		}
 			
-		delete back_arrow;
-		delete add_folder_icon;
-		
-		delete folder_highlighted_frame;
-		key_down.remove_event(&PlaylistsScene::on_key_down, this);
+		delete back_arrow;			
+		delete folder_highlighted_frame;		
 		delete locations_provider;		
-
+	#if USE_NTFS!=1	
+		delete add_folder_icon;
 		delete reindex_icon;
 		delete remove_icon;
+	#endif	
 	}
 };
 
